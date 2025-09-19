@@ -23,14 +23,8 @@ export const Menu = ({
 
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Check if user has permission for an item
-  const hasPermission = useCallback((item: MenuItem): boolean => {
-    if (!item.permissions || item.permissions.length === 0) return true;
-    return item.permissions.some(permission => userPermissions.includes(permission));
-  }, [userPermissions]);
-
-  // Filter items based on permissions
-  const filteredItems = items.filter(hasPermission);
+  // Show all items (no permission filtering)
+  const filteredItems = items;
 
   // Handle item toggle (expand/collapse)
   const handleToggle = useCallback((itemId: string) => {

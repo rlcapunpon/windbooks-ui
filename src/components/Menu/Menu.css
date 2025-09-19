@@ -5,16 +5,16 @@
 
 /* Sidebar variant */
 .menu-sidebar {
-  @apply w-64 bg-white border-r border-gray-200 h-full overflow-y-auto;
+  @apply w-full bg-white h-full overflow-y-auto overflow-x-hidden left-0;
 }
 
 .menu-sidebar .menu-list {
-  @apply p-4 space-y-2;
+  @apply pr-4 pb-4 pl-0 pt-4 space-y-2;
 }
 
 /* Drawer variant (mobile) */
 .menu-drawer {
-  @apply fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out;
+  @apply fixed inset-y-0 left-0 z-50 w-64 bg-white transform transition-transform duration-300 ease-in-out;
   @apply lg:translate-x-0 lg:static lg:inset-0;
 }
 
@@ -46,7 +46,7 @@
 
 /* Menu item base styles */
 .menu-item {
-  @apply relative;
+  @apply relative overflow-hidden;
 }
 
 .menu-item:hover {
@@ -87,6 +87,10 @@
   @apply space-y-1;
 }
 
+.menu-sidebar .menu-submenu {
+  @apply max-w-full;
+}
+
 .menu-submenu .menu-item {
   @apply pl-4;
 }
@@ -121,15 +125,15 @@
   .menu-sidebar,
   .menu-drawer,
   .menu-horizontal {
-    @apply bg-gray-800 border-gray-700;
+    @apply bg-white border-gray-700;
   }
 
   .menu-item:hover {
-    @apply bg-gray-700;
+    @apply bg-gray-50;
   }
 
   .menu-submenu {
-    @apply bg-gray-800 border-gray-700;
+    @apply bg-white border-gray-700;
   }
 }
 

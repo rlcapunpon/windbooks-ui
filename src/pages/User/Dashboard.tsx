@@ -24,7 +24,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="text-black">
+    <div className="text-black" data-testid="user-dashboard">
       {/* Welcome Section */}
       <div className="mb-8 bg-gradient-to-r from-gray-900 to-gray-800 p-8 rounded-2xl shadow-xl text-white">
         <h1 className="text-3xl md:text-4xl font-bold mb-2 text-white">

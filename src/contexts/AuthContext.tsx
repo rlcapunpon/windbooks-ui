@@ -1,7 +1,7 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { authService } from '../api/auth';
-import { setTokens, getRefreshToken, clearTokens } from '../utils/tokenStorage';
+import { setTokens, getRefreshToken, getAccessToken, clearTokens } from '../utils/tokenStorage';
 
 import type { User } from '../api/auth';
 
@@ -30,7 +30,39 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Initialize authentication state on app startup
+  useEffect(() => {
+    const initializeAuth = async () => {
+      const accessToken = getAccessToken();
+      const refreshToken = getRefreshToken();
+
+      if (accessToken && refreshToken) {
+        try {
+          // Try to get current user with existing tokens
+          const user = await authService.getCurrentUser();
+          setUser(user);
+        } catch (error) {
+          // If tokens are invalid, try to refresh
+          try {
+            const res = await authService.refreshToken({ refreshToken });
+            const { accessToken: newAccessToken } = res;
+            setTokens(newAccessToken, refreshToken);
+            const user = await authService.getCurrentUser();
+            setUser(user);
+          } catch (refreshError) {
+            // If refresh fails, clear tokens
+            clearTokens();
+          }
+        }
+      }
+
+      setIsLoading(false);
+    };
+
+    initializeAuth();
+  }, []);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);

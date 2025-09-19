@@ -8,14 +8,18 @@ interface ProtectedRouteProps {
 }
 
 export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user) {
+    if (!isLoading && !user) {
       navigate('/auth/login');
     }
-  }, [user, navigate]);
+  }, [user, isLoading, navigate]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   if (!user) {
     return <div>Loading...</div>;

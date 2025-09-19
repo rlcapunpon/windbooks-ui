@@ -22,6 +22,18 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
 
   const menuItems: MenuItem[] = [
     {
+      id: 'dashboard',
+      label: 'Dashboard',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5a2 2 0 012-2h4a2 2 0 012 2v2H8V5z" />
+        </svg>
+      ),
+      href: '/user',
+      permissions: ['USER.READ'], // All authenticated users can access dashboard
+    },
+    {
       id: 'profile',
       label: 'Profile',
       icon: (
@@ -76,6 +88,37 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
       ],
     },
     {
+      id: 'tasks',
+      label: 'Tasks',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+        </svg>
+      ),
+      href: '/tasks',
+      permissions: ['USER.READ'], // All authenticated users can view tasks
+      children: [
+        {
+          id: 'my-tasks',
+          label: 'My Tasks',
+          href: '/tasks/my-tasks',
+          permissions: ['USER.READ'],
+        },
+        {
+          id: 'assigned-tasks',
+          label: 'Assigned Tasks',
+          href: '/tasks/assigned',
+          permissions: ['USER.READ'],
+        },
+        {
+          id: 'task-management',
+          label: 'Task Management',
+          href: '/tasks/management',
+          permissions: ['USER.CREATE', 'USER.READ'],
+        },
+      ],
+    },
+    {
       id: 'admin',
       label: 'Administration',
       icon: (
@@ -117,9 +160,9 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-background-light-primary text-black flex">
+    <div className="min-h-screen bg-white text-black flex">
       {/* Sidebar Menu */}
-      <div className="w-64 bg-white border-r border-gray-200 shadow-sm">
+      <aside className="w-64 bg-white border-r border-gray-200 shadow-sm flex-shrink-0">
         <div className="p-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-900">Windbooks</h2>
           <p className="text-sm text-gray-600">Welcome, {user?.email?.split('@')[0]}</p>
@@ -133,12 +176,12 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
             showIcons={true}
           />
         </div>
-      </div>
+      </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col min-w-0">
         {/* Top Navigation */}
-        <nav className="bg-white border-b border-gray-200 px-6 py-3">
+        <nav className="bg-white border-b border-gray-200 px-6 py-3 flex-shrink-0">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-4">
               <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
@@ -164,7 +207,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
         </nav>
 
         {/* Page Content */}
-        <main className="flex-1 p-6">
+        <main className="flex-1 p-6 overflow-auto">
           {children}
         </main>
       </div>

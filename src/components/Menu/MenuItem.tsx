@@ -28,13 +28,7 @@ export const MenuItemComponent = ({
     }
   }, [hasChildren, isOpen, childrenLoaded, item.id, onAsyncLoad]);
 
-  // Check if user has permission for this item
-  const hasPermission = () => {
-    if (!item.permissions || item.permissions.length === 0) return true;
-    return item.permissions.some(permission => userPermissions.includes(permission));
-  };
-
-  if (!hasPermission()) return null;
+  // Always show menu items (no permission filtering)
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -84,27 +78,6 @@ export const MenuItemComponent = ({
   return (
     <li className="menu-item-container">
       <div className={itemClasses}>
-        {hasChildren && collapsible && (
-          <button
-            onClick={onToggle}
-            className="mr-2 p-1 rounded hover:bg-gray-100 transition-colors"
-            aria-expanded={isOpen}
-            aria-label={`Toggle ${item.label} submenu`}
-          >
-            <svg
-              className={cn(
-                'w-4 h-4 transition-transform duration-200',
-                isOpen ? 'rotate-90' : ''
-              )}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        )}
-
         {item.href ? (
           <a
             href={item.href}
@@ -159,6 +132,27 @@ export const MenuItemComponent = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
             </svg>
           </div>
+        )}
+
+        {hasChildren && collapsible && (
+          <button
+            onClick={onToggle}
+            className="ml-2 p-1 rounded hover:bg-gray-100 transition-colors"
+            aria-expanded={isOpen}
+            aria-label={`Toggle ${item.label} submenu`}
+          >
+            <svg
+              className={cn(
+                'w-4 h-4 transition-transform duration-200',
+                isOpen ? 'rotate-90' : ''
+              )}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
         )}
       </div>
 
