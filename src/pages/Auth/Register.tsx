@@ -1,7 +1,7 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useState } from 'react';
 
@@ -122,7 +122,16 @@ const Register = () => {
         >
           Register
         </button>
-        <div className="mt-4 text-center">
+        <div className="mt-4 flex justify-between items-center">
+          <Link
+            to="/"
+            className="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm transition-colors"
+          >
+            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Back to Home
+          </Link>
           <a href="#" className="text-blue-600 hover:text-blue-800 text-sm transition-colors">Already have an account? Login</a>
         </div>
       </form>
