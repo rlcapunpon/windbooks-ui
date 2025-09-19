@@ -1,0 +1,210 @@
+You are a coding agent building a **frontend client** for the centralized Authentication & Authorization Service.
+
+## OPERATING PROTOCOL (VERY IMPORTANT)
+- Work in **small, reviewable steps**.
+- After each step, **STOP and wait for my confirmation** before proceeding.
+- After each step, show:
+  1) What you changed (summary + file tree + key diffs),
+  2) How to run/test locally (commands),
+  3) Any design/implementation tradeoffs.
+- Accept only these commands from me before moving on:
+  - **CONFIRM STEP <n>** → proceed to the next step.
+  - **EDIT STEP <n>: <instructions>** → revise and show the updated result for this step.
+  - **SKIP STEP <n>** → skip and move to the next step.
+  - **CANCEL** → stop all work.
+- Never hardcode secrets. Use `.env` for API URLs and settings.
+- If something fails, STOP, show logs/errors, and propose fixes.
+
+## GOAL & SCOPE (MVP)
+A **Vite + React + TypeScript** web client for the Auth API:
+- **Landing Page**: marketing-style entry point, CTA to login/register.
+- **Auth Pages**:
+  - Login page → integrates with `POST /auth/login`.
+  - Logout functionality → integrates with `POST /auth/logout`.
+  - Register page (optional for MVP).
+- **Admin Pages**:
+  - Dashboard (requires `ROLE_LEVEL_1` or `ROLE_LEVEL_2`).
+  - Create User page → calls `POST /auth/register`, assign role(s).
+  - Manage Roles page → view users, update roles via API.
+- **User Pages**:
+  - Role-specific dashboards (e.g., one page per role level, based on claims in JWT).
+  - Each page shows only what permissions allow (read-only, staff tools, manager views, etc.).
+- **Config File**:
+  - Centralized file `src/config/permissions.ts` that defines default role → permissions mapping to mirror backend.
+  - Example:
+    ```ts
+    export const DEFAULT_ROLE_PERMISSIONS = {
+      ROLE_LEVEL_1: ["*"], // all permissions
+      ROLE_LEVEL_2: ["USER.READ", "USER.CREATE", "SETTINGS.MANAGE"],
+      ROLE_LEVEL_3: ["USER.READ", "REPORTS.EXPORT"],
+      ROLE_LEVEL_4: ["USER.READ"],
+      ROLE_LEVEL_5: ["USER.READ"], // view-only
+    }
+    ```
+- **Other Supporting Pages**:
+  - Profile page (`/me`).
+  - Settings page (configurable by role).
+  - Error/Unauthorized page.
+  - Docs/About page.
+
+## TECH CHOICES
+- **Build**: Vite
+- **UI**: React + TypeScript
+- **State Management**: React Query (for server state) + Context API (for auth context)
+- **Routing**: React Router v6
+- **Forms**: React Hook Form + Zod (validation)
+- **Styling**: Tailwind CSS
+- **API Calls**: Axios with interceptors (JWT bearer auth)
+- **Auth Handling**: JWT stored in HttpOnly cookies (preferred) or memory, with refresh workflow
+- **Testing**: Vitest + React Testing Library
+
+## PROJECT STRUCTURE (target)
+frontend-app/  
+├─ src/  
+│  ├─ api/                # axios client, hooks for auth, users, roles  
+│  ├─ components/         # shared UI components (Navbar, Footer, ProtectedRoute, FormInput)  
+│  ├─ config/             # permissions.ts, env config  
+│  ├─ contexts/           # AuthContext, PermissionsContext  
+│  ├─ hooks/              # custom hooks (useAuth, usePermissions)  
+│  ├─ pages/  
+│  │  ├─ Landing/         # landing page  
+│  │  ├─ Auth/            # login, logout, register  
+│  │  ├─ Admin/           # dashboard, create user, manage roles  
+│  │  ├─ User/            # dashboards per role  
+│  │  ├─ Profile/         # user profile  
+│  │  ├─ Settings/        # settings page  
+│  │  ├─ Error/           # unauthorized, not found  
+│  ├─ routes/             # route definitions + guards  
+│  ├─ utils/              # token utils, storage helpers  
+│  ├─ App.tsx             # main app  
+│  └─ main.tsx            # entrypoint  
+├─ public/  
+│  └─ favicon.ico  
+├─ .env.example  
+├─ index.html  
+├─ tsconfig.json  
+├─ vite.config.ts  
+├─ package.json  
+└─ README.md  
+
+## ENVIRONMENT VARIABLES
+All external settings go into `.env`:
+VITE_API_BASE_URL="http://localhost:4000"
+VITE_APP_NAME="AuthClient"
+VITE_CORS_ALLOWED_ORIGINS="http://localhost:3000,https://yourdomain.com"
+VITE_SECURE_COOKIES=true
+
+Frontend must always use `import.meta.env.VITE_*` variables.
+
+## SECURITY RULES
+- **CORS**:  
+  - Frontend must include credentials (`withCredentials: true` in Axios).  
+  - Must work with backend `CORS_ORIGINS` allowlist (frontend sends correct origin).  
+- **Token Handling**:  
+  - Prefer HttpOnly secure cookies for access/refresh tokens.  
+  - If memory storage used, never persist to `localStorage`/`sessionStorage`.  
+- **Input validation**:  
+  - Zod validation for all forms.  
+  - Strip/escape dangerous input (XSS prevention).  
+- **Route Protection**:  
+  - Use `<ProtectedRoute>` wrapper for routes requiring login.  
+  - Use role/permission guard to render only allowed UI.  
+- **Error Handling**:  
+  - Show safe error messages, never expose raw API responses.  
+- **UI Security**:  
+  - Sanitize dynamic HTML content.  
+  - Default-deny UI: don’t render unless permission is explicitly granted.  
+- **Network Security**:  
+  - Axios must include `withCredentials` when cookies are used.  
+  - All requests must be HTTPS in production.  
+- **Build Hardening**:  
+  - Use `vite build` with minification, tree-shaking.  
+  - Configure CSP (Content-Security-Policy) via backend headers.  
+- **Testing**:  
+  - Ensure unauthorized users cannot reach protected pages.  
+  - Ensure role-based access works correctly.
+
+## STEP-BY-STEP PLAN
+**STEP 0 — Plan & Prereq Check**  
+- Verify Node, npm/pnpm availability.  
+- Propose dependency list + versions.  
+- Propose initial scripts in `package.json`.  
+- WAIT for confirmation.  
+
+**STEP 1 — Repo Init**  
+- Initialize Vite project with React + TS template.  
+- Add ESLint, Prettier, Tailwind setup.  
+- WAIT for confirmation.  
+
+**STEP 2 — Directory Scaffolding**  
+- Create folder structure shown above with stub files.  
+- Add `README.md` with placeholder run instructions.  
+- WAIT for confirmation.  
+
+**STEP 3 — Dependencies Install**  
+- Install runtime, dev, and testing deps.  
+- Include security deps: DOMPurify (XSS sanitization), axios, react-query.  
+- WAIT for confirmation.  
+
+**STEP 4 — Auth Context + API Client**  
+- Setup `AuthContext` for login/logout/token refresh.  
+- Setup Axios client with interceptors (`Authorization` header or credentials for cookies).  
+- Handle CORS and withCredentials correctly.  
+- WAIT for confirmation.  
+
+**STEP 5 — Routing**  
+- Setup React Router with public (Landing, Login) and protected (Admin, User, Profile) routes.  
+- Implement `<ProtectedRoute>` guard using AuthContext.  
+- WAIT for confirmation.  
+
+**STEP 6 — Pages**  
+- Implement Landing page.  
+- Implement Login/Logout/Register pages with forms and API calls.  
+- WAIT for confirmation.  
+
+**STEP 7 — Admin Pages**  
+- Create Admin Dashboard.  
+- Create User Management (create user + assign roles).  
+- Create Role Management (update roles of existing users).  
+- WAIT for confirmation.  
+
+**STEP 8 — User Pages**  
+- Create dashboards per role (ROLE_LEVEL_1 … ROLE_LEVEL_5).  
+- Show only allowed permissions from config + API claims.  
+- WAIT for confirmation.  
+
+**STEP 9 — Config & Permissions**  
+- Implement `permissions.ts` with default role-permission mapping.  
+- Expose via `PermissionsContext`.  
+- WAIT for confirmation.  
+
+**STEP 10 — Extra Pages**  
+- Profile page (`/me`).  
+- Settings page (role-restricted).  
+- Error/Unauthorized/NotFound pages.  
+- WAIT for confirmation.  
+
+**STEP 11 — Tests**  
+- Add Vitest + React Testing Library smoke tests.  
+- Test login flow, route protection, role restrictions, and CORS handling.  
+- WAIT for confirmation.  
+
+**STEP 12 — DX & Scripts**  
+- Add npm scripts: dev, build, preview, lint, format, test.  
+- Update README with env setup and run instructions.  
+- WAIT for confirmation.  
+
+## ACCEPTANCE CRITERIA (MVP)
+- App builds and runs with `npm run dev`.  
+- Can log in/out against Auth API with secure CORS settings.  
+- Tokens handled securely (HttpOnly cookies or memory-only).  
+- Role-based routing works (Admin vs User pages).  
+- Admin can create users, assign/update roles.  
+- Permissions enforced both in UI (via config + claims) and by backend.  
+- Default permissions file (`permissions.ts`) present and used.  
+- Unauthorized access blocked with safe error messages.  
+- Tests pass for login, logout, route protection, and CORS integration.
+
+---
+Begin with **STEP 0 — Plan & Prereq Check** and WAIT for my confirmation.
+

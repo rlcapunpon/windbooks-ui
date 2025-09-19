@@ -1,0 +1,62 @@
+Redesign the existing Login, Register, and Dashboard pages using TailwindCSS to achieve a minimalistic and futuristic aesthetic.
+
+🎨 Design Guidelines
+
+Overall look: clean, futuristic, minimalistic.
+
+Style inspiration: neumorphism + glassmorphism, subtle gradients, rounded corners, glowing hover/focus effects.
+
+Color scheme: dark mode first (black/gray backgrounds, glowing cyan/blue/purple accents).
+
+Typography: modern sans-serif (e.g., Inter, Poppins).
+
+Containers: centered glassmorphic cards with blurred background, soft shadows, and rounded 2xl corners.
+
+Inputs: full-width, minimal borders, glowing focus rings, subtle background transparency.
+
+Buttons: full-width, bold typography, gradient backgrounds (blue → purple), hover states with glow.
+
+Animations: smooth transitions using transition-all, hover scaling, and subtle framer-motion fade/slide-in.
+
+📌 Page-Specific Design
+🔑 Login & Register Pages
+
+Centered card layout with frosted glass background.
+
+Form fields stacked vertically with spacing.
+
+Buttons full-width, gradient style.
+
+Links (Forgot password?, Create account) styled as subtle glowing text buttons.
+
+🖥 Dashboard Page
+
+Minimal top navigation bar with logo/app name and logout button.
+
+Content centered with a welcoming message (e.g., “Welcome back 🚀”).
+
+Use grid or flex for layout, ensuring responsiveness on mobile.
+
+On mobile: navigation collapses into a menu (hamburger or dropdown).
+
+🛠 Technical Requirements
+
+Use TailwindCSS utility classes only (no inline CSS).
+
+Ensure responsiveness with Tailwind breakpoints (sm, md, lg).
+
+Use backdrop-blur, bg-opacity, shadow-2xl, and gradient utilities for futuristic effects.
+
+Ensure accessibility (labels for inputs, sufficient contrast, focus states).
+
+Code must be clean, reusable, and extensible.
+
+✅ Deliverables
+
+Updated Tailwind classes applied to existing pages/components.
+
+Consistent UI theme across Login, Register, and Dashboard.
+
+Fully responsive design (tested at mobile, tablet, desktop breakpoints).
+
+Dark-mode-first aesthetic with futuristic styling.

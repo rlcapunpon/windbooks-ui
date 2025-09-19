@@ -1,0 +1,41 @@
+<?xml version='1.0'?>
+			<div>taxTypeCodeCount=37taxTypeCodeCount=</div>
+			<div>taxTypeCode1:CG~CAPITAL GAINS TAX-Real Property~0605taxTypeCode1:</div>
+			<div>taxTypeCode2:CS~CAPITAL GAINS TAX-Stocks~0605taxTypeCode2:</div>
+			<div>taxTypeCode3:DN~DONORS TAX~0605taxTypeCode3:</div>
+			<div>taxTypeCode4:DO~DOCUMENTARY STAMP TAX-ONE TIME~0605taxTypeCode4:</div>
+			<div>taxTypeCode5:DS~DOCUMENTARY STAMP TAX~0605taxTypeCode5:</div>
+			<div>taxTypeCode6:ES~ESTATE TAX~0605taxTypeCode6:</div>	
+			<div>taxTypeCode7:ET~ENERGY TAX~0605taxTypeCode7:</div>
+			<div>taxTypeCode8:IE~IMPROPERLY ACCUMULATED EARNINGS~0605taxTypeCode8:</div>
+			<div>taxTypeCode9:IT~INCOME TAX~0605taxTypeCode9:</div>
+			<div>taxTypeCode10:MC~MISCELLANEOUS TAX~0605taxTypeCode10:</div>
+			<div>taxTypeCode11:PM~PERCENTAGE TAX-MONTHLY~0605taxTypeCode11:</div>
+			<div>taxTypeCode12:PT~PERCENTAGE TAX-QUARTERLY~0605taxTypeCode12:</div>
+			<div>taxTypeCode13:QP~QUALIFYING FEES-PAGCOR~0605taxTypeCode13:</div>
+			<div>taxTypeCode14:RF~REGISTRATION FEE~0605taxTypeCode14:</div>
+			<div>taxTypeCode15:SL~PERCENTAGE TAX-SPECIAL LAWS~0605taxTypeCode15:</div>
+			<div>taxTypeCode16:SO~PERCENTAGE TAX-STOCKS(IPO)~0605taxTypeCode16:</div>
+			<div>taxTypeCode17:ST~PERCENTAGE TAX-STOCKS~0605taxTypeCode17:</div>
+			<div>taxTypeCode18:TR~TRAVEL TAX-PTA~0605taxTypeCode18:</div>
+			<div>taxTypeCode19:VT~VALUE ADDED TAX~0605taxTypeCode19:</div>
+			<div>taxTypeCode20:WB~WITHHOLDING TAX-BANKS AND OTHER FINANCIAL INSTITUTIONS~0605taxTypeCode20:</div>
+			<div>taxTypeCode21:WC~WITHHOLDING TAX-COMPENSATION~0605taxTypeCode21:</div>
+			<div>taxTypeCode22:WE~WITHHOLDING TAX-EXPANDED~0605taxTypeCode22:</div>
+			<div>taxTypeCode23:WF~WITHHOLDING TAX-FINAL~0605taxTypeCode23:</div>
+			<div>taxTypeCode24:WG~WITHHOLDING TAX-VAT AND OTHER PERCENTAGE TAXES~0605taxTypeCode24:</div>
+			<div>taxTypeCode25:WO~WITHHOLDING TAX-OTHERS~0605taxTypeCode25:</div>
+			<div>taxTypeCode26:WR~WITHHOLDING TAX-FRINGE BENEFITS~0605taxTypeCode26:</div>
+			<div>taxTypeCode27:WW~WITHHOLDING TAX-PERCENTAGE TAX ON WINNING AND PRIZES~0605taxTypeCode27:</div>
+			<div>taxTypeCode28:WV~WITHHOLDING TAX-VALUE ADDED TAX (VAT)~0605taxTypeCode28:</div>			
+			<div>taxTypeCode29:WP~WITHHOLDING TAX-PERCENTAGE TAX~0605taxTypeCode29:</div>			
+			<div>taxTypeCode30:XA~EXCISE TAX-ALCOHOL~0605taxTypeCode30:</div>
+			<div>taxTypeCode31:XB~EXCISE TAX-SWEETENED BEVERAGES~0605taxTypeCode31:</div>
+			<div>taxTypeCode32:XF~EXCISE TAX-TOBACCO INSPECTION AND MONITORING FESS~0605taxTypeCode32:</div>
+			<div>taxTypeCode33:XG~EXCISE TAX-AUTOMOBILES AND NON-ESSENTIALS~0605taxTypeCode33:</div>
+			<div>taxTypeCode34:XM~EXCISE TAX-MINERALS~0605taxTypeCode34:</div>
+			<div>taxTypeCode35:XP~EXCISE TAX-PETROLEUM~0605taxTypeCode35:</div>
+			<div>taxTypeCode36:XS~EXCISE TAX-SPECIFIC~0605taxTypeCode36:</div>
+			<div>taxTypeCode37:XT~EXCISE TAX-TOBACCO~0605taxTypeCode37:</div>
+			<div>taxTypeCode38:XV~EXCISE TAX-AD VALOREM~0605taxTypeCode38:</div>
+			<div>taxTypeCode39:XC~EXCISE TAX-PERFORMANCE OF SERVICES ON INVASIVE COSMETICS PROCEDURES~0605taxTypeCode39:</div>
