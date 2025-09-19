@@ -166,11 +166,41 @@ Frontend must always use `import.meta.env.VITE_*` variables.
 - Create Admin Dashboard.  
 - Create User Management (create user + assign roles).  
 - Create Role Management (update roles of existing users).  
-- WAIT for confirmation.  
+- WAIT for confirmation.
 
-**STEP 8 — User Pages**  
-- Create dashboards per role (ROLE_LEVEL_1 … ROLE_LEVEL_5).  
-- Show only allowed permissions from config + API claims.  
+**STEP 7.5 - Extendable Menu Component**
+Create a reusable, extensible menu component for the web application that supports:
+- Single-level items (simple menu links)
+- Multiple nested sub-menus (collapsible/expandable)
+- Responsive design for desktop and mobile
+- Clean TypeScript types for strong safety
+Expandable/Collapsible:
+
+- Parent items with children should be expandable via arrow toggle.
+- Only one submenu open at a time by default (optional prop for multiple open).
+- Keyboard Accessibility:
+- Tab navigation supported.
+- Enter/Space expands/collapses.
+- Responsive Layout:
+    -- Desktop: Sidebar menu.
+    -- Mobile: Collapsible drawer (hamburger toggle).
+- Icons: Allow optional icons for items.
+- RBAC: Support permissions array for conditional rendering.
+- Dynamic Loading: Should support lazy-loading menu items (async fetching).
+- Custom Renderers: Accept a render-prop for custom item rendering if needed.
+Outcome:
+  A scalable, reusable menu system that can grow with the app (supporting RBAC, async loading, and deeply nested structures) while staying minimal, futuristic, and accessible.
+
+**STEP 8.1 - Menu**
+- Create a Menu that contais initial options that direct to work-in-progress pages:
+   -- Profile - page that shows user details
+   -- Settings - page that shows settings that can be seen or updated by the current user
+   -- Organizations - page that shows the organizations that a user has access to
+
+**STEP 8.2 — User Pages**  
+- Create a dynamic dashboard that can be dynamically rendered depending on the user’s role (ROLE_LEVEL_1 … ROLE_LEVEL_5).  
+- Use the response of the endpoint /api/auth/me (check the auth_api.yaml file for response schema)
+- Menu and submenu items should have permission level attributes
 - WAIT for confirmation.  
 
 **STEP 9 — Config & Permissions**  

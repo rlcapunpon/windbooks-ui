@@ -12,6 +12,12 @@ export default {
           primary: '#1E2235', // Main background (lighter)
           secondary: '#1A1C2E',
           surface: '#1F2337', // Modal surface (darker for better contrast)
+          // Light theme variants for dashboard
+          light: {
+            primary: '#F8FAFC', // Light background
+            secondary: '#F1F5F9',
+            surface: '#FFFFFF',
+          }
         },
         // Accent colors
         accent: {
@@ -30,11 +36,22 @@ export default {
           primary: '#F8FAFC',
           secondary: '#94A3B8',
           disabled: '#475569',
+          // Light theme text variants
+          light: {
+            primary: '#1E293B', // Dark text for light backgrounds
+            secondary: '#475569',
+            disabled: '#64748B',
+          }
         },
         // Form fields
         input: {
           background: '#2D3342', // More distinct from main background
           border: '#475569', // Better border contrast
+          // Light theme input variants
+          light: {
+            background: '#FFFFFF',
+            border: '#CBD5E1',
+          }
         },
       },
       fontFamily: {

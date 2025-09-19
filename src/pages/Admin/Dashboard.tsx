@@ -5,7 +5,7 @@ import Banner from '../../components/Banner';
 interface User {
   id: string;
   email: string;
-  role: 'admin' | 'user' | 'accountant';
+  role: 'ROLE_LEVEL_1' | 'ROLE_LEVEL_2' | 'ROLE_LEVEL_3' | 'ROLE_LEVEL_4' | 'ROLE_LEVEL_5';
   createdAt: string;
   lastLogin?: string;
   status: 'active' | 'inactive';
@@ -19,7 +19,7 @@ const Dashboard = () => {
   const [newUser, setNewUser] = useState({
     email: '',
     password: '',
-    role: 'user' as const,
+    role: 'ROLE_LEVEL_4' as const,
     confirmPassword: ''
   });
 
@@ -29,7 +29,7 @@ const Dashboard = () => {
       {
         id: '1',
         email: 'admin@windbooks.com',
-        role: 'admin',
+        role: 'ROLE_LEVEL_1',
         createdAt: '2024-01-15',
         lastLogin: '2024-09-19',
         status: 'active'
@@ -37,7 +37,7 @@ const Dashboard = () => {
       {
         id: '2',
         email: 'john.doe@company.com',
-        role: 'user',
+        role: 'ROLE_LEVEL_3',
         createdAt: '2024-03-20',
         lastLogin: '2024-09-18',
         status: 'active'
@@ -45,7 +45,7 @@ const Dashboard = () => {
       {
         id: '3',
         email: 'sarah.accountant@windbooks.com',
-        role: 'accountant',
+        role: 'ROLE_LEVEL_2',
         createdAt: '2024-02-10',
         lastLogin: '2024-09-17',
         status: 'active'
@@ -69,7 +69,7 @@ const Dashboard = () => {
     };
 
     setUsers([...users, user]);
-    setNewUser({ email: '', password: '', role: 'user', confirmPassword: '' });
+    setNewUser({ email: '', password: '', role: 'ROLE_LEVEL_4', confirmPassword: '' });
     setShowCreateModal(false);
   };
 
@@ -92,15 +92,17 @@ const Dashboard = () => {
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'admin': return 'bg-red-100 text-red-800';
-      case 'accountant': return 'bg-blue-100 text-blue-800';
-      case 'user': return 'bg-green-100 text-green-800';
+      case 'ROLE_LEVEL_1': return 'bg-red-100 text-red-800';
+      case 'ROLE_LEVEL_2': return 'bg-purple-100 text-purple-800';
+      case 'ROLE_LEVEL_3': return 'bg-blue-100 text-blue-800';
+      case 'ROLE_LEVEL_4': return 'bg-green-100 text-green-800';
+      case 'ROLE_LEVEL_5': return 'bg-gray-100 text-gray-800';
       default: return 'bg-gray-100 text-gray-800';
     }
   };
 
   return (
-    <div className="min-h-screen bg-background-primary">
+    <div className="min-h-screen bg-background-light-primary text-text-light-primary">
       <Banner
         title="Windbooks Admin"
         subtitle="User Management Dashboard"
@@ -135,11 +137,11 @@ const Dashboard = () => {
           </div>
           <div className="bg-white/95 backdrop-blur-xl p-6 rounded-xl shadow-lg border border-gray-200">
             <h3 className="text-lg font-semibold text-gray-800 mb-2">Admins</h3>
-            <p className="text-3xl font-bold text-red-600">{users.filter(u => u.role === 'admin').length}</p>
+            <p className="text-3xl font-bold text-red-600">{users.filter(u => u.role === 'ROLE_LEVEL_1').length}</p>
           </div>
           <div className="bg-white/95 backdrop-blur-xl p-6 rounded-xl shadow-lg border border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">Accountants</h3>
-            <p className="text-3xl font-bold text-purple-600">{users.filter(u => u.role === 'accountant').length}</p>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Managers</h3>
+            <p className="text-3xl font-bold text-purple-600">{users.filter(u => u.role === 'ROLE_LEVEL_2').length}</p>
           </div>
         </div>
 
@@ -240,9 +242,11 @@ const Dashboard = () => {
                 onChange={(e) => setNewUser({...newUser, role: e.target.value as any})}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="user">User</option>
-                <option value="accountant">Accountant</option>
-                <option value="admin">Admin</option>
+                <option value="ROLE_LEVEL_1">Level 1 (Super Admin)</option>
+                <option value="ROLE_LEVEL_2">Level 2 (Manager)</option>
+                <option value="ROLE_LEVEL_3">Level 3 (Staff)</option>
+                <option value="ROLE_LEVEL_4">Level 4 (User)</option>
+                <option value="ROLE_LEVEL_5">Level 5 (Read-Only)</option>
               </select>
             </div>
             <div className="flex space-x-3 mt-6">
@@ -280,9 +284,11 @@ const Dashboard = () => {
                 onChange={(e) => setEditingUser({...editingUser, role: e.target.value as any})}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="user">User</option>
-                <option value="accountant">Accountant</option>
-                <option value="admin">Admin</option>
+                <option value="ROLE_LEVEL_1">Level 1 (Super Admin)</option>
+                <option value="ROLE_LEVEL_2">Level 2 (Manager)</option>
+                <option value="ROLE_LEVEL_3">Level 3 (Staff)</option>
+                <option value="ROLE_LEVEL_4">Level 4 (User)</option>
+                <option value="ROLE_LEVEL_5">Level 5 (Read-Only)</option>
               </select>
               <select
                 value={editingUser.status}

@@ -1,13 +1,9 @@
 import { createContext, useContext, useState } from 'react';
 import type { ReactNode } from 'react';
-import apiClient from '../api/client';
+import { authService } from '../api/auth';
 import { setTokens, getRefreshToken, clearTokens } from '../utils/tokenStorage';
 
-interface User {
-  id: string;
-  email: string;
-  roles: string[];
-}
+import type { User } from '../api/auth';
 
 interface AuthContextType {
   user: User | null;
@@ -39,11 +35,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      const res = await apiClient.post('/auth/login', { email, password });
-      const { accessToken, refreshToken } = res.data;
+      const res = await authService.login({ email, password });
+      const { accessToken, refreshToken } = res;
       setTokens(accessToken, refreshToken);
-      const userRes = await apiClient.get('/auth/me');
-      setUser(userRes.data);
+      const user = await authService.getCurrentUser();
+      setUser(user);
     } catch (error) {
       throw error;
     } finally {
@@ -55,7 +51,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const refresh = getRefreshToken();
     if (refresh) {
       try {
-        await apiClient.post('/auth/logout', { refreshToken: refresh });
+        await authService.logout(refresh);
       } catch {}
     }
     clearTokens();
@@ -66,11 +62,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     const refreshToken = getRefreshToken();
     if (!refreshToken) return;
     try {
-      const res = await apiClient.post('/auth/refresh', { refreshToken });
-      const { accessToken } = res.data;
+      const res = await authService.refreshToken({ refreshToken });
+      const { accessToken } = res;
       setTokens(accessToken, refreshToken);
-      const userRes = await apiClient.get('/auth/me');
-      setUser(userRes.data);
+      const user = await authService.getCurrentUser();
+      setUser(user);
     } catch {
       clearTokens();
       setUser(null);
@@ -80,7 +76,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const register = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      await apiClient.post('/auth/register', { email, password });
+      await authService.register({ email, password });
     } catch (error) {
       throw error;
     } finally {

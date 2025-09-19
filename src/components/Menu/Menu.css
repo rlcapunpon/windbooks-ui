@@ -1,0 +1,164 @@
+/* Menu Component Styles */
+.menu-component {
+  @apply relative;
+}
+
+/* Sidebar variant */
+.menu-sidebar {
+  @apply w-64 bg-white border-r border-gray-200 h-full overflow-y-auto;
+}
+
+.menu-sidebar .menu-list {
+  @apply p-4 space-y-2;
+}
+
+/* Drawer variant (mobile) */
+.menu-drawer {
+  @apply fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out;
+  @apply lg:translate-x-0 lg:static lg:inset-0;
+}
+
+.menu-drawer.menu-closed {
+  @apply -translate-x-full;
+}
+
+.menu-drawer .menu-list {
+  @apply p-4 space-y-2;
+}
+
+/* Horizontal variant */
+.menu-horizontal {
+  @apply bg-white border-b border-gray-200;
+}
+
+.menu-horizontal .menu-list {
+  @apply flex items-center space-x-1 p-2;
+}
+
+.menu-horizontal .menu-item-container {
+  @apply relative;
+}
+
+.menu-horizontal .menu-submenu {
+  @apply absolute top-full left-0 z-50 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg py-2;
+  @apply opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200;
+}
+
+/* Menu item base styles */
+.menu-item {
+  @apply relative;
+}
+
+.menu-item:hover {
+  @apply bg-gray-50;
+}
+
+.menu-item:focus {
+  @apply outline-none ring-2 ring-blue-500/50;
+}
+
+/* Active state */
+.menu-item.active {
+  @apply bg-blue-50 text-blue-600;
+}
+
+/* Disabled state */
+.menu-item.disabled {
+  @apply cursor-not-allowed opacity-50;
+}
+
+/* Loading spinner */
+.menu-item .animate-spin {
+  @apply animate-spin;
+}
+
+/* Badge styles */
+.menu-item .badge {
+  @apply ml-auto bg-blue-600 text-white text-xs px-2 py-1 rounded-full;
+}
+
+/* Icon styles */
+.menu-item .icon {
+  @apply mr-3 flex-shrink-0;
+}
+
+/* Submenu styles */
+.menu-submenu {
+  @apply space-y-1;
+}
+
+.menu-submenu .menu-item {
+  @apply pl-4;
+}
+
+/* Nested submenu indentation */
+.menu-submenu .menu-submenu .menu-item {
+  @apply pl-8;
+}
+
+.menu-submenu .menu-submenu .menu-submenu .menu-item {
+  @apply pl-12;
+}
+
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  .menu-sidebar {
+    @apply fixed inset-y-0 left-0 z-50 w-64 transform -translate-x-full transition-transform duration-300 ease-in-out;
+  }
+
+  .menu-sidebar.menu-open {
+    @apply translate-x-0;
+  }
+
+  .menu-horizontal .menu-submenu {
+    @apply relative mt-0 opacity-100 visible;
+    @apply bg-transparent border-none shadow-none py-0;
+  }
+}
+
+/* Dark mode support (if needed) */
+@media (prefers-color-scheme: dark) {
+  .menu-sidebar,
+  .menu-drawer,
+  .menu-horizontal {
+    @apply bg-gray-800 border-gray-700;
+  }
+
+  .menu-item:hover {
+    @apply bg-gray-700;
+  }
+
+  .menu-submenu {
+    @apply bg-gray-800 border-gray-700;
+  }
+}
+
+/* Focus visible for accessibility */
+.menu-item:focus-visible {
+  @apply outline-none ring-2 ring-blue-500/50;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .menu-item {
+    @apply border border-gray-300;
+  }
+
+  .menu-item:hover,
+  .menu-item:focus {
+    @apply border-blue-600 bg-blue-50;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .menu-item,
+  .menu-drawer,
+  .menu-submenu {
+    @apply transition-none;
+  }
+
+  .menu-item .animate-spin {
+    @apply animate-none;
+  }
+}
