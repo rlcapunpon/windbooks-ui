@@ -1,4 +1,4 @@
-import type { User } from '../api/auth';
+import type { User, UserResource } from '../api/auth';
 import { CookieStorage } from '../utils/cookieStorage';
 import apiClient from '../api/client';
 
@@ -130,7 +130,7 @@ export class UserService {
   /**
    * Gets user's resource roles
    */
-  static getUserResources(): Array<{ resourceId: string; role: string }> {
+  static getUserResources(): UserResource[] {
     const user = this.getCachedUserData();
     return user?.resources || [];
   }

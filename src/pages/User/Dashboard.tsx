@@ -1,37 +1,18 @@
-import { useUserData } from '../../hooks/useUserData';
+import { useAuth } from '../../contexts/AuthContext';
+import { UserService } from '../../services/userService';
 
 const Dashboard = () => {
-  const { user, loading, error, hasPermission, isSuperAdmin } = useUserData();
+  const { user } = useAuth();
 
   // Get user roles from the new structure
   const userRoles = user?.resources?.map(resource => resource.role) || [];
   const primaryRole = userRoles[0] || 'viewer'; // Default to viewer if no roles
 
-  const getRoleDisplayName = (role: string) => {
-    const roleMap: Record<string, string> = {
-      admin: 'Administrator',
-      manager: 'Manager',
-      editor: 'Editor',
-      viewer: 'Viewer'
-    };
-    return roleMap[role.toLowerCase()] || 'User';
-  };
-
-  if (loading) {
+  // Show loading if no user data yet
+  if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-md">
-          <h3 className="text-red-800 font-semibold">Error Loading Dashboard</h3>
-          <p className="text-red-600 text-sm mt-1">{error}</p>
-        </div>
       </div>
     );
   }
@@ -41,10 +22,10 @@ const Dashboard = () => {
       {/* Welcome Section */}
       <div className="mb-8 bg-gradient-to-r from-gray-900 to-gray-800 p-8 rounded-2xl shadow-xl text-white">
         <h1 className="text-3xl md:text-4xl font-bold mb-2 text-white">
-          Welcome back, {user?.email?.split('@')[0]}! 🚀
+          Welcome back, {user?.details?.nickName || user?.email?.split('@')[0]}! 🚀
         </h1>
         <p className="text-lg text-gray-300 mb-2">
-          {isSuperAdmin() ? 'Super Administrator' : getRoleDisplayName(primaryRole)} Dashboard
+          {UserService.isSuperAdmin() ? 'Super Administrator' : 'User'} Dashboard
         </p>
         {user?.resources && user.resources.length > 0 && (
           <p className="text-sm text-gray-300">
@@ -56,7 +37,7 @@ const Dashboard = () => {
           <span className="text-sm text-gray-300">
             Account {user?.isActive ? 'Active' : 'Inactive'}
           </span>
-          {isSuperAdmin() && (
+          {UserService.isSuperAdmin() && (
             <>
               <div className="w-2 h-2 rounded-full bg-yellow-400"></div>
               <span className="text-sm text-yellow-300">Super Admin</span>
@@ -68,7 +49,7 @@ const Dashboard = () => {
         {/* Dashboard Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* User Management Card - Available for levels 1-4 */}
-          {(hasPermission('USER.READ') || hasPermission('*')) && (
+          {(UserService.hasPermission('USER.READ') || UserService.hasPermission('*')) && (
             <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-200 hover:shadow-2xl transition-all duration-300">
               <div className="flex items-center mb-4">
                 <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center mr-3">
@@ -79,19 +60,19 @@ const Dashboard = () => {
                 <h3 className="text-lg font-semibold text-black">User Management</h3>
               </div>
               <p className="text-gray-600 mb-4">
-                {isSuperAdmin() ? 'Full user administration and system management' :
+                {UserService.isSuperAdmin() ? 'Full user administration and system management' :
                  primaryRole === 'admin' ? 'Create and manage user accounts' :
                  primaryRole === 'manager' ? 'Manage team members and permissions' :
                  'View user information and basic management'}
               </p>
               <div className="flex flex-wrap gap-2">
-                {hasPermission('*') && (
+                {UserService.hasPermission('*') && (
                   <span className="px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">Full Access</span>
                 )}
-                {hasPermission('USER.CREATE') && (
+                {UserService.hasPermission('USER.CREATE') && (
                   <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">Create Users</span>
                 )}
-                {hasPermission('USER.READ') && (
+                {UserService.hasPermission('USER.READ') && (
                   <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">View Users</span>
                 )}
               </div>
@@ -99,7 +80,7 @@ const Dashboard = () => {
           )}
 
           {/* Reports Card - Available for levels 1-3 */}
-          {(hasPermission('REPORTS.EXPORT') || hasPermission('*')) && (
+          {(UserService.hasPermission('REPORTS.EXPORT') || UserService.hasPermission('*')) && (
             <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-200 hover:shadow-2xl transition-all duration-300">
               <div className="flex items-center mb-4">
                 <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center mr-3">
@@ -120,7 +101,7 @@ const Dashboard = () => {
           )}
 
           {/* Settings Card - Available for levels 1-2 */}
-          {(hasPermission('SETTINGS.MANAGE') || hasPermission('*')) && (
+          {(UserService.hasPermission('SETTINGS.MANAGE') || UserService.hasPermission('*')) && (
             <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-200 hover:shadow-2xl transition-all duration-300">
               <div className="flex items-center mb-4">
                 <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mr-3">
@@ -160,8 +141,24 @@ const Dashboard = () => {
                 <span className="text-black font-medium">{user?.email}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Role:</span>
-                <span className="text-black font-medium">{getRoleDisplayName(primaryRole)}</span>
+                <span className="text-gray-600">Full Name:</span>
+                <span className="text-black font-medium">
+                  {user?.details ? `${user.details.firstName} ${user.details.lastName}` : 'N/A'}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Nickname:</span>
+                <span className="text-black font-medium">{user?.details?.nickName || 'N/A'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Contact:</span>
+                <span className="text-black font-medium">{user?.details?.contactNumber || 'N/A'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Reports To:</span>
+                <span className="text-black font-medium">
+                  {user?.details?.reportTo ? `${user.details.reportTo.firstName} ${user.details.reportTo.lastName}` : 'N/A'}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Resources:</span>
@@ -174,10 +171,6 @@ const Dashboard = () => {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">User ID:</span>
-                <span className="text-black font-medium font-mono text-xs">{user?.id}</span>
-              </div>
-              <div className="flex justify-between">
                 <span className="text-gray-600">Member since:</span>
                 <span className="text-black font-medium">
                   {user?.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
@@ -187,7 +180,7 @@ const Dashboard = () => {
           </div>
 
           {/* Admin Only Features - Super Admin only */}
-          {isSuperAdmin() && (
+          {UserService.isSuperAdmin() && (
             <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-200 hover:shadow-2xl transition-all duration-300 md:col-span-2 lg:col-span-3">
               <div className="flex items-center mb-4">
                 <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg flex items-center justify-center mr-3">
@@ -225,12 +218,12 @@ const Dashboard = () => {
             <button className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105">
               View Profile
             </button>
-            {(hasPermission('SETTINGS.MANAGE') || hasPermission('*')) && (
+            {(UserService.hasPermission('SETTINGS.MANAGE') || UserService.hasPermission('*')) && (
               <button className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105">
                 Settings
               </button>
             )}
-            {(hasPermission('REPORTS.EXPORT') || hasPermission('*')) && (
+            {(UserService.hasPermission('REPORTS.EXPORT') || UserService.hasPermission('*')) && (
               <button className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105">
                 Generate Report
               </button>

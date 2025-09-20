@@ -21,8 +21,24 @@ export interface RolePermission {
 }
 
 export interface UserResource {
-  resourceId: string;
+  resourceId: string | null;
   role: string;
+}
+
+export interface UserReportTo {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  nickName: string;
+}
+
+export interface UserDetails {
+  firstName: string;
+  lastName: string;
+  nickName: string;
+  contactNumber: string;
+  reportTo: UserReportTo;
 }
 
 export interface User {
@@ -32,6 +48,7 @@ export interface User {
   isSuperAdmin: boolean;
   createdAt: string;
   updatedAt: string;
+  details: UserDetails;
   resources: UserResource[];
 }
 

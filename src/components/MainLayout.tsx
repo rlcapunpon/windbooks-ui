@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Menu } from '../components/Menu/Menu';
-import { useUserData } from '../hooks/useUserData';
 import { useAuth } from '../contexts/AuthContext';
+import { UserService } from '../services/userService';
 import type { MenuItem } from '../components/Menu/types';
 
 interface MainLayoutProps {
@@ -9,8 +9,7 @@ interface MainLayoutProps {
 }
 
 export const MainLayout = ({ children }: MainLayoutProps) => {
-  const { user, isSuperAdmin } = useUserData();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
 
   // Get user roles from the new structure
   const userRoles = user?.resources?.map(resource => resource.role) || [];
@@ -18,7 +17,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
 
   // Create user permissions array for the Menu component
   const userPermissions: string[] = [];
-  if (isSuperAdmin()) {
+  if (UserService.isSuperAdmin()) {
     userPermissions.push('*');
   } else {
     // Add permissions based on roles
@@ -206,12 +205,12 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-4">
               <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
-              <div className={`px-3 py-1 rounded-full text-xs font-semibold text-white bg-gradient-to-r ${isSuperAdmin() ? 'from-yellow-500 to-orange-500' :
+              <div className={`px-3 py-1 rounded-full text-xs font-semibold text-white bg-gradient-to-r ${UserService.isSuperAdmin() ? 'from-yellow-500 to-orange-500' :
                 primaryRole === 'admin' ? 'from-purple-500 to-pink-500' :
                 primaryRole === 'manager' ? 'from-blue-500 to-cyan-500' :
                 primaryRole === 'editor' ? 'from-green-500 to-emerald-500' :
                 'from-gray-500 to-slate-500'}`}>
-                {isSuperAdmin() ? 'Super Admin' :
+                {UserService.isSuperAdmin() ? 'Super Admin' :
                  primaryRole === 'admin' ? 'Administrator' :
                  primaryRole === 'manager' ? 'Manager' :
                  primaryRole === 'editor' ? 'Editor' :

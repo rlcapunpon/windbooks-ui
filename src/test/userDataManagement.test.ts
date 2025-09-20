@@ -16,6 +16,19 @@ const mockUser: User = {
   isSuperAdmin: false,
   createdAt: '2025-09-20T10:30:00.000Z',
   updatedAt: '2025-09-20T10:30:00.000Z',
+  details: {
+    firstName: 'John',
+    lastName: 'Doe',
+    nickName: 'Johnny',
+    contactNumber: '+1-555-0123',
+    reportTo: {
+      id: 'clx2vafy4000008l2g7w2b8h5',
+      email: 'manager@example.com',
+      firstName: 'Jane',
+      lastName: 'Smith',
+      nickName: 'JaneS'
+    }
+  },
   resources: [
     {
       resourceId: 'clx2vafy4000008l2g7w2b8h7',
