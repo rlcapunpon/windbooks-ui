@@ -1,27 +1,40 @@
-import { useAuth } from '../../contexts/AuthContext';
-import { DEFAULT_ROLE_PERMISSIONS } from '../../config/permissions';
+import { useUserData } from '../../hooks/useUserData';
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, loading, error, hasPermission, isSuperAdmin } = useUserData();
 
-  // Get the highest role level (assuming user has only one role)
-  const userRole = user?.roles?.[0]?.role?.name || 'ROLE_LEVEL_5';
-  const userPermissions = DEFAULT_ROLE_PERMISSIONS[userRole as keyof typeof DEFAULT_ROLE_PERMISSIONS] || [];
-
-  const hasPermission = (permission: string) => {
-    return userPermissions.includes('*') || userPermissions.includes(permission);
-  };
+  // Get user roles from the new structure
+  const userRoles = user?.resources?.map(resource => resource.role) || [];
+  const primaryRole = userRoles[0] || 'viewer'; // Default to viewer if no roles
 
   const getRoleDisplayName = (role: string) => {
     const roleMap: Record<string, string> = {
-      ROLE_LEVEL_1: 'System Administrator',
-      ROLE_LEVEL_2: 'Manager',
-      ROLE_LEVEL_3: 'Supervisor',
-      ROLE_LEVEL_4: 'Operator',
-      ROLE_LEVEL_5: 'Viewer'
+      admin: 'Administrator',
+      manager: 'Manager',
+      editor: 'Editor',
+      viewer: 'Viewer'
     };
-    return roleMap[role] || 'User';
+    return roleMap[role.toLowerCase()] || 'User';
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 max-w-md">
+          <h3 className="text-red-800 font-semibold">Error Loading Dashboard</h3>
+          <p className="text-red-600 text-sm mt-1">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="text-black" data-testid="user-dashboard">
@@ -31,11 +44,11 @@ const Dashboard = () => {
           Welcome back, {user?.email?.split('@')[0]}! 🚀
         </h1>
         <p className="text-lg text-gray-300 mb-2">
-          {getRoleDisplayName(userRole)} Dashboard
+          {isSuperAdmin() ? 'Super Administrator' : getRoleDisplayName(primaryRole)} Dashboard
         </p>
-        {user?.organizationCode && (
+        {user?.resources && user.resources.length > 0 && (
           <p className="text-sm text-gray-300">
-            Organization: {user.organizationCode}
+            Resources: {user.resources.length} assigned
           </p>
         )}
         <div className="flex items-center gap-2 mt-2">
@@ -43,6 +56,12 @@ const Dashboard = () => {
           <span className="text-sm text-gray-300">
             Account {user?.isActive ? 'Active' : 'Inactive'}
           </span>
+          {isSuperAdmin() && (
+            <>
+              <div className="w-2 h-2 rounded-full bg-yellow-400"></div>
+              <span className="text-sm text-yellow-300">Super Admin</span>
+            </>
+          )}
         </div>
       </div>
 
@@ -60,8 +79,9 @@ const Dashboard = () => {
                 <h3 className="text-lg font-semibold text-black">User Management</h3>
               </div>
               <p className="text-gray-600 mb-4">
-                {userRole === 'ROLE_LEVEL_1' ? 'Full user administration and system management' :
-                 userRole === 'ROLE_LEVEL_2' ? 'Create and manage user accounts' :
+                {isSuperAdmin() ? 'Full user administration and system management' :
+                 primaryRole === 'admin' ? 'Create and manage user accounts' :
+                 primaryRole === 'manager' ? 'Manage team members and permissions' :
                  'View user information and basic management'}
               </p>
               <div className="flex flex-wrap gap-2">
@@ -141,11 +161,11 @@ const Dashboard = () => {
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Role:</span>
-                <span className="text-black font-medium">{getRoleDisplayName(userRole)}</span>
+                <span className="text-black font-medium">{getRoleDisplayName(primaryRole)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-gray-600">Organization:</span>
-                <span className="text-black font-medium">{user?.organizationCode || 'N/A'}</span>
+                <span className="text-gray-600">Resources:</span>
+                <span className="text-black font-medium">{user?.resources?.length || 0} assigned</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Status:</span>
@@ -166,8 +186,8 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Admin Only Features - Level 1 only */}
-          {userRole === 'ROLE_LEVEL_1' && (
+          {/* Admin Only Features - Super Admin only */}
+          {isSuperAdmin() && (
             <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-200 hover:shadow-2xl transition-all duration-300 md:col-span-2 lg:col-span-3">
               <div className="flex items-center mb-4">
                 <div className="w-10 h-10 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg flex items-center justify-center mr-3">

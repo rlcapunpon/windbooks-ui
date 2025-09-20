@@ -99,7 +99,7 @@ const RoleLevel4Dashboard = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Account Role</label>
-              <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-lg">{user?.roles?.[0]?.role?.name || 'User'}</p>
+              <p className="text-gray-900 bg-gray-50 px-3 py-2 rounded-lg">{user?.isSuperAdmin ? 'Super Admin' : (user?.resources?.[0]?.role || 'User')}</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Member Since</label>
@@ -114,7 +114,7 @@ const RoleLevel4Dashboard = () => {
 
         <div className="mt-8 text-center">
           <p className="text-sm text-text-light-disabled">
-            Logged in as: {user?.email} • Role: {user?.roles?.[0]?.role?.name || 'Unknown'}
+            Logged in as: {user?.email} • Role: {user?.isSuperAdmin ? 'Super Admin' : (user?.resources?.[0]?.role || 'Unknown')}
           </p>
         </div>
       </div>

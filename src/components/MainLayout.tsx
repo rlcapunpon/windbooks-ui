@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Menu } from '../components/Menu/Menu';
+import { useUserData } from '../hooks/useUserData';
 import { useAuth } from '../contexts/AuthContext';
-import { DEFAULT_ROLE_PERMISSIONS } from '../config/permissions';
 import type { MenuItem } from '../components/Menu/types';
 
 interface MainLayoutProps {
@@ -9,16 +9,37 @@ interface MainLayoutProps {
 }
 
 export const MainLayout = ({ children }: MainLayoutProps) => {
-  const { user, logout } = useAuth();
+  const { user, isSuperAdmin } = useUserData();
+  const { logout } = useAuth();
 
-  // Extract role names from the user roles
-  const userRoleNames = user?.roles?.map(userRole => userRole.role.name) || [];
-  const userPermissions = userRoleNames.flatMap(roleName =>
-    DEFAULT_ROLE_PERMISSIONS[roleName as keyof typeof DEFAULT_ROLE_PERMISSIONS] || []
-  );
+  // Get user roles from the new structure
+  const userRoles = user?.resources?.map(resource => resource.role) || [];
+  const primaryRole = userRoles[0] || 'viewer';
 
-  // Get the primary role for display
-  const primaryRole = user?.roles?.[0]?.role?.name || 'ROLE_LEVEL_5';
+  // Create user permissions array for the Menu component
+  const userPermissions: string[] = [];
+  if (isSuperAdmin()) {
+    userPermissions.push('*');
+  } else {
+    // Add permissions based on roles
+    userRoles.forEach(role => {
+      switch (role.toLowerCase()) {
+        case 'admin':
+          userPermissions.push('USER.READ', 'USER.CREATE', 'USER.UPDATE', 'USER.DELETE', 'SETTINGS.MANAGE', 'REPORTS.EXPORT');
+          break;
+        case 'manager':
+          userPermissions.push('USER.READ', 'USER.CREATE', 'USER.UPDATE', 'REPORTS.EXPORT');
+          break;
+        case 'editor':
+          userPermissions.push('USER.READ', 'USER.UPDATE', 'REPORTS.EXPORT');
+          break;
+        case 'viewer':
+        default:
+          userPermissions.push('USER.READ');
+          break;
+      }
+    });
+  }
 
   const menuItems: MenuItem[] = [
     {
@@ -126,7 +147,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
         </svg>
       ),
-      permissions: ['*'], // Only system administrators
+      permissions: ['*'], // Only super administrators
       children: [
         {
           id: 'user-management',
@@ -185,15 +206,15 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-4">
               <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
-              <div className={`px-3 py-1 rounded-full text-xs font-semibold text-white bg-gradient-to-r ${primaryRole === 'ROLE_LEVEL_1' ? 'from-purple-500 to-pink-500' :
-                primaryRole === 'ROLE_LEVEL_2' ? 'from-blue-500 to-cyan-500' :
-                primaryRole === 'ROLE_LEVEL_3' ? 'from-green-500 to-emerald-500' :
-                primaryRole === 'ROLE_LEVEL_4' ? 'from-yellow-500 to-orange-500' :
+              <div className={`px-3 py-1 rounded-full text-xs font-semibold text-white bg-gradient-to-r ${isSuperAdmin() ? 'from-yellow-500 to-orange-500' :
+                primaryRole === 'admin' ? 'from-purple-500 to-pink-500' :
+                primaryRole === 'manager' ? 'from-blue-500 to-cyan-500' :
+                primaryRole === 'editor' ? 'from-green-500 to-emerald-500' :
                 'from-gray-500 to-slate-500'}`}>
-                {primaryRole === 'ROLE_LEVEL_1' ? 'System Admin' :
-                 primaryRole === 'ROLE_LEVEL_2' ? 'Manager' :
-                 primaryRole === 'ROLE_LEVEL_3' ? 'Supervisor' :
-                 primaryRole === 'ROLE_LEVEL_4' ? 'Operator' :
+                {isSuperAdmin() ? 'Super Admin' :
+                 primaryRole === 'admin' ? 'Administrator' :
+                 primaryRole === 'manager' ? 'Manager' :
+                 primaryRole === 'editor' ? 'Editor' :
                  'Viewer'}
               </div>
             </div>

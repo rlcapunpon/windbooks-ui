@@ -113,23 +113,29 @@ export const MenuExample = () => {
   const [variant, setVariant] = useState<'sidebar' | 'drawer' | 'horizontal'>('sidebar');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  // Mock user permissions based on role
-  const userPermissions = user?.roles?.flatMap(userRole => {
-    switch (userRole.role.name) {
-      case 'ROLE_LEVEL_1':
-        return ['*'];
-      case 'ROLE_LEVEL_2':
-        return ['USER.READ', 'USER.CREATE', 'SETTINGS.MANAGE'];
-      case 'ROLE_LEVEL_3':
-        return ['USER.READ', 'REPORTS.EXPORT'];
-      case 'ROLE_LEVEL_4':
-        return ['USER.READ'];
-      case 'ROLE_LEVEL_5':
-        return ['USER.READ'];
-      default:
-        return [];
-    }
-  }) || [];
+  // Mock user permissions based on resources
+  const userPermissions: string[] = [];
+  if (user?.isSuperAdmin) {
+    userPermissions.push('*');
+  } else {
+    user?.resources?.forEach(resource => {
+      switch (resource.role.toLowerCase()) {
+        case 'admin':
+          userPermissions.push('USER.READ', 'USER.CREATE', 'USER.UPDATE', 'USER.DELETE', 'SETTINGS.MANAGE', 'REPORTS.EXPORT');
+          break;
+        case 'manager':
+          userPermissions.push('USER.READ', 'USER.CREATE', 'USER.UPDATE', 'REPORTS.EXPORT');
+          break;
+        case 'editor':
+          userPermissions.push('USER.READ', 'USER.UPDATE', 'REPORTS.EXPORT');
+          break;
+        case 'viewer':
+        default:
+          userPermissions.push('USER.READ');
+          break;
+      }
+    });
+  }
 
   const menuItems = createMenuItems(user);
 

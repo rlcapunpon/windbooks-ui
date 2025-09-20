@@ -93,7 +93,7 @@ const RoleLevel2Dashboard = () => {
 
         <div className="mt-8 text-center">
           <p className="text-sm text-text-light-disabled">
-            Logged in as: {user?.email} • Role: {user?.roles?.[0]?.role?.name || 'Unknown'}
+            Logged in as: {user?.email} • Role: {user?.isSuperAdmin ? 'Super Admin' : (user?.resources?.[0]?.role || 'Unknown')}
           </p>
         </div>
       </div>

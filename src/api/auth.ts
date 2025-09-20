@@ -20,18 +20,19 @@ export interface RolePermission {
   };
 }
 
-export interface UserRole {
-  role: Role;
+export interface UserResource {
+  resourceId: string;
+  role: string;
 }
 
 export interface User {
   id: string;
   email: string;
-  organizationCode?: string | null;
   isActive: boolean;
+  isSuperAdmin: boolean;
   createdAt: string;
   updatedAt: string;
-  roles: UserRole[];
+  resources: UserResource[];
 }
 
 export interface RegisterData {
