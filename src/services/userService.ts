@@ -35,7 +35,7 @@ export class UserService {
       ...minimalUser,
       createdAt: '', // Not stored in cookies
       updatedAt: '', // Not stored in cookies
-      details: {
+      details: minimalUser.details || {
         firstName: '',
         lastName: '',
         nickName: '',

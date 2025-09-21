@@ -49,6 +49,19 @@ const mockMinimalUser: MinimalUserData = {
       role: 'manager',
     },
   ],
+  details: {
+    firstName: 'John',
+    lastName: 'Doe',
+    nickName: 'Johnny',
+    contactNumber: '+1-555-0123',
+    reportTo: {
+      id: 'clx2vafy4000008l2g7w2b8h5',
+      email: 'manager@example.com',
+      firstName: 'Jane',
+      lastName: 'Smith',
+      nickName: 'JaneS'
+    }
+  }
 };
 
 describe('User Data Management System', () => {
@@ -98,19 +111,6 @@ describe('User Data Management System', () => {
         ...mockMinimalUser,
         createdAt: '',
         updatedAt: '',
-        details: {
-          firstName: '',
-          lastName: '',
-          nickName: '',
-          contactNumber: '',
-          reportTo: {
-            id: '',
-            email: '',
-            firstName: '',
-            lastName: '',
-            nickName: ''
-          }
-        }
       });
     });
 

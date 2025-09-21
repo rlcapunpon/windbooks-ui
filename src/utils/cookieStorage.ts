@@ -1,4 +1,4 @@
-import type { User, UserResource } from '../api/auth';
+import type { User, UserResource, UserDetails } from '../api/auth';
 
 // Minimal user data structure for cookies to reduce header size
 export interface MinimalUserData {
@@ -7,6 +7,7 @@ export interface MinimalUserData {
   isActive: boolean;
   isSuperAdmin: boolean;
   resources: UserResource[];
+  details?: UserDetails; // Include details for non-superadmin users
 }
 
 export const COOKIE_NAMES = {
@@ -32,6 +33,11 @@ export class CookieStorage {
       isSuperAdmin: user.isSuperAdmin,
       resources: user.resources,
     };
+
+    // Include details only for non-superadmin users (for reportTo information)
+    if (!user.isSuperAdmin) {
+      minimalUserData.details = user.details;
+    }
 
     const userData = JSON.stringify(minimalUserData);
     document.cookie = `${COOKIE_NAMES.USER_DATA}=${encodeURIComponent(userData)}; max-age=${COOKIE_OPTIONS.maxAge}; path=/; samesite=${COOKIE_OPTIONS.sameSite}`;
