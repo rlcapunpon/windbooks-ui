@@ -1,75 +1,74 @@
 import type { User, UserResource } from '../api/auth';
-import { CookieStorage } from '../utils/cookieStorage';
 import apiClient from '../api/client';
+import { getAccessToken } from '../utils/tokenStorage';
 
 export class UserService {
   private static readonly ME_ENDPOINT = 'auth/me';
 
   /**
-   * Fetches current user data from /api/auth/me endpoint and stores it in cookies
+   * Fetches current user data from /api/auth/me endpoint
    */
   static async fetchAndStoreUserData(): Promise<User> {
     try {
       const response = await apiClient.get<User>(this.ME_ENDPOINT);
       const userData = response.data;
 
-      // Store user data in cookies
-      CookieStorage.setUserData(userData);
+      // Store user data in localStorage for caching
+      localStorage.setItem('windbooks_user_data', JSON.stringify(userData));
 
       return userData;
-    } catch (error) {
+    } catch (error: any) {
+      // Check if this is related to large token issues
+      const token = getAccessToken();
+      if (token && token.length > 8000) {
+        console.warn('⚠️ Authentication failed possibly due to large token size');
+        console.log('🔄 This requires backend support for large token authentication');
+        
+        // For now, we'll throw a more descriptive error
+        const enhancedError = new Error(
+          'Authentication failed due to large token size. Please contact support or try logging out and back in.'
+        );
+        enhancedError.name = 'LargeTokenError';
+        throw enhancedError;
+      }
+      
       console.error('Failed to fetch user data:', error);
       throw error;
     }
   }
 
   /**
-   * Gets user data from cookies (cached data)
+   * Gets user data from localStorage cache
    */
   static getCachedUserData(): User | null {
-    const minimalUser = CookieStorage.getUserData();
-    if (!minimalUser) return null;
-
-    // Convert minimal user data back to full User format for compatibility
-    return {
-      ...minimalUser,
-      createdAt: '', // Not stored in cookies
-      updatedAt: '', // Not stored in cookies
-      details: minimalUser.details || {
-        firstName: '',
-        lastName: '',
-        nickName: '',
-        contactNumber: '',
-        reportTo: {
-          id: '',
-          email: '',
-          firstName: '',
-          lastName: '',
-          nickName: ''
-        }
-      }
-    };
+    try {
+      const cached = localStorage.getItem('windbooks_user_data');
+      return cached ? JSON.parse(cached) : null;
+    } catch (error) {
+      console.error('Failed to parse cached user data:', error);
+      return null;
+    }
   }
 
   /**
-   * Refreshes user data by calling /api/auth/me endpoint and updating cookies
+   * Refreshes user data by calling /api/auth/me endpoint
    */
   static async refreshUserData(): Promise<User> {
     return this.fetchAndStoreUserData();
   }
 
   /**
-   * Checks if user data exists in cookies
+   * Checks if user data exists in cache
    */
   static hasUserData(): boolean {
     return this.getCachedUserData() !== null;
   }
 
   /**
-   * Clears all user data from cookies
+   * Clears all user data from cache
    */
   static clearUserData(): void {
-    CookieStorage.clearUserData();
+    localStorage.removeItem('windbooks_user_data');
   }
 
   /**

@@ -23,7 +23,21 @@ apiClient.interceptors.request.use(
     console.log('API Request:', config.method?.toUpperCase(), config.url);
     const token = getAccessToken();
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      // Check token size to avoid 431 Request Header Fields Too Large errors
+      const authHeader = `Bearer ${token}`;
+      const headerSize = authHeader.length;
+      
+      if (headerSize > 8000) {
+        console.warn(`⚠️ Token is too large (${headerSize} chars), skipping Authorization header to avoid 431 errors`);
+        console.log('🚫 Large token detected - authentication will be handled by backend session');
+        // Don't set Authorization header for large tokens to prevent 431 errors
+        // Backend should be updated to handle authentication differently for large tokens
+      } else {
+        config.headers.Authorization = authHeader;
+        console.log('✅ Authorization header added');
+      }
+    } else {
+      console.log('❌ No access token found');
     }
     return config;
   },

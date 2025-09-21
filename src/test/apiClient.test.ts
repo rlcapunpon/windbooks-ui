@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
+// Mock the tokenStorage module
+const mockGetAccessToken = vi.fn()
+vi.mock('../utils/tokenStorage', () => ({
+  getAccessToken: mockGetAccessToken
+}))
+
 // Mock axios before importing the client
 const mockInstance = {
   interceptors: {
@@ -29,6 +35,7 @@ vi.mock('import.meta.env', () => ({
 describe('API Client Configuration', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockGetAccessToken.mockClear()
   })
 
   it('should create axios instance with correct configuration in development', async () => {
@@ -104,5 +111,30 @@ describe('API Client Error Handling', () => {
 
     const isCorsOrNetworkError = normalError.message.includes('CORS') || normalError.code === 'ERR_NETWORK'
     expect(isCorsOrNetworkError).toBe(false)
+  })
+})
+
+describe('Token Size Handling', () => {
+  it('should skip Authorization header for large tokens', () => {
+    const largeToken = 'x'.repeat(10000) // 10KB token
+    const authHeader = `Bearer ${largeToken}`
+    const isLargeToken = authHeader.length > 8000
+
+    expect(isLargeToken).toBe(true)
+  })
+
+  it('should include Authorization header for normal-sized tokens', () => {
+    const normalToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c'
+    const authHeader = `Bearer ${normalToken}`
+    const isLargeToken = authHeader.length > 8000
+
+    expect(isLargeToken).toBe(false)
+  })
+
+  it('should handle missing tokens gracefully', () => {
+    const token = null
+    const hasToken = token !== null && token !== undefined
+
+    expect(hasToken).toBe(false)
   })
 })

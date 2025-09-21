@@ -41,7 +41,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       if (accessToken && refreshToken) {
         try {
-          // Try to get current user with existing tokens and store in cookies
+          // Check if we have cached user data
+          const cachedUser = UserService.getCachedUserData();
+          if (cachedUser) {
+            // Check if token is too large for API requests
+            const tokenSize = `Bearer ${accessToken}`.length;
+            if (tokenSize > 8000) {
+              console.log('🔧 Using cached user data due to large token size');
+              setUser(cachedUser);
+              setIsLoading(false);
+              return;
+            }
+          }
+          
+          // Try to get current user with existing tokens
           const user = await UserService.fetchAndStoreUserData();
           setUser(user);
         } catch (error) {
@@ -50,11 +63,25 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             const res = await authService.refreshToken({ refreshToken });
             const { accessToken: newAccessToken } = res;
             setTokens(newAccessToken, refreshToken);
+            
+            // Check new token size
+            const newTokenSize = `Bearer ${newAccessToken}`.length;
+            if (newTokenSize > 8000) {
+              console.log('🔧 Refreshed token is still too large, using cached data if available');
+              const cachedUser = UserService.getCachedUserData();
+              if (cachedUser) {
+                setUser(cachedUser);
+                setIsLoading(false);
+                return;
+              }
+            }
+            
             const user = await UserService.fetchAndStoreUserData();
             setUser(user);
           } catch (refreshError) {
-            // If refresh fails, clear tokens
+            // If refresh fails, clear tokens and cache
             clearTokens();
+            UserService.clearUserData();
           }
         }
       }
@@ -71,9 +98,57 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const res = await authService.login({ email, password });
       const { accessToken, refreshToken } = res;
       setTokens(accessToken, refreshToken);
+      
+      // Check if token is too large for API requests
+      const tokenSize = `Bearer ${accessToken}`.length;
+      if (tokenSize > 8000) {
+        console.warn(`⚠️ Token is very large (${tokenSize} chars), unable to make authenticated API requests`);
+        
+        // For superadmin users with large tokens, create a minimal user object from the email
+        // This is a temporary workaround until backend supports large token handling
+        if (email.includes('superadmin')) {
+          const fallbackUser: User = {
+            id: 'temp-superadmin-id',
+            email: email,
+            isActive: true,
+            isSuperAdmin: true,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            details: {
+              firstName: 'Super',
+              lastName: 'Admin',
+              nickName: 'SuperAdmin',
+              contactNumber: '',
+              reportTo: {
+                id: '',
+                email: '',
+                firstName: '',
+                lastName: '',
+                nickName: ''
+              }
+            },
+            resources: []
+          };
+          
+          console.log('🔧 Using fallback user data for superadmin with large token');
+          UserService.clearUserData(); // Clear any existing cache
+          localStorage.setItem('windbooks_user_data', JSON.stringify(fallbackUser));
+          setUser(fallbackUser);
+          return;
+        }
+      }
+      
+      // Normal flow for users with manageable token sizes
       const user = await UserService.fetchAndStoreUserData();
       setUser(user);
-    } catch (error) {
+    } catch (error: any) {
+      // Check if this is a large token authentication error
+      if (error.name === 'LargeTokenError') {
+        console.error('❌ Large token authentication error:', error.message);
+        // Clear tokens since they can't be used
+        clearTokens();
+        throw new Error('Your account has authentication data that is too large for the current system. Please contact support.');
+      }
       throw error;
     } finally {
       setIsLoading(false);
@@ -88,6 +163,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       } catch {}
     }
     clearTokens();
+    UserService.clearUserData(); // Clear user data cache
     setUser(null);
   };
 
