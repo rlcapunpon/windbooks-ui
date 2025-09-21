@@ -165,10 +165,10 @@ export class UserService {
         throw new Error('Unable to get user ID from token');
       }
 
-      const response = await apiClient.put(`/user-details/${userId}`, userDetails);
+      await apiClient.put(`/user-details/${userId}`, userDetails);
       // After a successful update, refresh the user data in local storage
-      await this.fetchAndStoreUserData();
-      return response.data;
+      const updatedUserData = await this.fetchAndStoreUserData();
+      return updatedUserData;
     } catch (error) {
       console.error('Failed to update user details:', error);
       throw error;

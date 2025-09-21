@@ -1,13 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { UserService } from '../services/userService';
 import apiClient from '../api/client';
+import { getUserIdFromToken } from '../utils/tokenStorage';
 import type { User } from '../api/auth';
 import type { AxiosResponse } from 'axios';
 
 // Mock dependencies
 vi.mock('../api/client');
 vi.mock('../utils/tokenStorage', () => ({
-  getAccessToken: vi.fn()
+  getAccessToken: vi.fn(),
+  getUserIdFromToken: vi.fn()
 }));
 
 // Mock localStorage
@@ -154,6 +156,24 @@ describe('User Data Management System', () => {
       UserService.clearUserData();
 
       expect(localStorageMock.removeItem).toHaveBeenCalledWith('windbooks_user_data');
+    });
+
+    it('should update user details and return refreshed user data', async () => {
+      const updatedDetails = { firstName: 'Updated', lastName: 'Name' };
+      const updatedUser = { ...mockUser, details: { ...mockUser.details, ...updatedDetails } };
+
+      // Mock the API call
+      (apiClient.put as any).mockResolvedValue({ data: { success: true } });
+      // Mock fetchAndStoreUserData to return updated user
+      const fetchSpy = vi.spyOn(UserService, 'fetchAndStoreUserData').mockResolvedValue(updatedUser);
+      // Mock getUserIdFromToken
+      vi.mocked(getUserIdFromToken).mockReturnValue('test-user-id');
+
+      const result = await UserService.updateUserDetails(updatedDetails);
+
+      expect(apiClient.put).toHaveBeenCalledWith('/user-details/test-user-id', updatedDetails);
+      expect(fetchSpy).toHaveBeenCalled();
+      expect(result).toEqual(updatedUser);
     });
   });
 
