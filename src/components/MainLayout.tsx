@@ -210,11 +210,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
                 primaryRole === 'manager' ? 'from-blue-500 to-cyan-500' :
                 primaryRole === 'editor' ? 'from-green-500 to-emerald-500' :
                 'from-gray-500 to-slate-500'}`} id="user-role-badge">
-                {UserService.isSuperAdmin() ? 'Super Admin' :
-                 primaryRole === 'admin' ? 'Administrator' :
-                 primaryRole === 'manager' ? 'Manager' :
-                 primaryRole === 'editor' ? 'Editor' :
-                 'Viewer'}
+                {UserService.isSuperAdmin() ? 'Super Admin' : primaryRole.toUpperCase()}
               </div>
             </div>
             <button
