@@ -1,4 +1,5 @@
 import React from 'react';
+import logo from '/public/wb_icon.png';
 
 interface BannerProps {
   title?: string;
@@ -17,7 +18,7 @@ const Banner: React.FC<BannerProps> = ({
   className = '',
   children,
   showLogo = true,
-  logoSrc = '/vite.svg'
+  logoSrc = logo
 }) => {
   const baseClasses = "flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-white/95 backdrop-blur-xl";
 

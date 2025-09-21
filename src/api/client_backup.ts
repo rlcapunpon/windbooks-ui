@@ -36,15 +36,26 @@ apiClient.interceptors.request.use(
         console.warn(`⚠️ Large Authorization header: ${headerSize} chars (${(headerSize/1024).toFixed(1)}KB)`);
       }
       
-      // FIXED: Never send Authorization header if token is too large to prevent 431 errors
-      if (headerSize > MAX_AUTH_HEADER_SIZE) {
-        console.warn(`🚫 PREVENTING 431 ERROR: Skipping Authorization header (${headerSize} chars)`);
-        console.log('🔄 Backend must handle authentication via sessions or alternative methods');
-        // Important: DO NOT add Authorization header to prevent 431 errors
-      } else {
-        // Token is safe to use in headers for all endpoints
+      // Critical endpoints always get auth headers (even if large)
+      if (config.url?.includes('/user-details/') || config.url?.includes('/auth/me')) {
         config.headers.Authorization = authHeader;
-        console.log('✅ Authorization header added (token size acceptable)');
+        console.log('✅ Authorization header added for critical endpoint');
+        
+        if (headerSize > MAX_AUTH_HEADER_SIZE) {
+          console.error(`🚨 CRITICAL: Authorization header (${headerSize} chars) exceeds safe limit!`);
+          console.error('This will likely cause 431 "Request Header Fields Too Large" errors');
+          console.error('🔧 SOLUTION NEEDED: Reduce JWT payload size or implement token refresh');
+        }
+      } else {
+        // Non-critical endpoints skip large headers to prevent 431 errors
+        if (headerSize > MAX_AUTH_HEADER_SIZE) {
+          console.warn(`🚫 Skipping Authorization header (${headerSize} chars) to prevent 431 errors`);
+          console.log('� Authentication will rely on backend session/cookies');
+          // Don't set Authorization header for large tokens to prevent 431 errors
+        } else {
+          config.headers.Authorization = authHeader;
+          console.log('✅ Authorization header added');
+        }
       }
     } else {
       console.log('❌ No access token found');

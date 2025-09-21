@@ -1,6 +1,6 @@
 import type { User, UserResource } from '../api/auth';
 import apiClient from '../api/client';
-import { getAccessToken } from '../utils/tokenStorage';
+import { getAccessToken, getUserIdFromToken } from '../utils/tokenStorage';
 
 export class UserService {
   private static readonly ME_ENDPOINT = 'auth/me';
@@ -153,5 +153,25 @@ export class UserService {
   static getUserResources(): UserResource[] {
     const user = this.getCachedUserData();
     return user?.resources || [];
+  }
+
+  /**
+   * Updates user details.
+   */
+  static async updateUserDetails(userDetails: Partial<User['details']>) {
+    try {
+      const userId = getUserIdFromToken();
+      if (!userId) {
+        throw new Error('Unable to get user ID from token');
+      }
+
+      const response = await apiClient.put(`/user-details/${userId}`, userDetails);
+      // After a successful update, refresh the user data in local storage
+      await this.fetchAndStoreUserData();
+      return response.data;
+    } catch (error) {
+      console.error('Failed to update user details:', error);
+      throw error;
+    }
   }
 }
