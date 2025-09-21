@@ -26,6 +26,14 @@ type FormData = z.infer<typeof schema>;
 const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [resendStatus, setResendStatus] = useState<{
+    isLoading: boolean;
+    message: string | null;
+  }>({
+    isLoading: false,
+    message: null,
+  });
+
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
     type: 'error' | 'notification' | null;
@@ -40,6 +48,7 @@ const Login = () => {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -75,22 +84,94 @@ const Login = () => {
       }
 
       navigate('/user');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Login failed:', error);
-      const responseResult = parseAuthResponse(error);
+
+      // Check if this is an unverified account error
+      const apiMessage = error?.response?.data?.message;
+      const axiosMessage = error?.message;
+      const message = apiMessage || axiosMessage || 'An unexpected error occurred';
+      const statusCode = error?.response?.status;
+
+      // Special handling for unverified account
+      const isUnverified = statusCode === 401 && (
+        message.includes('not active and unverified') ||
+        message.includes('User account is not active and unverified') ||
+        message.toLowerCase().includes('unverified') ||
+        message.toLowerCase().includes('not active')
+      );
+
+      if (isUnverified) {
+        // Show notification with resend functionality
+        setModalState({
+          isOpen: true,
+          type: 'notification',
+          data: {
+            type: 'warning',
+            title: 'Email Verification Required',
+            message: resendStatus.message || 'Your account needs to be verified before you can log in. Please check your email for a verification link that was sent to you during registration.',
+            actionText: resendStatus.isLoading ? 'Sending...' : 'Resend Verification Email',
+            onAction: handleResendVerification,
+          },
+        });
+      } else {
+        // Use the standard error parser for other errors
+        const responseResult = parseAuthResponse(error);
+        setModalState({
+          isOpen: true,
+          type: responseResult.type,
+          data: responseResult.data,
+        });
+      }
+
       console.log('🎭 Modal State Debug:', {
-        responseType: responseResult.type,
-        responseData: responseResult.data,
-        willShowError: responseResult.type === 'error',
-        willShowNotification: responseResult.type === 'notification'
-      });
-      setModalState({
-        isOpen: true,
-        type: responseResult.type,
-        data: responseResult.data,
+        responseType: modalState.type,
+        responseData: modalState.data,
+        willShowError: modalState.type === 'error',
+        willShowNotification: modalState.type === 'notification'
       });
     }
   });
+
+  const handleResendVerification = async () => {
+    const email = watch('email'); // Get current email from form
+    if (!email) {
+      setResendStatus({
+        isLoading: false,
+        message: 'Please enter your email address.',
+      });
+      return;
+    }
+
+    setResendStatus({ isLoading: true, message: null });
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/resend-verification`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email }),
+      });
+
+      if (response.ok) {
+        setResendStatus({
+          isLoading: false,
+          message: 'Verification email sent successfully. Please check your inbox.',
+        });
+      } else {
+        setResendStatus({
+          isLoading: false,
+          message: 'Failed to send verification email. Please try again.',
+        });
+      }
+    } catch (error) {
+      setResendStatus({
+        isLoading: false,
+        message: 'Network error occurred. Please try again.',
+      });
+    }
+  };
 
   const closeModal = () => {
     setModalState({
@@ -98,6 +179,8 @@ const Login = () => {
       type: null,
       data: null,
     });
+    // Clear resend status when closing modal
+    setResendStatus({ isLoading: false, message: null });
   };
 
   return (
@@ -150,7 +233,12 @@ const Login = () => {
             </svg>
             Back to Home
           </Link>
-          <a href="#" className="text-blue-600 hover:text-blue-800 text-sm transition-colors">Forgot password?</a>
+          <Link
+            to="/auth/register"
+            className="text-blue-600 hover:text-blue-800 text-sm transition-colors"
+          >
+            Register Now
+          </Link>
         </div>
       </form>
 

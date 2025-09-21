@@ -132,7 +132,12 @@ const Register = () => {
             </svg>
             Back to Home
           </Link>
-          <a href="#" className="text-blue-600 hover:text-blue-800 text-sm transition-colors">Already have an account? Login</a>
+          <Link
+            to="/auth/login"
+            className="text-blue-600 hover:text-blue-800 text-sm transition-colors"
+          >
+            Already have an account? Login
+          </Link>
         </div>
       </form>
     </div>
