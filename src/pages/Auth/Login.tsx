@@ -3,7 +3,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import ErrorModal from '../../components/ErrorModal';
+import NotificationModal from '../../components/NotificationModal';
+import type { ErrorInfo } from '../../components/ErrorModal';
+import type { NotificationInfo } from '../../components/NotificationModal';
+import { parseAuthResponse } from '../../utils/authResponseParser';
 
 const schema = z.object({
   email: z.string()
@@ -21,6 +26,15 @@ type FormData = z.infer<typeof schema>;
 const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [modalState, setModalState] = useState<{
+    isOpen: boolean;
+    type: 'error' | 'notification' | null;
+    data: ErrorInfo | NotificationInfo | null;
+  }>({
+    isOpen: false,
+    type: null,
+    data: null,
+  });
 
   const {
     register,
@@ -63,8 +77,28 @@ const Login = () => {
       navigate('/user');
     } catch (error) {
       console.error('Login failed:', error);
+      const responseResult = parseAuthResponse(error);
+      console.log('🎭 Modal State Debug:', {
+        responseType: responseResult.type,
+        responseData: responseResult.data,
+        willShowError: responseResult.type === 'error',
+        willShowNotification: responseResult.type === 'notification'
+      });
+      setModalState({
+        isOpen: true,
+        type: responseResult.type,
+        data: responseResult.data,
+      });
     }
   });
+
+  const closeModal = () => {
+    setModalState({
+      isOpen: false,
+      type: null,
+      data: null,
+    });
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background-primary px-4">
@@ -119,6 +153,18 @@ const Login = () => {
           <a href="#" className="text-blue-600 hover:text-blue-800 text-sm transition-colors">Forgot password?</a>
         </div>
       </form>
+
+      <ErrorModal
+        isOpen={modalState.isOpen && modalState.type === 'error'}
+        onClose={closeModal}
+        error={modalState.type === 'error' ? modalState.data as ErrorInfo : null}
+      />
+
+      <NotificationModal
+        isOpen={modalState.isOpen && modalState.type === 'notification'}
+        onClose={closeModal}
+        notification={modalState.type === 'notification' ? modalState.data as NotificationInfo : null}
+      />
     </div>
   );
 };
