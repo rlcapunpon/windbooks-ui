@@ -12,13 +12,19 @@ const VerifyEmail = () => {
   useEffect(() => {
     if (!code) {
       // No verification code provided, redirect to landing page
+      const errorMessage = 'No verification code provided in URL';
+      console.error('Email verification error:', errorMessage);
+      alert(`Verification Error: ${errorMessage}. Redirecting to home page.`);
       navigate('/');
       return;
     }
 
     // Basic protection against malicious attacks - validate UUID format
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    const uuidRegex = /^[a-f0-9]{32}$/i;
     if (!uuidRegex.test(code)) {
+      const errorMessage = `Invalid verification code format: ${code}`;
+      console.error('Email verification error:', errorMessage);
+      alert(`Verification Error: ${errorMessage}. Redirecting to home page.`);
       navigate('/');
       return;
     }
@@ -45,10 +51,15 @@ const VerifyEmail = () => {
           navigate('/auth/login');
         }, 10000);
       } else {
+        const errorData = await response.text();
+        const errorMessage = `Email verification failed with status ${response.status}: ${errorData}`;
+        console.error('Email verification API error:', errorMessage);
         setStatus('error');
         setMessage('Email verification failed. Please try again.');
       }
     } catch (error) {
+      const errorMessage = `Network error during email verification: ${error}`;
+      console.error('Email verification network error:', errorMessage);
       setStatus('error');
       setMessage('Network error occurred. Please try again.');
     }
@@ -56,10 +67,13 @@ const VerifyEmail = () => {
 
   const handleResendVerification = async () => {
     if (!email) {
+      const errorMessage = 'No email address provided for resend verification';
+      console.error('Resend verification error:', errorMessage);
       setMessage('Please enter your email address.');
       return;
     }
 
+    console.log('Attempting to resend verification email to:', email);
     setIsResending(true);
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/resend-verification`, {
@@ -71,11 +85,18 @@ const VerifyEmail = () => {
       });
 
       if (response.ok) {
+        const successMessage = 'Verification email sent successfully to: ' + email;
+        console.log('Resend verification success:', successMessage);
         setMessage('Verification email sent successfully. Please check your inbox.');
       } else {
+        const errorData = await response.text();
+        const errorMessage = `Failed to resend verification email with status ${response.status}: ${errorData}`;
+        console.error('Resend verification API error:', errorMessage);
         setMessage('Failed to send verification email. Please try again.');
       }
     } catch (error) {
+      const errorMessage = `Network error during resend verification: ${error}`;
+      console.error('Resend verification network error:', errorMessage);
       setMessage('Network error occurred. Please try again.');
     } finally {
       setIsResending(false);
