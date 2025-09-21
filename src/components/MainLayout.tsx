@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { useState } from 'react';
 import { Menu } from '../components/Menu/Menu';
 import { useAuth } from '../contexts/AuthContext';
 import { UserService } from '../services/userService';
@@ -10,6 +11,7 @@ interface MainLayoutProps {
 
 export const MainLayout = ({ children }: MainLayoutProps) => {
   const { user, logout } = useAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Get user roles from the new structure
   const userRoles = user?.resources?.map(resource => resource.role) || [];
@@ -171,6 +173,9 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   ];
 
   const handleMenuItemClick = (item: MenuItem) => {
+    // Close mobile menu when item is clicked
+    setIsMobileMenuOpen(false);
+    
     // Handle navigation or other actions
     if (item.href) {
       window.location.href = item.href;
@@ -181,8 +186,18 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
 
   return (
     <div className="min-h-screen bg-white text-black flex" id="main-layout">
-      {/* Sidebar Menu */}
-      <aside className="w-64 bg-white border-r border-gray-200 shadow-sm flex-shrink-0" id="sidebar">
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" 
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      {/* Sidebar Menu - Hidden on mobile, visible on md and above, or shown when mobile menu is open */}
+      <aside className={`fixed md:relative inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 shadow-sm flex-shrink-0 transform transition-transform duration-300 ease-in-out md:translate-x-0 ${
+        isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+      } md:block`} id="sidebar">
         <div className="p-4 border-b border-gray-200" id="sidebar-header">
           <h2 className="text-lg font-semibold text-gray-900" id="sidebar-title">Windbooks</h2>
           <p className="text-sm text-gray-600" id="sidebar-welcome">Welcome, {user?.email?.split('@')[0]}</p>
@@ -204,6 +219,16 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
         <nav className="bg-white border-b border-gray-200 px-6 py-3 flex-shrink-0" id="top-navigation">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-4" id="nav-left">
+              {/* Mobile Menu Button */}
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                aria-label="Toggle mobile menu"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
               <h1 className="text-xl font-semibold text-gray-900" id="page-title">Dashboard</h1>
               <div className={`px-3 py-1 rounded-full text-xs font-semibold text-white bg-gradient-to-r ${UserService.isSuperAdmin() ? 'from-yellow-500 to-orange-500' :
                 primaryRole === 'admin' ? 'from-purple-500 to-pink-500' :
