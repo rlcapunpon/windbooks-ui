@@ -1,4 +1,13 @@
-import type { User } from '../api/auth';
+import type { User, UserResource } from '../api/auth';
+
+// Minimal user data structure for cookies to reduce header size
+export interface MinimalUserData {
+  id: string;
+  email: string;
+  isActive: boolean;
+  isSuperAdmin: boolean;
+  resources: UserResource[];
+}
 
 export const COOKIE_NAMES = {
   USER_DATA: 'windbooks_user_data',
@@ -15,11 +24,20 @@ export const COOKIE_OPTIONS = {
 
 export class CookieStorage {
   static setUserData(user: User): void {
-    const userData = JSON.stringify(user);
+    // Convert to minimal user data to reduce cookie size
+    const minimalUserData: MinimalUserData = {
+      id: user.id,
+      email: user.email,
+      isActive: user.isActive,
+      isSuperAdmin: user.isSuperAdmin,
+      resources: user.resources,
+    };
+
+    const userData = JSON.stringify(minimalUserData);
     document.cookie = `${COOKIE_NAMES.USER_DATA}=${encodeURIComponent(userData)}; max-age=${COOKIE_OPTIONS.maxAge}; path=/; samesite=${COOKIE_OPTIONS.sameSite}`;
   }
 
-  static getUserData(): User | null {
+  static getUserData(): MinimalUserData | null {
     const cookies = document.cookie.split(';');
     const userCookie = cookies.find(cookie => cookie.trim().startsWith(`${COOKIE_NAMES.USER_DATA}=`));
 

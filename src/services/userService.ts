@@ -27,7 +27,28 @@ export class UserService {
    * Gets user data from cookies (cached data)
    */
   static getCachedUserData(): User | null {
-    return CookieStorage.getUserData();
+    const minimalUser = CookieStorage.getUserData();
+    if (!minimalUser) return null;
+
+    // Convert minimal user data back to full User format for compatibility
+    return {
+      ...minimalUser,
+      createdAt: '', // Not stored in cookies
+      updatedAt: '', // Not stored in cookies
+      details: {
+        firstName: '',
+        lastName: '',
+        nickName: '',
+        contactNumber: '',
+        reportTo: {
+          id: '',
+          email: '',
+          firstName: '',
+          lastName: '',
+          nickName: ''
+        }
+      }
+    };
   }
 
   /**

@@ -180,14 +180,14 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-white text-black flex">
+    <div className="min-h-screen bg-white text-black flex" id="main-layout">
       {/* Sidebar Menu */}
-      <aside className="w-64 bg-white border-r border-gray-200 shadow-sm flex-shrink-0">
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">Windbooks</h2>
-          <p className="text-sm text-gray-600">Welcome, {user?.email?.split('@')[0]}</p>
+      <aside className="w-64 bg-white border-r border-gray-200 shadow-sm flex-shrink-0" id="sidebar">
+        <div className="p-4 border-b border-gray-200" id="sidebar-header">
+          <h2 className="text-lg font-semibold text-gray-900" id="sidebar-title">Windbooks</h2>
+          <p className="text-sm text-gray-600" id="sidebar-welcome">Welcome, {user?.email?.split('@')[0]}</p>
         </div>
-        <div className="p-4">
+        <div className="p-4" id="sidebar-menu">
           <Menu
             items={menuItems}
             userPermissions={userPermissions}
@@ -199,17 +199,17 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0" id="main-content">
         {/* Top Navigation */}
-        <nav className="bg-white border-b border-gray-200 px-6 py-3 flex-shrink-0">
+        <nav className="bg-white border-b border-gray-200 px-6 py-3 flex-shrink-0" id="top-navigation">
           <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-xl font-semibold text-gray-900">Dashboard</h1>
+            <div className="flex items-center space-x-4" id="nav-left">
+              <h1 className="text-xl font-semibold text-gray-900" id="page-title">Dashboard</h1>
               <div className={`px-3 py-1 rounded-full text-xs font-semibold text-white bg-gradient-to-r ${UserService.isSuperAdmin() ? 'from-yellow-500 to-orange-500' :
                 primaryRole === 'admin' ? 'from-purple-500 to-pink-500' :
                 primaryRole === 'manager' ? 'from-blue-500 to-cyan-500' :
                 primaryRole === 'editor' ? 'from-green-500 to-emerald-500' :
-                'from-gray-500 to-slate-500'}`}>
+                'from-gray-500 to-slate-500'}`} id="user-role-badge">
                 {UserService.isSuperAdmin() ? 'Super Admin' :
                  primaryRole === 'admin' ? 'Administrator' :
                  primaryRole === 'manager' ? 'Manager' :
@@ -220,6 +220,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
             <button
               onClick={logout}
               className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-2 rounded-lg hover:shadow-lg transition-all duration-300 transform hover:scale-105 text-sm"
+              id="logout-btn"
             >
               Logout
             </button>
@@ -227,7 +228,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
         </nav>
 
         {/* Page Content */}
-        <main className="flex-1 p-6 overflow-auto">
+        <main className="flex-1 p-6 overflow-auto" id="page-content">
           {children}
         </main>
       </div>

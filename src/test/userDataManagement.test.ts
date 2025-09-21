@@ -3,6 +3,7 @@ import { UserService } from '../services/userService';
 import { CookieStorage } from '../utils/cookieStorage';
 import apiClient from '../api/client';
 import type { User } from '../api/auth';
+import type { MinimalUserData } from '../utils/cookieStorage';
 import type { AxiosResponse } from 'axios';
 
 // Mock dependencies
@@ -37,6 +38,19 @@ const mockUser: User = {
   ],
 };
 
+const mockMinimalUser: MinimalUserData = {
+  id: 'clx2vafy4000008l2g7w2b8h6',
+  email: 'test@example.com',
+  isActive: true,
+  isSuperAdmin: false,
+  resources: [
+    {
+      resourceId: 'clx2vafy4000008l2g7w2b8h7',
+      role: 'manager',
+    },
+  ],
+};
+
 describe('User Data Management System', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -55,7 +69,7 @@ describe('User Data Management System', () => {
     });
 
     it('should extract permissions from user resources', () => {
-      vi.spyOn(CookieStorage, 'getUserData').mockReturnValue(mockUser);
+      vi.spyOn(CookieStorage, 'getUserData').mockReturnValue(mockMinimalUser);
 
       const permissions = UserService.getUserPermissions();
 
@@ -66,7 +80,7 @@ describe('User Data Management System', () => {
     });
 
     it('should return wildcard permission for super admin', () => {
-      const superAdminUser = { ...mockUser, isSuperAdmin: true };
+      const superAdminUser = { ...mockMinimalUser, isSuperAdmin: true };
       vi.spyOn(CookieStorage, 'getUserData').mockReturnValue(superAdminUser);
 
       const permissions = UserService.getUserPermissions();
@@ -74,12 +88,56 @@ describe('User Data Management System', () => {
       expect(permissions).toEqual(['*']);
     });
 
-    it('should extract roles from user resources', () => {
-      vi.spyOn(CookieStorage, 'getUserData').mockReturnValue(mockUser);
+    it('should return cached user data from cookies', () => {
+      vi.spyOn(CookieStorage, 'getUserData').mockReturnValue(mockMinimalUser);
 
-      const roles = UserService.getUserRoles();
+      const cachedUser = UserService.getCachedUserData();
 
-      expect(roles).toEqual(['manager']);
+      expect(CookieStorage.getUserData).toHaveBeenCalled();
+      expect(cachedUser).toEqual({
+        ...mockMinimalUser,
+        createdAt: '',
+        updatedAt: '',
+        details: {
+          firstName: '',
+          lastName: '',
+          nickName: '',
+          contactNumber: '',
+          reportTo: {
+            id: '',
+            email: '',
+            firstName: '',
+            lastName: '',
+            nickName: ''
+          }
+        }
+      });
+    });
+
+    it('should return null when no cached user data exists', () => {
+      vi.spyOn(CookieStorage, 'getUserData').mockReturnValue(null);
+
+      const cachedUser = UserService.getCachedUserData();
+
+      expect(CookieStorage.getUserData).toHaveBeenCalled();
+      expect(cachedUser).toBeNull();
+    });
+
+    it('should correctly identify super admin status from cached data', () => {
+      const superAdminUser = { ...mockMinimalUser, isSuperAdmin: true };
+      vi.spyOn(CookieStorage, 'getUserData').mockReturnValue(superAdminUser);
+
+      const isSuperAdmin = UserService.isSuperAdmin();
+
+      expect(isSuperAdmin).toBe(true);
+    });
+
+    it('should correctly identify non-super admin status from cached data', () => {
+      vi.spyOn(CookieStorage, 'getUserData').mockReturnValue(mockMinimalUser);
+
+      const isSuperAdmin = UserService.isSuperAdmin();
+
+      expect(isSuperAdmin).toBe(false);
     });
   });
 

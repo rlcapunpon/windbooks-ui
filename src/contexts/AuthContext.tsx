@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { authService } from '../api/auth';
 import { setTokens, getRefreshToken, getAccessToken, clearTokens } from '../utils/tokenStorage';
+import { UserService } from '../services/userService';
 
 import type { User } from '../api/auth';
 
@@ -40,8 +41,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       if (accessToken && refreshToken) {
         try {
-          // Try to get current user with existing tokens
-          const user = await authService.getCurrentUser();
+          // Try to get current user with existing tokens and store in cookies
+          const user = await UserService.fetchAndStoreUserData();
           setUser(user);
         } catch (error) {
           // If tokens are invalid, try to refresh
@@ -49,7 +50,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             const res = await authService.refreshToken({ refreshToken });
             const { accessToken: newAccessToken } = res;
             setTokens(newAccessToken, refreshToken);
-            const user = await authService.getCurrentUser();
+            const user = await UserService.fetchAndStoreUserData();
             setUser(user);
           } catch (refreshError) {
             // If refresh fails, clear tokens
@@ -70,7 +71,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const res = await authService.login({ email, password });
       const { accessToken, refreshToken } = res;
       setTokens(accessToken, refreshToken);
-      const user = await authService.getCurrentUser();
+      const user = await UserService.fetchAndStoreUserData();
       setUser(user);
     } catch (error) {
       throw error;
@@ -97,7 +98,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       const res = await authService.refreshToken({ refreshToken });
       const { accessToken } = res;
       setTokens(accessToken, refreshToken);
-      const user = await authService.getCurrentUser();
+      const user = await UserService.fetchAndStoreUserData();
       setUser(user);
     } catch {
       clearTokens();
