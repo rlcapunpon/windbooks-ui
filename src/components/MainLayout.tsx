@@ -96,12 +96,6 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
           permissions: ['USER.READ'],
         },
         {
-          id: 'org-members',
-          label: 'Members',
-          href: '/organizations/members',
-          permissions: ['USER.READ'],
-        },
-        {
           id: 'org-settings',
           label: 'Settings',
           href: '/organizations/settings',
