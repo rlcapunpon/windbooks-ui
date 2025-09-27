@@ -14,6 +14,7 @@ dist-ssr
 permission_context
 notes
 prompts*
+checkpoint
 
 # Editor directories and files
 .vscode/*

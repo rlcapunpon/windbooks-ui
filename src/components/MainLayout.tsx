@@ -76,7 +76,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
         </svg>
       ),
       href: '/settings',
-      permissions: ['SETTINGS.MANAGE'], // Only users with settings permissions
+      permissions: ['*'], // Only super administrators
     },
     {
       id: 'organizations',

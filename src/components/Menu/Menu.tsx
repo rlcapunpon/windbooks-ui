@@ -23,8 +23,21 @@ export const Menu = ({
 
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Show all items (no permission filtering)
-  const filteredItems = items;
+  // Filter items based on user permissions
+  const filteredItems = items.filter(item => {
+    // If no permissions required, show the item
+    if (!item.permissions || item.permissions.length === 0) {
+      return true;
+    }
+
+    // If user has wildcard permission (*), show all items
+    if (userPermissions.includes('*')) {
+      return true;
+    }
+
+    // Check if user has any of the required permissions
+    return item.permissions.some(permission => userPermissions.includes(permission));
+  });
 
   // Handle item toggle (expand/collapse)
   const handleToggle = useCallback((itemId: string) => {

@@ -38,7 +38,7 @@ const mockMenuItems: MenuItem[] = [
     id: 'settings',
     label: 'Settings',
     href: '/settings',
-    permissions: ['SETTINGS.MANAGE'],
+    permissions: ['*'], // Super admin only
   },
 ];
 
@@ -51,7 +51,7 @@ describe('Menu Component', () => {
     render(
       <Menu
         items={mockMenuItems}
-        userPermissions={['USER.READ', 'USER.CREATE', 'SETTINGS.MANAGE']}
+        userPermissions={['*']} // Super admin permissions to see all items
       />
     );
 
@@ -60,18 +60,96 @@ describe('Menu Component', () => {
     expect(screen.getByText('Settings')).toBeInTheDocument();
   });
 
-  it('shows all items regardless of permissions (no filtering)', () => {
-    render(
+  it('filters items based on user permissions', () => {
+    const itemsWithPermissions: MenuItem[] = [
+      {
+        id: 'public',
+        label: 'Public Item',
+        permissions: [], // No permissions required
+      },
+      {
+        id: 'user-only',
+        label: 'User Only',
+        permissions: ['USER.READ'],
+      },
+      {
+        id: 'admin-only',
+        label: 'Admin Only',
+        permissions: ['ADMIN.ACCESS'],
+      },
+      {
+        id: 'super-admin-only',
+        label: 'Super Admin Only',
+        permissions: ['*'],
+      },
+    ];
+
+    // Test with no permissions - should only show public item
+    const { rerender } = render(
       <Menu
-        items={mockMenuItems}
-        userPermissions={['USER.READ']} // Only USER.READ permission
+        items={itemsWithPermissions}
+        userPermissions={[]}
       />
     );
 
-    // All items should be visible regardless of permissions
+    expect(screen.getByText('Public Item')).toBeInTheDocument();
+    expect(screen.queryByText('User Only')).not.toBeInTheDocument();
+    expect(screen.queryByText('Admin Only')).not.toBeInTheDocument();
+    expect(screen.queryByText('Super Admin Only')).not.toBeInTheDocument();
+
+    // Test with USER.READ permission
+    rerender(
+      <Menu
+        items={itemsWithPermissions}
+        userPermissions={['USER.READ']}
+      />
+    );
+
+    expect(screen.getByText('Public Item')).toBeInTheDocument();
+    expect(screen.getByText('User Only')).toBeInTheDocument();
+    expect(screen.queryByText('Admin Only')).not.toBeInTheDocument();
+    expect(screen.queryByText('Super Admin Only')).not.toBeInTheDocument();
+
+    // Test with wildcard (*) permission (super admin)
+    rerender(
+      <Menu
+        items={itemsWithPermissions}
+        userPermissions={['*']}
+      />
+    );
+
+    expect(screen.getByText('Public Item')).toBeInTheDocument();
+    expect(screen.getByText('User Only')).toBeInTheDocument();
+    expect(screen.getByText('Admin Only')).toBeInTheDocument();
+    expect(screen.getByText('Super Admin Only')).toBeInTheDocument();
+  });
+
+  it('hides Settings menu item for non-super-admin users', () => {
+    // Test with regular user permissions - Settings should be hidden
+    render(
+      <Menu
+        items={mockMenuItems}
+        userPermissions={['USER.READ', 'USER.CREATE']}
+      />
+    );
+
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
     expect(screen.getByText('Users')).toBeInTheDocument();
-    expect(screen.getByText('Settings')).toBeInTheDocument(); // Now visible for all users
+    expect(screen.queryByText('Settings')).not.toBeInTheDocument();
+  });
+
+  it('shows Settings menu item only for super admin users', () => {
+    // Test with super admin permissions - Settings should be visible
+    render(
+      <Menu
+        items={mockMenuItems}
+        userPermissions={['*']}
+      />
+    );
+
+    expect(screen.getByText('Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Users')).toBeInTheDocument();
+    expect(screen.getByText('Settings')).toBeInTheDocument();
   });
 
   it('shows submenu when parent is clicked', async () => {
