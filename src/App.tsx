@@ -8,6 +8,7 @@ import UserDashboard from './pages/User/Dashboard';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Organizations from './pages/Organizations';
+import OrganizationsDashboard from './pages/Organizations/OrganizationsDashboard';
 import Unauthorized from './pages/Error/Unauthorized';
 import NotFound from './pages/Error/NotFound';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -29,6 +30,7 @@ function App() {
             <Route path="/profile" element={<ProtectedRoute><MainLayout><Profile /></MainLayout></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><MainLayout><Settings /></MainLayout></ProtectedRoute>} />
             <Route path="/organizations" element={<ProtectedRoute><MainLayout><Organizations /></MainLayout></ProtectedRoute>} />
+            <Route path="/organizations/dashboard" element={<ProtectedRoute><MainLayout><OrganizationsDashboard /></MainLayout></ProtectedRoute>} />
             <Route path="/unauthorized" element={<Unauthorized />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

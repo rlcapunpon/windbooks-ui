@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock the API client
-vi.mock('../api/client')
+vi.mock('../api/orgClient')
 
 import { OrganizationService } from '../services/organizationService'
-import apiClient from '../api/client'
+import orgApiClient from '../api/orgClient'
 
 // Mock organization data
 const mockOrganization = {
@@ -64,7 +64,7 @@ describe('OrganizationService', () => {
     it('should fetch all organizations without filters', async () => {
       // Arrange
       const mockResponse = [mockOrganization]
-      ;(apiClient.get as any).mockResolvedValueOnce({
+      ;(orgApiClient.get as any).mockResolvedValueOnce({
         data: mockResponse
       })
 
@@ -72,14 +72,14 @@ describe('OrganizationService', () => {
       const result = await OrganizationService.getAllOrganizations()
 
       // Assert
-      expect(apiClient.get).toHaveBeenCalledWith('/organizations', { params: undefined })
+      expect(orgApiClient.get).toHaveBeenCalledWith('/organizations', { params: undefined })
       expect(result).toEqual(mockResponse)
     })
 
     it('should fetch organizations with category filter', async () => {
       // Arrange
       const mockResponse = [mockOrganization]
-      ;(apiClient.get as any).mockResolvedValueOnce({
+      ;(orgApiClient.get as any).mockResolvedValueOnce({
         data: mockResponse
       })
 
@@ -87,7 +87,7 @@ describe('OrganizationService', () => {
       const result = await OrganizationService.getAllOrganizations({ category: 'NON_INDIVIDUAL' })
 
       // Assert
-      expect(apiClient.get).toHaveBeenCalledWith('/organizations', {
+      expect(orgApiClient.get).toHaveBeenCalledWith('/organizations', {
         params: { category: 'NON_INDIVIDUAL' }
       })
       expect(result).toEqual(mockResponse)
@@ -96,7 +96,7 @@ describe('OrganizationService', () => {
     it('should handle API errors', async () => {
       // Arrange
       const mockError = new Error('Network error')
-      ;(apiClient.get as any).mockRejectedValueOnce(mockError)
+      ;(orgApiClient.get as any).mockRejectedValueOnce(mockError)
 
       // Act & Assert
       await expect(OrganizationService.getAllOrganizations()).rejects.toThrow('Network error')
@@ -106,7 +106,7 @@ describe('OrganizationService', () => {
   describe('createOrganization', () => {
     it('should create a new organization', async () => {
       // Arrange
-      ;(apiClient.post as any).mockResolvedValueOnce({
+      ;(orgApiClient.post as any).mockResolvedValueOnce({
         data: mockOrganization
       })
 
@@ -114,7 +114,7 @@ describe('OrganizationService', () => {
       const result = await OrganizationService.createOrganization(mockCreateOrganizationData)
 
       // Assert
-      expect(apiClient.post).toHaveBeenCalledWith('/organizations', mockCreateOrganizationData)
+      expect(orgApiClient.post).toHaveBeenCalledWith('/organizations', mockCreateOrganizationData)
       expect(result).toEqual(mockOrganization)
     })
 
@@ -126,7 +126,7 @@ describe('OrganizationService', () => {
           data: { message: 'Validation failed' }
         }
       }
-      ;(apiClient.post as any).mockRejectedValueOnce(mockError)
+      ;(orgApiClient.post as any).mockRejectedValueOnce(mockError)
 
       // Act & Assert
       await expect(OrganizationService.createOrganization(mockCreateOrganizationData)).rejects.toThrow()
@@ -136,7 +136,7 @@ describe('OrganizationService', () => {
   describe('getOrganizationById', () => {
     it('should fetch organization by ID', async () => {
       // Arrange
-      ;(apiClient.get as any).mockResolvedValueOnce({
+      ;(orgApiClient.get as any).mockResolvedValueOnce({
         data: mockOrganization
       })
 
@@ -144,7 +144,7 @@ describe('OrganizationService', () => {
       const result = await OrganizationService.getOrganizationById('org-123')
 
       // Assert
-      expect(apiClient.get).toHaveBeenCalledWith('/organizations/org-123')
+      expect(orgApiClient.get).toHaveBeenCalledWith('/organizations/org-123')
       expect(result).toEqual(mockOrganization)
     })
 
@@ -156,7 +156,7 @@ describe('OrganizationService', () => {
           data: { message: 'Organization not found' }
         }
       }
-      ;(apiClient.get as any).mockRejectedValueOnce(mockError)
+      ;(orgApiClient.get as any).mockRejectedValueOnce(mockError)
 
       // Act & Assert
       await expect(OrganizationService.getOrganizationById('org-999')).rejects.toThrow()
@@ -168,7 +168,7 @@ describe('OrganizationService', () => {
       // Arrange
       const updateData = { name: 'Updated Name', address: 'New Address' }
       const updatedOrganization = { ...mockOrganization, ...updateData }
-      ;(apiClient.put as any).mockResolvedValueOnce({
+      ;(orgApiClient.put as any).mockResolvedValueOnce({
         data: updatedOrganization
       })
 
@@ -176,7 +176,7 @@ describe('OrganizationService', () => {
       const result = await OrganizationService.updateOrganization('org-123', updateData)
 
       // Assert
-      expect(apiClient.put).toHaveBeenCalledWith('/organizations/org-123', updateData)
+      expect(orgApiClient.put).toHaveBeenCalledWith('/organizations/org-123', updateData)
       expect(result).toEqual(updatedOrganization)
     })
   })
@@ -195,7 +195,7 @@ describe('OrganizationService', () => {
         ...statusData,
         last_update: '2024-01-01T00:00:00.000Z'
       }
-      ;(apiClient.put as any).mockResolvedValueOnce({
+      ;(orgApiClient.put as any).mockResolvedValueOnce({
         data: updatedStatus
       })
 
@@ -203,7 +203,7 @@ describe('OrganizationService', () => {
       const result = await OrganizationService.updateOrganizationStatus('org-123', statusData)
 
       // Assert
-      expect(apiClient.put).toHaveBeenCalledWith('/organizations/org-123/status', statusData)
+      expect(orgApiClient.put).toHaveBeenCalledWith('/organizations/org-123/status', statusData)
       expect(result).toEqual(updatedStatus)
     })
   })
@@ -212,7 +212,7 @@ describe('OrganizationService', () => {
     it('should fetch organization status', async () => {
       // Arrange
       const mockStatus = mockOrganization.status
-      ;(apiClient.get as any).mockResolvedValueOnce({
+      ;(orgApiClient.get as any).mockResolvedValueOnce({
         data: mockStatus
       })
 
@@ -220,7 +220,7 @@ describe('OrganizationService', () => {
       const result = await OrganizationService.getOrganizationStatus('org-123')
 
       // Assert
-      expect(apiClient.get).toHaveBeenCalledWith('/organizations/org-123/status')
+      expect(orgApiClient.get).toHaveBeenCalledWith('/organizations/org-123/status')
       expect(result).toEqual(mockStatus)
     })
   })
@@ -243,7 +243,7 @@ describe('OrganizationService', () => {
         is_bir_withholding_agent: false,
         accounting_method: 'ACCRUAL' as const
       }
-      ;(apiClient.put as any).mockResolvedValueOnce({
+      ;(orgApiClient.put as any).mockResolvedValueOnce({
         data: operationData
       })
 
@@ -251,7 +251,7 @@ describe('OrganizationService', () => {
       const result = await OrganizationService.updateOrganizationOperation('org-123', operationData)
 
       // Assert
-      expect(apiClient.put).toHaveBeenCalledWith('/organizations/org-123/operation', operationData)
+      expect(orgApiClient.put).toHaveBeenCalledWith('/organizations/org-123/operation', operationData)
       expect(result).toEqual(operationData)
     })
   })
@@ -264,7 +264,7 @@ describe('OrganizationService', () => {
         fy_end: '2025-12-31',
         accounting_method: 'ACCRUAL'
       }
-      ;(apiClient.get as any).mockResolvedValueOnce({
+      ;(orgApiClient.get as any).mockResolvedValueOnce({
         data: mockOperation
       })
 
@@ -272,7 +272,7 @@ describe('OrganizationService', () => {
       const result = await OrganizationService.getOrganizationOperation('org-123')
 
       // Assert
-      expect(apiClient.get).toHaveBeenCalledWith('/organizations/org-123/operation')
+      expect(orgApiClient.get).toHaveBeenCalledWith('/organizations/org-123/operation')
       expect(result).toEqual(mockOperation)
     })
   })
@@ -298,7 +298,7 @@ describe('OrganizationService', () => {
         start_date: '2024-01-01',
         reg_date: '2024-01-01'
       }
-      ;(apiClient.put as any).mockResolvedValueOnce({
+      ;(orgApiClient.put as any).mockResolvedValueOnce({
         data: registrationData
       })
 
@@ -306,7 +306,7 @@ describe('OrganizationService', () => {
       const result = await OrganizationService.updateOrganizationRegistration('org-123', registrationData)
 
       // Assert
-      expect(apiClient.put).toHaveBeenCalledWith('/organizations/org-123/registration', registrationData)
+      expect(orgApiClient.put).toHaveBeenCalledWith('/organizations/org-123/registration', registrationData)
       expect(result).toEqual(registrationData)
     })
   })
