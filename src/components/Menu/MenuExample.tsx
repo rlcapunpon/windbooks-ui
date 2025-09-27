@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Menu, type MenuItem } from '../Menu';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContextTypes';
 
 // Example menu items with different features
-const createMenuItems = (_user: any): MenuItem[] => [
+const createMenuItems = (): MenuItem[] => [
   {
     id: 'dashboard',
     label: 'Dashboard',
@@ -118,7 +118,7 @@ export const MenuExample = () => {
   if (user?.isSuperAdmin) {
     userPermissions.push('*');
   } else {
-    user?.resources?.forEach(resource => {
+    user?.resources?.forEach((resource: { role: string }) => {
       switch (resource.role.toLowerCase()) {
         case 'admin':
           userPermissions.push('USER.READ', 'USER.CREATE', 'USER.UPDATE', 'USER.DELETE', 'SETTINGS.MANAGE', 'REPORTS.EXPORT');
@@ -137,7 +137,7 @@ export const MenuExample = () => {
     });
   }
 
-  const menuItems = createMenuItems(user);
+  const menuItems = createMenuItems();
 
   const handleItemClick = (item: MenuItem) => {
     console.log('Menu item clicked:', item);

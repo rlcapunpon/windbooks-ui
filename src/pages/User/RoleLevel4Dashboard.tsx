@@ -1,4 +1,4 @@
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContextTypes';
 
 const RoleLevel4Dashboard = () => {
   const { user, logout } = useAuth();

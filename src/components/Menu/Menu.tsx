@@ -117,24 +117,28 @@ export const Menu = ({
       const currentIndex = Array.from(focusableElements).indexOf(focusedElement as Element);
 
       switch (key) {
-        case 'ArrowDown':
+        case 'ArrowDown': {
           event.preventDefault();
           const nextIndex = Math.min(currentIndex + 1, focusableElements.length - 1);
           (focusableElements[nextIndex] as HTMLElement)?.focus();
           break;
-        case 'ArrowUp':
+        }
+        case 'ArrowUp': {
           event.preventDefault();
           const prevIndex = Math.max(currentIndex - 1, 0);
           (focusableElements[prevIndex] as HTMLElement)?.focus();
           break;
-        case 'Home':
+        }
+        case 'Home': {
           event.preventDefault();
           (focusableElements[0] as HTMLElement)?.focus();
           break;
-        case 'End':
+        }
+        case 'End': {
           event.preventDefault();
           (focusableElements[focusableElements.length - 1] as HTMLElement)?.focus();
           break;
+        }
       }
     };
 

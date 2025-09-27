@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { useState } from 'react';
 import { Menu } from '../components/Menu/Menu';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../contexts/AuthContextTypes';
 import { UserService } from '../services/userService';
 import type { MenuItem } from '../components/Menu/types';
 
@@ -14,7 +14,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Get user roles from the new structure
-  const userRoles = user?.resources?.map(resource => resource.role) || [];
+  const userRoles = user?.resources?.map((resource: { role: string }) => resource.role) || [];
   const primaryRole = userRoles[0] || 'viewer';
 
   // Create user permissions array for the Menu component
@@ -23,7 +23,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     userPermissions.push('*');
   } else {
     // Add permissions based on roles
-    userRoles.forEach(role => {
+    userRoles.forEach((role: string) => {
       switch (role.toLowerCase()) {
         case 'admin':
           userPermissions.push('USER.READ', 'USER.CREATE', 'USER.UPDATE', 'USER.DELETE', 'SETTINGS.MANAGE', 'REPORTS.EXPORT');

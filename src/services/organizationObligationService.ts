@@ -35,7 +35,7 @@ export class OrganizationObligationService {
     try {
       const response = await apiClient.get<OrganizationObligation[]>(`${this.BASE_ENDPOINT}/${organizationId}/obligations`)
       return response.data
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to fetch organization obligations:', error)
       throw error
     }
@@ -48,7 +48,7 @@ export class OrganizationObligationService {
     try {
       const response = await apiClient.post<OrganizationObligation>(`${this.BASE_ENDPOINT}/${organizationId}/obligations`, data)
       return response.data
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to assign obligation:', error)
       throw error
     }
@@ -61,7 +61,7 @@ export class OrganizationObligationService {
     try {
       const response = await apiClient.put<OrganizationObligation>(`${this.OBLIGATION_ENDPOINT}/${obligationId}`, data)
       return response.data
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to update obligation status:', error)
       throw error
     }

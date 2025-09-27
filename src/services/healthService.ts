@@ -18,7 +18,7 @@ export class HealthService {
     try {
       const response = await apiClient.get<HealthStatus>(this.HEALTH_ENDPOINT)
       return response.data
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to check health status:', error)
       throw error
     }

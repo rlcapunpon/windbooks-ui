@@ -47,7 +47,7 @@ describe('orgApiClient Unit and Integration Tests', () => {
           validateStatus: () => true // Accept any status for testing
         });
       } catch (error) {
-        // Connection errors are expected in testing
+        // error is intentionally unused - connection errors are expected in testing
       }
 
       // Check that at least one log call contains the request message

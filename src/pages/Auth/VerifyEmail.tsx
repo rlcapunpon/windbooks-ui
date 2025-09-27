@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 const VerifyEmail = () => {
@@ -9,31 +9,7 @@ const VerifyEmail = () => {
   const [email, setEmail] = useState('');
   const [isResending, setIsResending] = useState(false);
 
-  useEffect(() => {
-    if (!code) {
-      // No verification code provided, redirect to landing page
-      const errorMessage = 'No verification code provided in URL';
-      console.error('Email verification error:', errorMessage);
-      alert(`Verification Error: ${errorMessage}. Redirecting to home page.`);
-      navigate('/');
-      return;
-    }
-
-    // Basic protection against malicious attacks - validate UUID format
-    const uuidRegex = /^[a-f0-9]{32}$/i;
-    if (!uuidRegex.test(code)) {
-      const errorMessage = `Invalid verification code format: ${code}`;
-      console.error('Email verification error:', errorMessage);
-      alert(`Verification Error: ${errorMessage}. Redirecting to home page.`);
-      navigate('/');
-      return;
-    }
-
-    // Call verification API
-    verifyEmail(code);
-  }, [code, navigate]);
-
-  const verifyEmail = async (verificationCode: string) => {
+  const verifyEmail = useCallback(async (verificationCode: string) => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/verify/${verificationCode}`, {
         method: 'GET',
@@ -63,7 +39,31 @@ const VerifyEmail = () => {
       setStatus('error');
       setMessage('Network error occurred. Please try again.');
     }
-  };
+  }, [navigate]);
+
+  useEffect(() => {
+    if (!code) {
+      // No verification code provided, redirect to landing page
+      const errorMessage = 'No verification code provided in URL';
+      console.error('Email verification error:', errorMessage);
+      alert(`Verification Error: ${errorMessage}. Redirecting to home page.`);
+      navigate('/');
+      return;
+    }
+
+    // Basic protection against malicious attacks - validate UUID format
+    const uuidRegex = /^[a-f0-9]{32}$/i;
+    if (!uuidRegex.test(code)) {
+      const errorMessage = `Invalid verification code format: ${code}`;
+      console.error('Email verification error:', errorMessage);
+      alert(`Verification Error: ${errorMessage}. Redirecting to home page.`);
+      navigate('/');
+      return;
+    }
+
+    // Call verification API
+    verifyEmail(code);
+  }, [code, navigate, verifyEmail]);
 
   const handleResendVerification = async () => {
     if (!email) {

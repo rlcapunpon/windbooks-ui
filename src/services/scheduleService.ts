@@ -36,7 +36,7 @@ export class ScheduleService {
         { params: filters }
       )
       return response.data
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to fetch organization schedules:', error)
       throw error
     }

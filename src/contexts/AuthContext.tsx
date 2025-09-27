@@ -1,29 +1,11 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { authService } from '../api/auth';
 import { setTokens, getRefreshToken, getAccessToken, clearTokens } from '../utils/tokenStorage';
 import { UserService } from '../services/userService';
+import { AuthContext, type AuthContextType } from './AuthContextTypes';
 
 import type { User } from '../api/auth';
-
-interface AuthContextType {
-  user: User | null;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
-  refresh: () => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
-  isLoading: boolean;
-}
-
-export const AuthContext = createContext<AuthContextType | null>(null);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
-  }
-  return context;
-};
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -57,7 +39,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           // Try to get current user with existing tokens
           const user = await UserService.fetchAndStoreUserData();
           setUser(user);
-        } catch (error) {
+        } catch (_error) { // eslint-disable-line @typescript-eslint/no-unused-vars
+          // _error is intentionally unused - we handle token refresh failures silently
           // If tokens are invalid, try to refresh
           try {
             const res = await authService.refreshToken({ refreshToken });
@@ -78,7 +61,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             
             const user = await UserService.fetchAndStoreUserData();
             setUser(user);
-          } catch (refreshError) {
+          } catch (_refreshError) { // eslint-disable-line @typescript-eslint/no-unused-vars
+            // _refreshError is intentionally unused - we handle refresh failures silently
             // If refresh fails, clear tokens and cache
             clearTokens();
             UserService.clearUserData();
@@ -141,9 +125,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       // Normal flow for users with manageable token sizes
       const user = await UserService.fetchAndStoreUserData();
       setUser(user);
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Check if this is a large token authentication error
-      if (error.name === 'LargeTokenError') {
+      if (error instanceof Error && error.name === 'LargeTokenError') {
         console.error('❌ Large token authentication error:', error.message);
         // Clear tokens since they can't be used
         clearTokens();
@@ -160,7 +144,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     if (refresh) {
       try {
         await authService.logout(refresh);
-      } catch {}
+      } catch {
+        // Ignore logout errors
+      }
     }
     clearTokens();
     UserService.clearUserData(); // Clear user data cache
@@ -186,8 +172,6 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     setIsLoading(true);
     try {
       await authService.register({ email, password });
-    } catch (error) {
-      throw error;
     } finally {
       setIsLoading(false);
     }

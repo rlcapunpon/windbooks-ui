@@ -20,6 +20,7 @@ describe('Organization API E2E Integration Tests', () => {
       devServerRunning = true;
       console.log('✅ Dev server is running');
     } catch (error) {
+      // error is intentionally unused - we only care if the request succeeds or fails
       console.warn('⚠️ Dev server not running - proxy tests will be skipped');
     }
     
@@ -32,6 +33,7 @@ describe('Organization API E2E Integration Tests', () => {
       backendRunning = true;
       console.log('✅ Backend service is running');
     } catch (error) {
+      // error is intentionally unused - we only care if the request succeeds or fails
       console.warn('⚠️ Backend service not running - API tests will be skipped');
     }
   }, 10000);
@@ -307,7 +309,9 @@ export async function validateFullApiConnectivity(): Promise<{
   try {
     await axios.get('http://localhost:5173', { timeout: 3000 });
     results.devServer = true;
-  } catch {}
+  } catch {
+    // Dev server not running - expected in some test environments
+  }
 
   // Test backend directly
   try {
@@ -316,7 +320,9 @@ export async function validateFullApiConnectivity(): Promise<{
       validateStatus: (status) => status === 401 || (status >= 200 && status < 300)
     });
     results.backend = true;
-  } catch {}
+  } catch {
+    // Backend not running - expected in unit test environments
+  }
 
   // Test proxy
   if (results.devServer && results.backend) {
@@ -326,7 +332,9 @@ export async function validateFullApiConnectivity(): Promise<{
         validateStatus: (status) => status === 401 || (status >= 200 && status < 300)
       });
       results.proxy = true;
-    } catch {}
+    } catch {
+      // Proxy not working - expected if backend is not available
+    }
   }
 
   // Test orgClient

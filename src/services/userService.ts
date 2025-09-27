@@ -17,7 +17,7 @@ export class UserService {
       localStorage.setItem('windbooks_user_data', JSON.stringify(userData));
 
       return userData;
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Check if this is related to large token issues
       const token = getAccessToken();
       if (token && token.length > 8000) {

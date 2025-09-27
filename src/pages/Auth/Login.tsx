@@ -2,7 +2,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContextTypes';
 import { useEffect, useState } from 'react';
 import ErrorModal from '../../components/ErrorModal';
 import NotificationModal from '../../components/NotificationModal';
@@ -84,14 +84,17 @@ const Login = () => {
       }
 
       navigate('/user');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login failed:', error);
 
       // Check if this is an unverified account error
-      const apiMessage = error?.response?.data?.message;
-      const axiosMessage = error?.message;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const apiMessage = (error as any)?.response?.data?.message;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const axiosMessage = (error as any)?.message;
       const message = apiMessage || axiosMessage || 'An unexpected error occurred';
-      const statusCode = error?.response?.status;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const statusCode = (error as any)?.response?.status;
 
       // Special handling for unverified account
       const isUnverified = statusCode === 401 && (
@@ -165,7 +168,7 @@ const Login = () => {
           message: 'Failed to send verification email. Please try again.',
         });
       }
-    } catch (error) {
+    } catch (_error) { // eslint-disable-line @typescript-eslint/no-unused-vars
       setResendStatus({
         isLoading: false,
         message: 'Network error occurred. Please try again.',

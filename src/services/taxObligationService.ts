@@ -30,7 +30,7 @@ export class TaxObligationService {
     try {
       const response = await apiClient.get<TaxObligation[]>(this.BASE_ENDPOINT)
       return response.data
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to fetch tax obligations:', error)
       throw error
     }
@@ -43,7 +43,7 @@ export class TaxObligationService {
     try {
       const response = await apiClient.post<TaxObligation>(this.BASE_ENDPOINT, data)
       return response.data
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to create tax obligation:', error)
       throw error
     }
