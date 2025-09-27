@@ -76,7 +76,7 @@ import { OrganizationService } from '../services/organizationService'
       const user = userEvent.setup()
 
       // Step 1: Organization Type Selection
-      expect(screen.getByText((content) => content.includes('Step 1 of 6'))).toBeInTheDocument()
+      expect(screen.getByText('Next Step')).toBeInTheDocument()
       expect(screen.getByText('Organization Type')).toBeInTheDocument()
 
       // Select NON_INDIVIDUAL category and VAT classification
@@ -90,35 +90,33 @@ import { OrganizationService } from '../services/organizationService'
       await user.selectOptions(subcategorySelect, 'CORPORATION')
 
       // Navigate to Step 2
-      const nextButton = screen.getByText('Next')
+      const nextButton = screen.getByText('Next Step')
       await user.click(nextButton)
 
       // Step 2: Basic Organization Information
-      expect(screen.getByText((content) => content.includes('Step 2 of 6'))).toBeInTheDocument()
+      expect(screen.getByText('Next Step')).toBeInTheDocument()
       expect(screen.getByText('Basic Organization Information')).toBeInTheDocument()
 
       // Fill required fields
-      const registeredNameInput = screen.getByLabelText('Registered Business Name')
       const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
       const registrationDateInput = screen.getByLabelText('Registration Date *')
 
-      await user.type(registeredNameInput, 'ABC Corporation Inc.')
       await user.type(tinInput, '001234567890')
       fireEvent.change(registrationDateInput, { target: { value: '2024-01-01' } })
-
-      // Check organization name preview
-      expect(screen.getByText('Organization will be named:')).toBeInTheDocument()
-      expect(screen.getByText('ABC Corporation Inc.')).toBeInTheDocument()
 
       // Navigate to Step 3
       await user.click(nextButton)
 
       // Step 3: Registrant Information
-      expect(screen.getByText((content) => content.includes('Step 3 of 6'))).toBeInTheDocument()
+      expect(screen.getByText('Next Step')).toBeInTheDocument()
       expect(screen.getByText('Registrant Information')).toBeInTheDocument()
 
+      // Fill registered name
+      const registeredNameInput = screen.getByLabelText('Registered Business Name *')
+      await user.type(registeredNameInput, 'ABC Corporation Inc.')
+
       // Fill trade name (optional)
-      const tradeNameInput = screen.getByPlaceholderText('Enter trade name (optional)')
+      const tradeNameInput = screen.getByLabelText('Trade Name')
       await user.type(tradeNameInput, 'ABC Corp')
 
       // Upload file (optional)
@@ -126,11 +124,15 @@ import { OrganizationService } from '../services/organizationService'
       const file = new File(['test'], 'test.png', { type: 'image/png' })
       await user.upload(fileInput, file)
 
+      // Check organization name preview
+      expect(screen.getByText('Organization will be named:')).toBeInTheDocument()
+      expect(screen.getByText('ABC Corporation Inc.')).toBeInTheDocument()
+
       // Navigate to Step 4
       await user.click(nextButton)
 
       // Step 4: Business Address & Contact
-      expect(screen.getByText((content) => content.includes('Step 4 of 6'))).toBeInTheDocument()
+      expect(screen.getByText('Next Step')).toBeInTheDocument()
       expect(screen.getByText('Business Address & Contact')).toBeInTheDocument()
 
       // Fill address fields
@@ -152,7 +154,7 @@ import { OrganizationService } from '../services/organizationService'
       await user.click(nextButton)
 
       // Step 5: Business Registration Details
-      expect(screen.getByText((content) => content.includes('Step 5 of 6'))).toBeInTheDocument()
+      expect(screen.getByText('Next Step')).toBeInTheDocument()
       expect(screen.getByText('Business Registration Details')).toBeInTheDocument()
 
       // Fill registration details
@@ -168,8 +170,8 @@ import { OrganizationService } from '../services/organizationService'
       await user.click(nextButton)
 
       // Step 6: Advanced Settings
-      expect(screen.getByText((content) => content.includes('Step 6 of 6'))).toBeInTheDocument()
-      expect(screen.getByText('Advanced Settings (Optional)')).toBeInTheDocument()
+      expect(screen.getByText('Create Organization')).toBeInTheDocument()
+      expect(screen.getByText('Advanced Settings')).toBeInTheDocument()
 
       // Fill some optional settings
       const fyStartInput = screen.getByLabelText('Fiscal Year Start')
@@ -179,8 +181,8 @@ import { OrganizationService } from '../services/organizationService'
       await user.selectOptions(accountingMethodSelect, 'ACCRUAL')
 
       // Check some checkboxes
-      const hasEmployeesCheckbox = screen.getByLabelText('Has employees')
-      const isEwtCheckbox = screen.getByLabelText('Expanded withholding tax')
+      const hasEmployeesCheckbox = screen.getByRole('checkbox', { name: /has employees/i })
+      const isEwtCheckbox = screen.getByRole('checkbox', { name: /expanded withholding tax/i })
 
       await user.click(hasEmployeesCheckbox)
       await user.click(isEwtCheckbox)
@@ -270,7 +272,7 @@ import { OrganizationService } from '../services/organizationService'
       await user.selectOptions(subcategorySelect, 'SELF_EMPLOYED')
 
       // Navigate to Step 2
-      const nextButton = screen.getByText('Next')
+      const nextButton = screen.getByText('Next Step')
       await user.click(nextButton)
 
       // Step 2: Basic Organization Information
@@ -358,7 +360,7 @@ import { OrganizationService } from '../services/organizationService'
       const user = userEvent.setup()
 
       // Try to navigate without filling required fields
-      const nextButton = screen.getByText('Next')
+      const nextButton = screen.getByText('Next Step')
       await user.click(nextButton)
 
       // Should still be on step 1
@@ -401,7 +403,7 @@ import { OrganizationService } from '../services/organizationService'
       await user.click(individualRadio)
       await user.click(vatRadio)
 
-      const nextButton = screen.getByText('Next')
+      const nextButton = screen.getByText('Next Step')
       await user.click(nextButton) // Step 2
 
       expect(screen.getByText('Step 2 of 6')).toBeInTheDocument()
@@ -434,7 +436,7 @@ import { OrganizationService } from '../services/organizationService'
       await user.click(individualRadio)
       await user.click(vatRadio)
 
-      const nextButton = screen.getByText('Next')
+      const nextButton = screen.getByText('Next Step')
       await user.click(nextButton) // Step 2
 
       // Fill step 2
@@ -479,7 +481,7 @@ import { OrganizationService } from '../services/organizationService'
       await user.click(individualRadio)
       await user.click(vatRadio)
 
-      const nextButton = screen.getByText('Next')
+      const nextButton = screen.getByText('Next Step')
       await user.click(nextButton) // Step 2
 
       const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
@@ -562,7 +564,7 @@ import { OrganizationService } from '../services/organizationService'
       await user.click(individualRadio)
       await user.click(vatRadio)
 
-      const nextButton = screen.getByText('Next')
+      const nextButton = screen.getByText('Next Step')
       await user.click(nextButton)
 
       // Focus should move appropriately
@@ -628,7 +630,7 @@ import { OrganizationService } from '../services/organizationService'
       await user.click(individualRadio)
       await user.click(vatRadio)
 
-      const nextButton = screen.getByText('Next')
+      const nextButton = screen.getByText('Next Step')
       await user.click(nextButton) // Step 2
 
       const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')

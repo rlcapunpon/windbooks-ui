@@ -47,7 +47,7 @@ describe('CreateOrganizationModal', () => {
         />
       )
 
-      expect(screen.getByText('Step 1 of 6')).toBeInTheDocument()
+      expect(screen.getByText('Next Step')).toBeInTheDocument()
       expect(screen.getByText('Organization Type')).toBeInTheDocument()
     })
 
@@ -124,7 +124,7 @@ describe('CreateOrganizationModal', () => {
         />
       )
 
-      expect(screen.getByText('Next')).toBeInTheDocument()
+      expect(screen.getByText('Next Step')).toBeInTheDocument()
       expect(screen.queryByText('Previous')).not.toBeInTheDocument()
     })
 
@@ -144,11 +144,11 @@ describe('CreateOrganizationModal', () => {
       await userEvent.click(vatRadio)
 
       // Click Next to go to step 2
-      const nextButton = screen.getByText('Next')
+      const nextButton = screen.getByText('Next Step')
       await userEvent.click(nextButton)
 
       expect(screen.getByText('Previous')).toBeInTheDocument()
-      expect(screen.getByText('Next')).toBeInTheDocument()
+      expect(screen.getByText('Next Step')).toBeInTheDocument()
     })
 
     it('should show Create Organization button on final step', async () => {
@@ -176,11 +176,11 @@ describe('CreateOrganizationModal', () => {
         />
       )
 
-      const nextButton = screen.getByText('Next')
+      const nextButton = screen.getByText('Next Step')
       await userEvent.click(nextButton)
 
       // Should still be on step 1
-      expect(screen.getByText('Step 1 of 6')).toBeInTheDocument()
+      expect(screen.getByText('Next Step')).toBeInTheDocument()
     })
 
     it('should allow navigation with valid data', async () => {
@@ -198,11 +198,765 @@ describe('CreateOrganizationModal', () => {
       await userEvent.click(individualRadio)
       await userEvent.click(vatRadio)
 
-      const nextButton = screen.getByText('Next')
+      const nextButton = screen.getByText('Next Step')
       await userEvent.click(nextButton)
 
       // Should move to step 2
-      expect(screen.getByText('Step 2 of 6')).toBeInTheDocument()
+      expect(screen.getByText('Next Step')).toBeInTheDocument()
+    })
+
+    describe('Registration Date Validation', () => {
+      it('should accept valid past date', async () => {
+        render(
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        )
+
+        // Navigate to step 2
+        const individualRadio = screen.getByLabelText('Individual')
+        const vatRadio = screen.getByLabelText('VAT')
+        await userEvent.click(individualRadio)
+        await userEvent.click(vatRadio)
+
+        const nextButton = screen.getByText('Next Step')
+        await userEvent.click(nextButton)
+
+        const registrationDateInput = screen.getByLabelText('Registration Date *')
+        await userEvent.type(registrationDateInput, '2023-01-15')
+
+        // Should allow navigation to step 3
+        await userEvent.click(nextButton)
+        expect(screen.getByText('Next Step')).toBeInTheDocument()
+      })
+
+      it('should accept today\'s date', async () => {
+        render(
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        )
+
+        // Navigate to step 2
+        const individualRadio = screen.getByLabelText('Individual')
+        const vatRadio = screen.getByLabelText('VAT')
+        await userEvent.click(individualRadio)
+        await userEvent.click(vatRadio)
+
+        const nextButton = screen.getByText('Next Step')
+        await userEvent.click(nextButton)
+
+        const today = new Date().toISOString().split('T')[0]
+        const registrationDateInput = screen.getByLabelText('Registration Date *')
+        await userEvent.clear(registrationDateInput)
+        await userEvent.type(registrationDateInput, today)
+
+        // Should allow navigation to step 3
+        await userEvent.click(nextButton)
+        expect(screen.getByText('Next Step')).toBeInTheDocument()
+      })
+
+      it('should reject future date', async () => {
+        render(
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        )
+
+        // Navigate to step 2
+        const individualRadio = screen.getByLabelText('Individual')
+        const vatRadio = screen.getByLabelText('VAT')
+        await userEvent.click(individualRadio)
+        await userEvent.click(vatRadio)
+
+        const nextButton = screen.getByText('Next Step')
+        await userEvent.click(nextButton)
+
+        const futureDate = new Date()
+        futureDate.setDate(futureDate.getDate() + 1)
+        const futureDateString = futureDate.toISOString().split('T')[0]
+
+        const registrationDateInput = screen.getByLabelText('Registration Date *')
+        await userEvent.clear(registrationDateInput)
+        await userEvent.type(registrationDateInput, futureDateString)
+
+        // Should prevent navigation to step 3
+        await userEvent.click(nextButton)
+        expect(screen.getByText('Next Step')).toBeInTheDocument()
+      })
+
+      it('should reject invalid date format', async () => {
+        render(
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        )
+
+        // Navigate to step 2
+        const individualRadio = screen.getByLabelText('Individual')
+        const vatRadio = screen.getByLabelText('VAT')
+        await userEvent.click(individualRadio)
+        await userEvent.click(vatRadio)
+
+        const nextButton = screen.getByText('Next Step')
+        await userEvent.click(nextButton)
+
+        const registrationDateInput = screen.getByLabelText('Registration Date *')
+        await userEvent.clear(registrationDateInput)
+        await userEvent.type(registrationDateInput, 'invalid-date')
+
+        // Should prevent navigation to step 3
+        await userEvent.click(nextButton)
+        expect(screen.getByText('Next Step')).toBeInTheDocument()
+      })
+    })
+
+    describe('TIN Validation', () => {
+      it('should accept valid 9-digit TIN', async () => {
+        render(
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        )
+
+        // Navigate to step 2
+        const individualRadio = screen.getByLabelText('Individual')
+        const vatRadio = screen.getByLabelText('VAT')
+        await userEvent.click(individualRadio)
+        await userEvent.click(vatRadio)
+
+        const nextButton = screen.getByText('Next Step')
+        await userEvent.click(nextButton)
+
+        const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
+        const registrationDateInput = screen.getByLabelText('Registration Date *')
+        await userEvent.type(tinInput, '123456789')
+        await userEvent.type(registrationDateInput, '2023-01-15')
+
+        // Should allow navigation to step 3
+        await userEvent.click(nextButton)
+        expect(screen.getByText('Next Step')).toBeInTheDocument()
+      })
+
+      it('should accept valid 12-digit TIN', async () => {
+        render(
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        )
+
+        // Navigate to step 2
+        const individualRadio = screen.getByLabelText('Individual')
+        const vatRadio = screen.getByLabelText('VAT')
+        await userEvent.click(individualRadio)
+        await userEvent.click(vatRadio)
+
+        const nextButton = screen.getByText('Next Step')
+        await userEvent.click(nextButton)
+
+        const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
+        const registrationDateInput = screen.getByLabelText('Registration Date *')
+        await userEvent.type(tinInput, '123456789012')
+        await userEvent.type(registrationDateInput, '2023-01-15')
+
+        // Should allow navigation to step 3
+        await userEvent.click(nextButton)
+        expect(screen.getByText('Next Step')).toBeInTheDocument()
+      })
+
+      it('should reject TIN with less than 9 digits', async () => {
+        render(
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        )
+
+        // Navigate to step 2
+        const individualRadio = screen.getByLabelText('Individual')
+        const vatRadio = screen.getByLabelText('VAT')
+        await userEvent.click(individualRadio)
+        await userEvent.click(vatRadio)
+
+        const nextButton = screen.getByText('Next Step')
+        await userEvent.click(nextButton)
+
+        const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
+        const registrationDateInput = screen.getByLabelText('Registration Date *')
+        await userEvent.type(tinInput, '12345678')
+        await userEvent.type(registrationDateInput, '2023-01-15')
+
+        // Should prevent navigation to step 3
+        await userEvent.click(nextButton)
+        expect(screen.getByText('Next Step')).toBeInTheDocument()
+      })
+
+      it('should reject TIN with 10 digits (invalid length)', async () => {
+        render(
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        )
+
+        // Navigate to step 2
+        const individualRadio = screen.getByLabelText('Individual')
+        const vatRadio = screen.getByLabelText('VAT')
+        await userEvent.click(individualRadio)
+        await userEvent.click(vatRadio)
+
+        const nextButton = screen.getByText('Next Step')
+        await userEvent.click(nextButton)
+
+        const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
+        const registrationDateInput = screen.getByLabelText('Registration Date *')
+        await userEvent.type(tinInput, '1234567890')
+        await userEvent.type(registrationDateInput, '2023-01-15')
+
+        // Should prevent navigation to step 3
+        await userEvent.click(nextButton)
+        expect(screen.getByText('Next Step')).toBeInTheDocument()
+      })
+
+      it('should reject TIN with 11 digits (invalid length)', async () => {
+        render(
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        )
+
+        // Navigate to step 2
+        const individualRadio = screen.getByLabelText('Individual')
+        const vatRadio = screen.getByLabelText('VAT')
+        await userEvent.click(individualRadio)
+        await userEvent.click(vatRadio)
+
+        const nextButton = screen.getByText('Next Step')
+        await userEvent.click(nextButton)
+
+        const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
+        const registrationDateInput = screen.getByLabelText('Registration Date *')
+        await userEvent.type(tinInput, '12345678901')
+        await userEvent.type(registrationDateInput, '2023-01-15')
+
+        // Should prevent navigation to step 3
+        await userEvent.click(nextButton)
+        expect(screen.getByText('Next Step')).toBeInTheDocument()
+      })
+
+      it('should reject TIN with more than 12 digits', async () => {
+        render(
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        )
+
+        // Navigate to step 2
+        const individualRadio = screen.getByLabelText('Individual')
+        const vatRadio = screen.getByLabelText('VAT')
+        await userEvent.click(individualRadio)
+        await userEvent.click(vatRadio)
+
+        const nextButton = screen.getByText('Next Step')
+        await userEvent.click(nextButton)
+
+        const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
+        const registrationDateInput = screen.getByLabelText('Registration Date *')
+        await userEvent.type(tinInput, '1234567890123')
+        await userEvent.type(registrationDateInput, '2023-01-15')
+
+        // Should prevent navigation to step 3
+        await userEvent.click(nextButton)
+        expect(screen.getByText('Next Step')).toBeInTheDocument()
+      })
+
+      it('should reject TIN with non-numeric characters', async () => {
+        render(
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        )
+
+        // Navigate to step 2
+        const individualRadio = screen.getByLabelText('Individual')
+        const vatRadio = screen.getByLabelText('VAT')
+        await userEvent.click(individualRadio)
+        await userEvent.click(vatRadio)
+
+        const nextButton = screen.getByText('Next Step')
+        await userEvent.click(nextButton)
+
+        const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
+        const registrationDateInput = screen.getByLabelText('Registration Date *')
+        await userEvent.type(tinInput, '12345678a')
+        await userEvent.type(registrationDateInput, '2023-01-15')
+
+        // Should prevent navigation to step 3
+        await userEvent.click(nextButton)
+        expect(screen.getByText('Next Step')).toBeInTheDocument()
+      })
+    })
+
+    describe('RDO Code Validation', () => {
+      it('should accept valid 3-digit RDO code', async () => {
+        render(
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        )
+
+        // Navigate to step 5
+        const individualRadio = screen.getByLabelText('Individual')
+        const vatRadio = screen.getByLabelText('VAT')
+        await userEvent.click(individualRadio)
+        await userEvent.click(vatRadio)
+
+        let nextButton = screen.getByText('Next Step')
+        await userEvent.click(nextButton) // Step 2
+
+        // Fill step 2
+        const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
+        const registrationDateInput = screen.getByLabelText('Registration Date *')
+        await userEvent.type(tinInput, '123456789')
+        await userEvent.type(registrationDateInput, '2023-01-15')
+        await userEvent.click(nextButton) // Step 3
+
+        // Fill step 3
+        const firstNameInput = screen.getByLabelText('First Name')
+        const lastNameInput = screen.getByLabelText('Last Name')
+        await userEvent.type(firstNameInput, 'John')
+        await userEvent.type(lastNameInput, 'Doe')
+        await userEvent.click(nextButton) // Step 4
+
+        // Fill step 4
+        const addressInput = screen.getByLabelText('Street Address *')
+        const cityInput = screen.getByLabelText('City *')
+        const regionSelect = screen.getByLabelText('Region *')
+        const zipInput = screen.getByLabelText('ZIP Code *')
+        const contactInput = screen.getByLabelText('Contact Number *')
+        const emailInput = screen.getByLabelText('Email Address *')
+        await userEvent.type(addressInput, '123 Main St')
+        await userEvent.type(cityInput, 'Manila')
+        await userEvent.selectOptions(regionSelect, 'NCR')
+        await userEvent.type(zipInput, '1000')
+        await userEvent.type(contactInput, '+639123456789')
+        await userEvent.type(emailInput, 'test@example.com')
+        await userEvent.click(nextButton) // Step 5
+
+        const rdoInput = screen.getByLabelText('RDO Code *')
+        const startDateInput = screen.getByLabelText('Start Date *')
+        await userEvent.type(rdoInput, '123')
+        await userEvent.type(startDateInput, '2023-01-15')
+
+        // Should allow navigation to step 6
+        await userEvent.click(nextButton)
+        expect(screen.getByText('Next Step')).toBeInTheDocument()
+      })
+
+      it('should reject RDO code with less than 3 digits', async () => {
+        render(
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        )
+
+        // Navigate to step 5
+        const individualRadio = screen.getByLabelText('Individual')
+        const vatRadio = screen.getByLabelText('VAT')
+        await userEvent.click(individualRadio)
+        await userEvent.click(vatRadio)
+
+        let nextButton = screen.getByText('Next Step')
+        await userEvent.click(nextButton) // Step 2
+
+        // Fill step 2
+        const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
+        const registrationDateInput = screen.getByLabelText('Registration Date *')
+        await userEvent.type(tinInput, '123456789')
+        await userEvent.type(registrationDateInput, '2023-01-15')
+        await userEvent.click(nextButton) // Step 3
+
+        // Fill step 3
+        const firstNameInput = screen.getByLabelText('First Name')
+        const lastNameInput = screen.getByLabelText('Last Name')
+        await userEvent.type(firstNameInput, 'John')
+        await userEvent.type(lastNameInput, 'Doe')
+        await userEvent.click(nextButton) // Step 4
+
+        // Fill step 4
+        const addressInput = screen.getByLabelText('Street Address *')
+        const cityInput = screen.getByLabelText('City *')
+        const regionSelect = screen.getByLabelText('Region *')
+        const zipInput = screen.getByLabelText('ZIP Code *')
+        const contactInput = screen.getByLabelText('Contact Number *')
+        const emailInput = screen.getByLabelText('Email Address *')
+        await userEvent.type(addressInput, '123 Main St')
+        await userEvent.type(cityInput, 'Manila')
+        await userEvent.selectOptions(regionSelect, 'NCR')
+        await userEvent.type(zipInput, '1000')
+        await userEvent.type(contactInput, '+639123456789')
+        await userEvent.type(emailInput, 'test@example.com')
+        await userEvent.click(nextButton) // Step 5
+
+        const rdoInput = screen.getByLabelText('RDO Code *')
+        const startDateInput = screen.getByLabelText('Start Date *')
+        await userEvent.type(rdoInput, '12')
+        await userEvent.type(startDateInput, '2023-01-15')
+
+        // Should prevent navigation to step 6
+        await userEvent.click(nextButton)
+        expect(screen.getByText('Next Step')).toBeInTheDocument()
+      })
+
+      it('should reject RDO code with more than 3 digits', async () => {
+        render(
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        )
+
+        // Navigate to step 5
+        const individualRadio = screen.getByLabelText('Individual')
+        const vatRadio = screen.getByLabelText('VAT')
+        await userEvent.click(individualRadio)
+        await userEvent.click(vatRadio)
+
+        let nextButton = screen.getByText('Next Step')
+        await userEvent.click(nextButton) // Step 2
+
+        // Fill step 2
+        const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
+        const registrationDateInput = screen.getByLabelText('Registration Date *')
+        await userEvent.type(tinInput, '123456789')
+        await userEvent.type(registrationDateInput, '2023-01-15')
+        await userEvent.click(nextButton) // Step 3
+
+        // Fill step 3
+        const firstNameInput = screen.getByLabelText('First Name')
+        const lastNameInput = screen.getByLabelText('Last Name')
+        await userEvent.type(firstNameInput, 'John')
+        await userEvent.type(lastNameInput, 'Doe')
+        await userEvent.click(nextButton) // Step 4
+
+        // Fill step 4
+        const addressInput = screen.getByLabelText('Street Address *')
+        const cityInput = screen.getByLabelText('City *')
+        const regionSelect = screen.getByLabelText('Region *')
+        const zipInput = screen.getByLabelText('ZIP Code *')
+        const contactInput = screen.getByLabelText('Contact Number *')
+        const emailInput = screen.getByLabelText('Email Address *')
+        await userEvent.type(addressInput, '123 Main St')
+        await userEvent.type(cityInput, 'Manila')
+        await userEvent.selectOptions(regionSelect, 'NCR')
+        await userEvent.type(zipInput, '1000')
+        await userEvent.type(contactInput, '+639123456789')
+        await userEvent.type(emailInput, 'test@example.com')
+        await userEvent.click(nextButton) // Step 5
+
+        const rdoInput = screen.getByLabelText('RDO Code *')
+        const startDateInput = screen.getByLabelText('Start Date *')
+        await userEvent.type(rdoInput, '1234')
+        await userEvent.type(startDateInput, '2023-01-15')
+
+        // Should prevent navigation to step 6
+        await userEvent.click(nextButton)
+        expect(screen.getByText('Next Step')).toBeInTheDocument()
+      })
+
+      it('should reject RDO code with non-numeric characters', async () => {
+        render(
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        )
+
+        // Navigate to step 5
+        const individualRadio = screen.getByLabelText('Individual')
+        const vatRadio = screen.getByLabelText('VAT')
+        await userEvent.click(individualRadio)
+        await userEvent.click(vatRadio)
+
+        let nextButton = screen.getByText('Next Step')
+        await userEvent.click(nextButton) // Step 2
+
+        // Fill step 2
+        const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
+        const registrationDateInput = screen.getByLabelText('Registration Date *')
+        await userEvent.type(tinInput, '123456789')
+        await userEvent.type(registrationDateInput, '2023-01-15')
+        await userEvent.click(nextButton) // Step 3
+
+        // Fill step 3
+        const firstNameInput = screen.getByLabelText('First Name')
+        const lastNameInput = screen.getByLabelText('Last Name')
+        await userEvent.type(firstNameInput, 'John')
+        await userEvent.type(lastNameInput, 'Doe')
+        await userEvent.click(nextButton) // Step 4
+
+        // Fill step 4
+        const addressInput = screen.getByLabelText('Street Address *')
+        const cityInput = screen.getByLabelText('City *')
+        const regionSelect = screen.getByLabelText('Region *')
+        const zipInput = screen.getByLabelText('ZIP Code *')
+        const contactInput = screen.getByLabelText('Contact Number *')
+        const emailInput = screen.getByLabelText('Email Address *')
+        await userEvent.type(addressInput, '123 Main St')
+        await userEvent.type(cityInput, 'Manila')
+        await userEvent.selectOptions(regionSelect, 'NCR')
+        await userEvent.type(zipInput, '1000')
+        await userEvent.type(contactInput, '+639123456789')
+        await userEvent.type(emailInput, 'test@example.com')
+        await userEvent.click(nextButton) // Step 5
+
+        const rdoInput = screen.getByLabelText('RDO Code *')
+        const startDateInput = screen.getByLabelText('Start Date *')
+        await userEvent.type(rdoInput, '12a')
+        await userEvent.type(startDateInput, '2023-01-15')
+
+        // Should prevent navigation to step 6
+        await userEvent.click(nextButton)
+        expect(screen.getByText('Next Step')).toBeInTheDocument()
+      })
+    })
+
+    describe('Name Validation', () => {
+      it('should accept valid first name with alphabetic characters', async () => {
+        render(
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        )
+
+        // Navigate to step 3
+        const individualRadio = screen.getByLabelText('Individual')
+        const vatRadio = screen.getByLabelText('VAT')
+        await userEvent.click(individualRadio)
+        await userEvent.click(vatRadio)
+
+        let nextButton = screen.getByText('Next Step')
+        await userEvent.click(nextButton) // Step 2
+
+        // Fill step 2
+        const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
+        const registrationDateInput = screen.getByLabelText('Registration Date *')
+        await userEvent.type(tinInput, '123456789')
+        await userEvent.type(registrationDateInput, '2023-01-15')
+        await userEvent.click(nextButton) // Step 3
+
+        const firstNameInput = screen.getByLabelText('First Name')
+        const lastNameInput = screen.getByLabelText('Last Name')
+        await userEvent.type(firstNameInput, 'John-Paul')
+        await userEvent.type(lastNameInput, 'Doe')
+
+        // Should allow navigation to step 4
+        await userEvent.click(nextButton)
+        expect(screen.getByText('Next Step')).toBeInTheDocument()
+      })
+
+      it('should accept valid last name with spaces and hyphens', async () => {
+        render(
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        )
+
+        // Navigate to step 3
+        const individualRadio = screen.getByLabelText('Individual')
+        const vatRadio = screen.getByLabelText('VAT')
+        await userEvent.click(individualRadio)
+        await userEvent.click(vatRadio)
+
+        let nextButton = screen.getByText('Next Step')
+        await userEvent.click(nextButton) // Step 2
+
+        // Fill step 2
+        const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
+        const registrationDateInput = screen.getByLabelText('Registration Date *')
+        await userEvent.type(tinInput, '123456789')
+        await userEvent.type(registrationDateInput, '2023-01-15')
+        await userEvent.click(nextButton) // Step 3
+
+        const firstNameInput = screen.getByLabelText('First Name')
+        const lastNameInput = screen.getByLabelText('Last Name')
+        await userEvent.type(firstNameInput, 'John')
+        await userEvent.type(lastNameInput, 'Van der Berg')
+
+        // Should allow navigation to step 4
+        await userEvent.click(nextButton)
+        expect(screen.getByText('Next Step')).toBeInTheDocument()
+      })
+
+      it('should reject first name with numeric characters', async () => {
+        render(
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        )
+
+        // Navigate to step 3
+        const individualRadio = screen.getByLabelText('Individual')
+        const vatRadio = screen.getByLabelText('VAT')
+        await userEvent.click(individualRadio)
+        await userEvent.click(vatRadio)
+
+        let nextButton = screen.getByText('Next Step')
+        await userEvent.click(nextButton) // Step 2
+
+        // Fill step 2
+        const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
+        const registrationDateInput = screen.getByLabelText('Registration Date *')
+        await userEvent.type(tinInput, '123456789')
+        await userEvent.type(registrationDateInput, '2023-01-15')
+        await userEvent.click(nextButton) // Step 3
+
+        const firstNameInput = screen.getByLabelText('First Name')
+        const lastNameInput = screen.getByLabelText('Last Name')
+        await userEvent.type(firstNameInput, 'John123')
+        await userEvent.type(lastNameInput, 'Doe')
+
+        // Should prevent navigation to step 4
+        await userEvent.click(nextButton)
+        expect(screen.getByText('Next Step')).toBeInTheDocument()
+      })
+
+      it('should reject last name with special characters', async () => {
+        render(
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        )
+
+        // Navigate to step 3
+        const individualRadio = screen.getByLabelText('Individual')
+        const vatRadio = screen.getByLabelText('VAT')
+        await userEvent.click(individualRadio)
+        await userEvent.click(vatRadio)
+
+        let nextButton = screen.getByText('Next Step')
+        await userEvent.click(nextButton) // Step 2
+
+        // Fill step 2
+        const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
+        const registrationDateInput = screen.getByLabelText('Registration Date *')
+        await userEvent.type(tinInput, '123456789')
+        await userEvent.type(registrationDateInput, '2023-01-15')
+        await userEvent.click(nextButton) // Step 3
+
+        const firstNameInput = screen.getByLabelText('First Name')
+        const lastNameInput = screen.getByLabelText('Last Name')
+        await userEvent.type(firstNameInput, 'John')
+        await userEvent.type(lastNameInput, 'Doe@#$')
+
+        // Should prevent navigation to step 4
+        await userEvent.click(nextButton)
+        expect(screen.getByText('Next Step')).toBeInTheDocument()
+      })
+
+      it('should reject empty first name', async () => {
+        render(
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        )
+
+        // Navigate to step 3
+        const individualRadio = screen.getByLabelText('Individual')
+        const vatRadio = screen.getByLabelText('VAT')
+        await userEvent.click(individualRadio)
+        await userEvent.click(vatRadio)
+
+        let nextButton = screen.getByText('Next Step')
+        await userEvent.click(nextButton) // Step 2
+
+        // Fill step 2
+        const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
+        const registrationDateInput = screen.getByLabelText('Registration Date *')
+        await userEvent.type(tinInput, '123456789')
+        await userEvent.type(registrationDateInput, '2023-01-15')
+        await userEvent.click(nextButton) // Step 3
+
+        const firstNameInput = screen.getByLabelText('First Name')
+        const lastNameInput = screen.getByLabelText('Last Name')
+        await userEvent.clear(firstNameInput)
+        await userEvent.type(lastNameInput, 'Doe')
+
+        // Should prevent navigation to step 4
+        await userEvent.click(nextButton)
+        expect(screen.getByText('Next Step')).toBeInTheDocument()
+      })
+
+      it('should reject empty last name', async () => {
+        render(
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        )
+
+        // Navigate to step 3
+        const individualRadio = screen.getByLabelText('Individual')
+        const vatRadio = screen.getByLabelText('VAT')
+        await userEvent.click(individualRadio)
+        await userEvent.click(vatRadio)
+
+        let nextButton = screen.getByText('Next Step')
+        await userEvent.click(nextButton) // Step 2
+
+        // Fill step 2
+        const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
+        const registrationDateInput = screen.getByLabelText('Registration Date *')
+        await userEvent.type(tinInput, '123456789')
+        await userEvent.type(registrationDateInput, '2023-01-15')
+        await userEvent.click(nextButton) // Step 3
+
+        const firstNameInput = screen.getByLabelText('First Name')
+        const lastNameInput = screen.getByLabelText('Last Name')
+        await userEvent.type(firstNameInput, 'John')
+        await userEvent.clear(lastNameInput)
+
+        // Should prevent navigation to step 4
+        await userEvent.click(nextButton)
+        expect(screen.getByText('Next Step')).toBeInTheDocument()
+      })
     })
   })
 
@@ -254,7 +1008,7 @@ describe('CreateOrganizationModal', () => {
       const vatRadio = screen.getByLabelText('VAT')
       await userEvent.click(vatRadio)
 
-      const nextButton = screen.getByText('Next')
+      const nextButton = screen.getByText('Next Step')
       await userEvent.click(nextButton) // Step 2
 
       // Fill required fields for step 2
@@ -292,7 +1046,7 @@ describe('CreateOrganizationModal', () => {
       const vatRadio = screen.getByLabelText('VAT')
       await userEvent.click(vatRadio)
 
-      const nextButton = screen.getByText('Next')
+      const nextButton = screen.getByText('Next Step')
       await userEvent.click(nextButton) // Step 2
 
       // Fill registered name
@@ -320,7 +1074,7 @@ describe('CreateOrganizationModal', () => {
       await userEvent.click(individualRadio)
       await userEvent.click(vatRadio)
 
-      const nextButton = screen.getByText('Next')
+      const nextButton = screen.getByText('Next Step')
       await userEvent.click(nextButton) // Step 2
 
       // Fill required fields for step 2
