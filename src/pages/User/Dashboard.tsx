@@ -11,28 +11,57 @@ const Dashboard = () => {
   // Function to get proper role display name
   const getRoleDisplayName = (role: string) => {
     const roleMap: Record<string, string> = {
+      'SUPERADMIN': 'Super Administrator',
+      'APPROVER': 'Approver',
       'STAFF': 'Staff',
-      'MANAGER': 'Manager',
-      'ADMIN': 'Administrator',
-      'SUPER_ADMIN': 'Super Administrator',
-      'viewer': 'Viewer',
+      'CLIENT': 'Client',
+      'super_admin': 'Super Administrator',
       'admin': 'Administrator',
+      'approver': 'Approver',
+      'staff': 'Staff',
+      'client': 'Client',
       'manager': 'Manager',
-      'editor': 'Editor'
+      'editor': 'Editor',
+      'viewer': 'Viewer'
     };
-    return roleMap[role.toUpperCase()] || role;
+    return roleMap[role.toLowerCase()] || role;
   };
 
-  // Function to get role level (1-4) for layout switching
+  // Function to get role level based on permission mappings
   const getRoleLevel = () => {
-    if (UserService.isSuperAdmin()) return 1; // Super Admin
-    if (primaryRole.toLowerCase().includes('admin') || primaryRole.toLowerCase() === 'super_admin') return 1; // Admin level
-    if (primaryRole.toLowerCase().includes('approver') || primaryRole.toLowerCase().includes('manager')) return 2; // Manager level
-    if (primaryRole.toLowerCase().includes('staff') || primaryRole.toLowerCase().includes('editor')) return 3; // Staff level
-    return 4; // Basic user level
+    if (UserService.isSuperAdmin()) return 1; // Super Admin - Full access
+
+    // Check for APPROVER role
+    if (user?.resources?.some(resource => resource.role?.toUpperCase() === 'APPROVER')) return 2; // Approver level
+
+    // Check for STAFF role
+    if (user?.resources?.some(resource => resource.role?.toUpperCase() === 'STAFF')) return 3; // Staff level
+
+    // Check for CLIENT role
+    if (user?.resources?.some(resource => resource.role?.toUpperCase() === 'CLIENT')) return 4; // Client level
+
+    return 5; // Basic user level
+  };
+
+  // Get assigned organizations from user resources
+  const getAssignedOrganizations = (): string[] => {
+    if (!user?.resources) return [];
+
+    // Extract organization IDs from user resources
+    return user.resources
+      .map(resource => resource.resourceId)
+      .filter((id): id is string => id !== null);
+  };
+
+  // Get organization display names (placeholder for now - would need API call for real names)
+  const getOrganizationDisplayName = (orgId: string) => {
+    // For now, return the organization ID as display name
+    // In a real implementation, this would fetch organization details from API
+    return `Organization ${orgId}`;
   };
 
   const roleLevel = getRoleLevel();
+  const assignedOrganizations = getAssignedOrganizations();
 
   // Show loading if no user data yet
   if (!user) {
@@ -60,30 +89,47 @@ const Dashboard = () => {
 
         <div className="max-w-7xl mx-auto p-6">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">{UserService.isSuperAdmin() ? 'Super Admin' : 'Administrator'} Dashboard</h1>
+            <h1 className="text-3xl font-bold mb-2">Super Admin Dashboard</h1>
             <p className="text-text-light-secondary">
-              {UserService.isSuperAdmin() ? 'Full system access and management capabilities' : 'System administration and user management'}
+              Full system access and management capabilities with tax configuration
             </p>
           </div>
 
-          {/* Quick Stats */}
+          {/* Organization Overview */}
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Organization Access</h3>
+            <p className="text-gray-600 mb-4">You have full access to all organizations and resources</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {assignedOrganizations.map((org) => (
+                <div key={org} className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 rounded-lg border border-blue-200">
+                  <h4 className="font-medium text-blue-800">{getOrganizationDisplayName(org)}</h4>
+                  <p className="text-sm text-blue-600">Full Access</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Quick Stats - Placeholder for real metrics */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Total Users</h3>
-              <p className="text-3xl font-bold text-blue-600">1,247</p>
+              <p className="text-3xl font-bold text-gray-400">--</p>
+              <p className="text-sm text-gray-500 mt-1">Data will be loaded from API</p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Active Organizations</h3>
-              <p className="text-3xl font-bold text-green-600">156</p>
+              <p className="text-3xl font-bold text-gray-400">--</p>
+              <p className="text-sm text-gray-500 mt-1">Data will be loaded from API</p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Total Organizations</h3>
-              <p className="text-3xl font-bold text-purple-600">203</p>
+              <p className="text-3xl font-bold text-gray-400">--</p>
+              <p className="text-sm text-gray-500 mt-1">Data will be loaded from API</p>
             </div>
           </div>
 
           {/* Admin Actions */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {(UserService.hasPermission('USER.READ') || UserService.hasPermission('*')) && (
               <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4">User Management</h3>
@@ -113,6 +159,15 @@ const Dashboard = () => {
                 </button>
               </div>
             )}
+
+            {/* Tax Configuration - Super Admin Only */}
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Tax Configuration</h3>
+              <p className="text-gray-600 mb-4">Configure tax settings and fiscal year management</p>
+              <button className="w-full bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition-colors">
+                Tax Settings
+              </button>
+            </div>
           </div>
 
           {/* Super Admin Only Features */}
@@ -165,74 +220,65 @@ const Dashboard = () => {
         <div className="max-w-7xl mx-auto p-6">
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">Approver Dashboard</h1>
-            <p className="text-text-light-secondary">Team management and operational oversight</p>
+            <p className="text-text-light-secondary">Organization oversight and approval management</p>
           </div>
 
-          {/* Quick Stats */}
+          {/* Organization Access */}
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Assigned Organizations</h3>
+            <p className="text-gray-600 mb-4">You have approval access to the following organizations</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {assignedOrganizations.map((org) => (
+                <div key={org} className="bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-lg border border-green-200">
+                  <h4 className="font-medium text-green-800">{getOrganizationDisplayName(org)}</h4>
+                  <p className="text-sm text-green-600">Approval Access</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Quick Stats - Placeholder for real metrics */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Team Members</h3>
-              <p className="text-3xl font-bold text-blue-600">24</p>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Pending Approvals</h3>
+              <p className="text-3xl font-bold text-gray-400">--</p>
+              <p className="text-sm text-gray-500 mt-1">Data will be loaded from API</p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Active Projects</h3>
-              <p className="text-3xl font-bold text-green-600">8</p>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Approved This Month</h3>
+              <p className="text-3xl font-bold text-gray-400">--</p>
+              <p className="text-sm text-gray-500 mt-1">Data will be loaded from API</p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Pending Tasks</h3>
-              <p className="text-3xl font-bold text-orange-600">12</p>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Organization Reports</h3>
+              <p className="text-3xl font-bold text-gray-400">--</p>
+              <p className="text-sm text-gray-500 mt-1">Data will be loaded from API</p>
             </div>
           </div>
 
-          {/* Manager Actions */}
+          {/* Approver Actions */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {(UserService.hasPermission('USER.READ') || UserService.hasPermission('*')) && (
-              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">User Management</h3>
-                <p className="text-gray-600 mb-4">Create and manage team member accounts</p>
-                <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
-                  Manage Team
-                </button>
-              </div>
-            )}
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Review Requests</h3>
+              <p className="text-gray-600 mb-4">Review and approve organization requests and workflows</p>
+              <button className="w-full bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition-colors">
+                Review Pending
+              </button>
+            </div>
 
-            {(UserService.hasPermission('SETTINGS.MANAGE') || UserService.hasPermission('*')) && (
-              <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">System Settings</h3>
-                <p className="text-gray-600 mb-4">Configure team and operational settings</p>
-                <button className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors">
-                  Settings
-                </button>
-              </div>
-            )}
+            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">Organization Reports</h3>
+              <p className="text-gray-600 mb-4">View reports from assigned organizations</p>
+              <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                View Reports
+              </button>
+            </div>
           </div>
 
-          {/* Recent Activity */}
+          {/* Recent Activity - Placeholder */}
           <div className="mt-8 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Team Activity</h3>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                <div>
-                  <p className="font-medium text-gray-800">New user account created</p>
-                  <p className="text-sm text-gray-600">john.doe@company.com</p>
-                </div>
-                <span className="text-sm text-gray-500">2 hours ago</span>
-              </div>
-              <div className="flex items-center justify-between py-2 border-b border-gray-100">
-                <div>
-                  <p className="font-medium text-gray-800">Settings updated</p>
-                  <p className="text-sm text-gray-600">Team notification preferences</p>
-                </div>
-                <span className="text-sm text-gray-500">4 hours ago</span>
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <div>
-                  <p className="font-medium text-gray-800">User role changed</p>
-                  <p className="text-sm text-gray-600">sarah.accountant promoted to Manager</p>
-                </div>
-                <span className="text-sm text-gray-500">1 day ago</span>
-              </div>
-            </div>
+            <p className="text-gray-500 text-center py-8">Activity data will be loaded from API</p>
           </div>
 
           <div className="mt-8 text-center">
@@ -263,20 +309,34 @@ const Dashboard = () => {
         <div className="max-w-7xl mx-auto p-6">
           <div className="mb-8">
             <h1 className="text-3xl font-bold mb-2">Staff Dashboard</h1>
-            <p className="text-text-light-secondary">Daily operations and reporting access</p>
+            <p className="text-text-light-secondary">Operational access to assigned organizations</p>
           </div>
 
-          {/* Quick Stats */}
+          {/* Organization Access */}
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Assigned Organizations</h3>
+            <p className="text-gray-600 mb-4">You have operational access to the following organizations</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {assignedOrganizations.map((org) => (
+                <div key={org} className="bg-gradient-to-r from-purple-50 to-indigo-50 p-3 rounded-lg border border-purple-200">
+                  <h4 className="font-medium text-purple-800">{getOrganizationDisplayName(org)}</h4>
+                  <p className="text-sm text-purple-600">Operational Access</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Quick Stats - Placeholder for real metrics */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-800 mb-2">My Tasks</h3>
-              <p className="text-3xl font-bold text-blue-600">7</p>
-              <p className="text-sm text-gray-600 mt-1">3 completed today</p>
+              <p className="text-3xl font-bold text-gray-400">--</p>
+              <p className="text-sm text-gray-500 mt-1">Data will be loaded from API</p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Reports Generated</h3>
-              <p className="text-3xl font-bold text-green-600">12</p>
-              <p className="text-sm text-gray-600 mt-1">This month</p>
+              <p className="text-3xl font-bold text-gray-400">--</p>
+              <p className="text-sm text-gray-500 mt-1">Data will be loaded from API</p>
             </div>
           </div>
 
@@ -301,43 +361,10 @@ const Dashboard = () => {
             )}
           </div>
 
-          {/* Current Tasks */}
+          {/* Current Tasks - Placeholder */}
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">My Current Tasks</h3>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <input type="checkbox" className="rounded border-gray-300" />
-                  <div>
-                    <p className="font-medium text-gray-800">Review monthly expense reports</p>
-                    <p className="text-sm text-gray-600">Due: Today, 5:00 PM</p>
-                  </div>
-                </div>
-                <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">High Priority</span>
-              </div>
-
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <input type="checkbox" className="rounded border-gray-300" />
-                  <div>
-                    <p className="font-medium text-gray-800">Update client contact information</p>
-                    <p className="text-sm text-gray-600">Due: Tomorrow</p>
-                  </div>
-                </div>
-                <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">Medium</span>
-              </div>
-
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <input type="checkbox" className="rounded border-gray-300" />
-                  <div>
-                    <p className="font-medium text-gray-800">Generate quarterly summary</p>
-                    <p className="text-sm text-gray-600">Due: Friday</p>
-                  </div>
-                </div>
-                <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">Low</span>
-              </div>
-            </div>
+            <p className="text-gray-500 text-center py-8">Task data will be loaded from API</p>
           </div>
 
           <div className="mt-8 text-center">
@@ -366,25 +393,49 @@ const Dashboard = () => {
 
       <div className="max-w-7xl mx-auto p-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">User Dashboard</h1>
-          <p className="text-text-light-secondary">Access your account information and basic features</p>
+          <h1 className="text-3xl font-bold mb-2">Client Dashboard</h1>
+          <p className="text-text-light-secondary">Limited access to assigned organizations and resources</p>
         </div>
 
-        {/* Welcome Section */}
+        {/* Organization Access */}
         <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 mb-8">
-          <div className="text-center">
-            <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+          <div className="text-center mb-6">
+            <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-10 h-10 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Welcome back, {user?.details?.nickName || user?.email?.split('@')[0] || 'User'}!</h2>
-            <p className="text-gray-600">Here's your account overview and available features.</p>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Welcome back, {user?.details?.nickName || user?.email?.split('@')[0] || 'Client'}!</h2>
+            <p className="text-gray-600">You have limited access to the following organizations</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {assignedOrganizations.map((org) => (
+              <div key={org} className="bg-gradient-to-r from-orange-50 to-red-50 p-4 rounded-lg border border-orange-200">
+                <h4 className="font-medium text-orange-800 text-center">{getOrganizationDisplayName(org)}</h4>
+                <p className="text-sm text-orange-600 text-center">Limited Access</p>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* Quick Actions */}
+        {/* Client Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+            <div className="flex items-center mb-4">
+              <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+                <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-800">View Resources</h3>
+            </div>
+            <p className="text-gray-600 mb-4">Access assigned organization resources</p>
+            <button className="w-full bg-orange-600 text-white py-2 px-4 rounded-lg hover:bg-orange-700 transition-colors">
+              View Resources
+            </button>
+          </div>
+
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
             <div className="flex items-center mb-4">
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
@@ -397,21 +448,6 @@ const Dashboard = () => {
             <p className="text-gray-600 mb-4">View and update your personal information</p>
             <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
               View Profile
-            </button>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center mb-4">
-              <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
-                <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-800">Directory</h3>
-            </div>
-            <p className="text-gray-600 mb-4">Browse team members and contact information</p>
-            <button className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
-              Browse Directory
             </button>
           </div>
 
