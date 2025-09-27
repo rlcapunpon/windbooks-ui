@@ -3,11 +3,13 @@ import { OrganizationService, type Organization } from '../../services/organizat
 import { UserService } from '../../services/userService'
 import { OrganizationTable } from '../../components/OrganizationTable/OrganizationTable'
 import { CreateOrganizationButton } from '../../components/CreateOrganizationButton/CreateOrganizationButton'
+import { CreateOrganizationModal } from '../../components/CreateOrganizationModal/CreateOrganizationModal'
 
 const OrganizationsDashboard: React.FC = () => {
   const [organizations, setOrganizations] = useState<Organization[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
   const loadOrganizations = useCallback(async () => {
     try {
@@ -31,6 +33,20 @@ const OrganizationsDashboard: React.FC = () => {
     loadOrganizations()
   }
 
+  const handleCreateOrganization = () => {
+    setIsCreateModalOpen(true)
+  }
+
+  const handleCreateModalClose = () => {
+    setIsCreateModalOpen(false)
+  }
+
+  const handleCreateSuccess = async (_newOrganization: any) => {
+    setIsCreateModalOpen(false)
+    // Refresh the organizations list to show the newly created organization
+    await loadOrganizations()
+  }
+
   // Check if user has permission to create organizations
   const canCreateOrganization = UserService.hasPermission('resource:create') || UserService.isSuperAdmin()
 
@@ -42,7 +58,7 @@ const OrganizationsDashboard: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900">Organizations Dashboard</h1>
           <p className="text-gray-600 mt-1">Manage and monitor all organizations</p>
         </div>
-        <CreateOrganizationButton hasCreatePermission={canCreateOrganization} onCreate={() => {}} />
+        <CreateOrganizationButton hasCreatePermission={canCreateOrganization} onCreate={handleCreateOrganization} />
       </div>
 
       {/* Error Message */}
@@ -69,6 +85,13 @@ const OrganizationsDashboard: React.FC = () => {
           onRefresh={handleRefresh}
         />
       </div>
+
+      {/* Create Organization Modal */}
+      <CreateOrganizationModal
+        isOpen={isCreateModalOpen}
+        onClose={handleCreateModalClose}
+        onSuccess={handleCreateSuccess}
+      />
     </div>
   )
 }
