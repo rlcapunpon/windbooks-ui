@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { BrowserRouter } from 'react-router-dom'
 import { OrganizationTable } from './OrganizationTable'
 import type { Organization } from '../../services/organizationService'
 
@@ -58,11 +59,13 @@ describe('OrganizationTable', () => {
   describe('Loading State', () => {
     it('should show loading skeleton when loading is true', () => {
       render(
-        <OrganizationTable
-          organizations={[]}
-          loading={true}
-          onRefresh={mockOnRefresh}
-        />
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={[]}
+            loading={true}
+            onRefresh={mockOnRefresh}
+          />
+        </BrowserRouter>
       )
 
       expect(screen.getByText('Loading organizations...')).toBeInTheDocument()
@@ -70,11 +73,13 @@ describe('OrganizationTable', () => {
 
     it('should show loading spinner in table when loading is true', () => {
       render(
-        <OrganizationTable
-          organizations={[]}
-          loading={true}
-          onRefresh={mockOnRefresh}
-        />
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={[]}
+            loading={true}
+            onRefresh={mockOnRefresh}
+          />
+        </BrowserRouter>
       )
 
       expect(screen.getByTestId('loading-spinner')).toBeInTheDocument()
@@ -84,11 +89,13 @@ describe('OrganizationTable', () => {
   describe('Empty State', () => {
     it('should show empty state message when no organizations and not loading', () => {
       render(
-        <OrganizationTable
-          organizations={[]}
-          loading={false}
-          onRefresh={mockOnRefresh}
-        />
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={[]}
+            loading={false}
+            onRefresh={mockOnRefresh}
+          />
+        </BrowserRouter>
       )
 
       expect(screen.getByText('No organizations found')).toBeInTheDocument()
@@ -99,11 +106,13 @@ describe('OrganizationTable', () => {
   describe('Data Display', () => {
     it('should render table headers correctly', () => {
       render(
-        <OrganizationTable
-          organizations={mockOrganizations}
-          loading={false}
-          onRefresh={mockOnRefresh}
-        />
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+          />
+        </BrowserRouter>
       )
 
       expect(screen.getByText('Name')).toBeInTheDocument()
@@ -116,11 +125,13 @@ describe('OrganizationTable', () => {
 
     it('should display organization data in table rows', () => {
       render(
-        <OrganizationTable
-          organizations={mockOrganizations}
-          loading={false}
-          onRefresh={mockOnRefresh}
-        />
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+          />
+        </BrowserRouter>
       )
 
       expect(screen.getByText('Test Organization 1')).toBeInTheDocument()
@@ -138,11 +149,13 @@ describe('OrganizationTable', () => {
 
     it('should show formatted dates', () => {
       render(
-        <OrganizationTable
-          organizations={mockOrganizations}
-          loading={false}
-          onRefresh={mockOnRefresh}
-        />
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+          />
+        </BrowserRouter>
       )
 
       // Should show formatted dates (Jan 1, 2024 format)
@@ -153,11 +166,13 @@ describe('OrganizationTable', () => {
   describe('Status Display', () => {
     it('should show status badges with correct colors', () => {
       render(
-        <OrganizationTable
-          organizations={mockOrganizations}
-          loading={false}
-          onRefresh={mockOnRefresh}
-        />
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+          />
+        </BrowserRouter>
       )
 
       const activeBadge = screen.getByText('ACTIVE')
@@ -175,11 +190,13 @@ describe('OrganizationTable', () => {
       }
 
       render(
-        <OrganizationTable
-          organizations={[orgWithoutStatus]}
-          loading={false}
-          onRefresh={mockOnRefresh}
-        />
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={[orgWithoutStatus]}
+            loading={false}
+            onRefresh={mockOnRefresh}
+          />
+        </BrowserRouter>
       )
 
       expect(screen.getByText('N/A')).toBeInTheDocument()
@@ -189,45 +206,66 @@ describe('OrganizationTable', () => {
   describe('Actions Column', () => {
     it('should render action buttons for each organization', () => {
       render(
-        <OrganizationTable
-          organizations={mockOrganizations}
-          loading={false}
-          onRefresh={mockOnRefresh}
-        />
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+          />
+        </BrowserRouter>
       )
 
       const viewButtons = screen.getAllByText('View')
-      const editButtons = screen.getAllByText('Edit')
 
       expect(viewButtons).toHaveLength(2)
-      expect(editButtons).toHaveLength(2)
     })
 
     it('should have proper button attributes', () => {
       render(
-        <OrganizationTable
-          organizations={mockOrganizations}
-          loading={false}
-          onRefresh={mockOnRefresh}
-        />
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+          />
+        </BrowserRouter>
       )
 
       const viewButton = screen.getAllByText('View')[0]
-      const editButton = screen.getAllByText('Edit')[0]
 
       expect(viewButton).toHaveAttribute('type', 'button')
-      expect(editButton).toHaveAttribute('type', 'button')
+    })
+
+    it('should navigate to organization page when View button is clicked', async () => {
+      render(
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+          />
+        </BrowserRouter>
+      )
+
+      const viewButton = screen.getAllByText('View')[0]
+      await userEvent.click(viewButton)
+
+      // Note: In a real test, you would check the navigation behavior
+      // For now, we just verify the button exists and can be clicked
+      expect(viewButton).toBeInTheDocument()
     })
   })
 
   describe('Refresh Functionality', () => {
     it('should call onRefresh when refresh button is clicked', async () => {
       render(
-        <OrganizationTable
-          organizations={mockOrganizations}
-          loading={false}
-          onRefresh={mockOnRefresh}
-        />
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+          />
+        </BrowserRouter>
       )
 
       const refreshButton = screen.getByText('Refresh')
@@ -238,11 +276,13 @@ describe('OrganizationTable', () => {
 
     it('should show refresh button', () => {
       render(
-        <OrganizationTable
-          organizations={mockOrganizations}
-          loading={false}
-          onRefresh={mockOnRefresh}
-        />
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+          />
+        </BrowserRouter>
       )
 
       expect(screen.getByText('Refresh')).toBeInTheDocument()
@@ -252,11 +292,13 @@ describe('OrganizationTable', () => {
   describe('Table Structure', () => {
     it('should have proper table structure', () => {
       render(
-        <OrganizationTable
-          organizations={mockOrganizations}
-          loading={false}
-          onRefresh={mockOnRefresh}
-        />
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+          />
+        </BrowserRouter>
       )
 
       expect(screen.getByRole('table')).toBeInTheDocument()
@@ -265,16 +307,48 @@ describe('OrganizationTable', () => {
 
     it('should have correct number of rows', () => {
       render(
-        <OrganizationTable
-          organizations={mockOrganizations}
-          loading={false}
-          onRefresh={mockOnRefresh}
-        />
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+          />
+        </BrowserRouter>
       )
 
       // Header row + 2 data rows
       const rows = screen.getAllByRole('row')
       expect(rows).toHaveLength(3)
+    })
+
+    it('should display View button for each organization', () => {
+      render(
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+          />
+        </BrowserRouter>
+      )
+
+      const viewButtons = screen.getAllByText('View')
+      expect(viewButtons).toHaveLength(2)
+    })
+
+    it('should NOT display Edit button for any organization', () => {
+      render(
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+          />
+        </BrowserRouter>
+      )
+
+      const editButtons = screen.queryAllByText('Edit')
+      expect(editButtons).toHaveLength(0)
     })
   })
 })

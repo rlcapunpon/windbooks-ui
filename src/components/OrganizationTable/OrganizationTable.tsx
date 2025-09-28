@@ -1,4 +1,5 @@
 import React from 'react'
+import { useNavigate } from 'react-router-dom'
 import type { Organization } from '../../services/organizationService'
 
 interface OrganizationTableProps {
@@ -12,6 +13,7 @@ export const OrganizationTable: React.FC<OrganizationTableProps> = ({
   loading,
   onRefresh
 }) => {
+  const navigate = useNavigate()
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -142,14 +144,9 @@ export const OrganizationTable: React.FC<OrganizationTableProps> = ({
                     <button
                       type="button"
                       className="text-blue-600 hover:text-blue-900"
+                      onClick={() => navigate(`/organizations/${organization.id}`)}
                     >
                       View
-                    </button>
-                    <button
-                      type="button"
-                      className="text-indigo-600 hover:text-indigo-900"
-                    >
-                      Edit
                     </button>
                   </div>
                 </td>
