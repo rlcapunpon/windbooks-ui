@@ -4,12 +4,15 @@ import userEvent from '@testing-library/user-event'
 import { BrowserRouter } from 'react-router-dom'
 import Organization from './Organization'
 import { OrganizationService } from '../../services/organizationService'
-import type { Organization as OrganizationType } from '../../services/organizationService'
+import type { Organization as OrganizationType, OrganizationStatus, OrganizationRegistration } from '../../services/organizationService'
 
 // Mock the organization service
 vi.mock('../../services/organizationService', () => ({
   OrganizationService: {
-    getOrganizationById: vi.fn()
+    getOrganizationById: vi.fn(),
+    getOrganizationStatus: vi.fn(),
+    getOrganizationOperation: vi.fn(),
+    getOrganizationRegistration: vi.fn()
   }
 }))
 
@@ -43,6 +46,62 @@ const mockOrganization: OrganizationType = {
     created_at: '2024-01-01T00:00:00.000Z',
     updated_at: '2024-01-01T00:00:00.000Z'
   }
+}
+
+const mockOrganizationStatus: OrganizationStatus = {
+  id: 'status-1',
+  organization_id: 'org-1',
+  status: 'ACTIVE',
+  reason: 'EXPIRED',
+  description: 'Organization is active and compliant',
+  last_update: '2024-01-01T00:00:00.000Z',
+  created_at: '2024-01-01T00:00:00.000Z',
+  updated_at: '2024-01-01T00:00:00.000Z'
+}
+
+const mockOrganizationOperation = {
+  id: 'operation-1',
+  organization_id: 'org-1',
+  fy_start: '2024-01-01T00:00:00.000Z',
+  fy_end: '2024-12-31T00:00:00.000Z',
+  vat_reg_effectivity: '2024-01-01T00:00:00.000Z',
+  registration_effectivity: '2024-01-01T00:00:00.000Z',
+  payroll_cut_off: ['15', '30'],
+  payment_cut_off: ['10', '25'],
+  quarter_closing: ['03-31', '06-30', '09-30', '12-31'],
+  has_foreign: false,
+  has_employees: true,
+  is_ewt: false,
+  is_fwt: false,
+  is_bir_withholding_agent: false,
+  accounting_method: 'ACCRUAL',
+  last_update: '2024-01-01T00:00:00.000Z',
+  created_at: '2024-01-01T00:00:00.000Z',
+  updated_at: '2024-01-01T00:00:00.000Z'
+}
+
+const mockOrganizationRegistration: OrganizationRegistration = {
+  organization_id: 'org-1',
+  first_name: 'John',
+  middle_name: 'Michael',
+  last_name: 'Doe',
+  trade_name: 'Test Trading Corp',
+  line_of_business: '6201',
+  address_line: '123 Main Street',
+  region: 'NCR',
+  city: 'Makati',
+  zip_code: '1223',
+  tin: '001234567890',
+  rdo_code: '001',
+  contact_number: '+639123456789',
+  email_address: 'john.doe@test.com',
+  tax_type: 'VAT',
+  start_date: '2024-01-01T00:00:00.000Z',
+  reg_date: '2024-01-01T00:00:00.000Z',
+  update_date: '2024-01-01T00:00:00.000Z',
+  update_by: 'user-1',
+  created_at: '2024-01-01T00:00:00.000Z',
+  updated_at: '2024-01-01T00:00:00.000Z'
 }
 
 describe('Organization Page', () => {
@@ -85,7 +144,10 @@ describe('Organization Page', () => {
       expect(screen.getByText('001234567890')).toBeInTheDocument()
       expect(screen.getByText('NON_INDIVIDUAL')).toBeInTheDocument()
       expect(screen.getByText('VAT')).toBeInTheDocument()
-      expect(screen.getByText('ACTIVE')).toBeInTheDocument()
+      expect(screen.getByText('Basic Information')).toBeInTheDocument()
+      expect(screen.getByText('Business Status')).toBeInTheDocument()
+      expect(screen.getByText('Operation Details')).toBeInTheDocument()
+      expect(screen.getByText('Registration Information')).toBeInTheDocument()
     })
 
     it('should display menu items', async () => {
@@ -207,6 +269,82 @@ describe('Organization Page', () => {
       await waitFor(() => {
         expect(screen.getByText('Organization not found')).toBeInTheDocument()
       })
+    })
+  })
+
+  describe('Comprehensive Data Loading', () => {
+    beforeEach(() => {
+      ;(OrganizationService.getOrganizationById as any).mockResolvedValue(mockOrganization)
+      ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(mockOrganizationStatus)
+      ;(OrganizationService.getOrganizationOperation as any).mockResolvedValue(mockOrganizationOperation)
+      ;(OrganizationService.getOrganizationRegistration as any).mockResolvedValue(mockOrganizationRegistration)
+    })
+
+    it('should call all 4 endpoints to load comprehensive organization data', async () => {
+      render(
+        <BrowserRouter>
+          <Organization />
+        </BrowserRouter>
+      )
+
+      await waitFor(() => {
+        expect(OrganizationService.getOrganizationById).toHaveBeenCalledWith('org-1')
+        expect(OrganizationService.getOrganizationStatus).toHaveBeenCalledWith('org-1')
+        expect(OrganizationService.getOrganizationOperation).toHaveBeenCalledWith('org-1')
+        expect(OrganizationService.getOrganizationRegistration).toHaveBeenCalledWith('org-1')
+      })
+    })
+
+    it('should display comprehensive organization details including operation and registration info', async () => {
+      render(
+        <BrowserRouter>
+          <Organization />
+        </BrowserRouter>
+      )
+
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { level: 1, name: 'Test Organization' })).toBeInTheDocument()
+      })
+
+      // Basic organization info
+      expect(screen.getByText('001234567890')).toBeInTheDocument()
+      expect(screen.getByText('NON_INDIVIDUAL')).toBeInTheDocument()
+      expect(screen.getByText('VAT')).toBeInTheDocument()
+
+      // Status information
+      expect(screen.getByText('ACTIVE')).toBeInTheDocument()
+      expect(screen.getByText('Organization is active and compliant')).toBeInTheDocument()
+
+      // Operation details
+      expect(screen.getByText('ACCRUAL')).toBeInTheDocument()
+      expect(screen.getByText('15, 30')).toBeInTheDocument() // payroll cut-off
+      expect(screen.getByText('10, 25')).toBeInTheDocument() // payment cut-off
+
+      // Registration details
+      expect(screen.getByText('John Michael Doe')).toBeInTheDocument()
+      expect(screen.getByText('Test Trading Corp')).toBeInTheDocument()
+      expect(screen.getByText('6201')).toBeInTheDocument() // line of business
+      expect(screen.getByText('123 Main Street, Makati, NCR 1223')).toBeInTheDocument()
+      expect(screen.getByText('+639123456789')).toBeInTheDocument()
+      expect(screen.getByText('john.doe@test.com')).toBeInTheDocument()
+    })
+
+    it('should display data in categorized sections', async () => {
+      render(
+        <BrowserRouter>
+          <Organization />
+        </BrowserRouter>
+      )
+
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { level: 1, name: 'Test Organization' })).toBeInTheDocument()
+      })
+
+      // Check for section headers
+      expect(screen.getByText('Basic Information')).toBeInTheDocument()
+      expect(screen.getByText('Business Status')).toBeInTheDocument()
+      expect(screen.getByText('Operation Details')).toBeInTheDocument()
+      expect(screen.getByText('Registration Information')).toBeInTheDocument()
     })
   })
 })

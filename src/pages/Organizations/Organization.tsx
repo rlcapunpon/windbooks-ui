@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { OrganizationService } from '../../services/organizationService'
-import type { Organization } from '../../services/organizationService'
+import type { Organization, OrganizationStatus, OrganizationRegistration } from '../../services/organizationService'
 
 type MenuItem = 'details' | 'contacts' | 'obligations' | 'history' | 'settings'
 
@@ -9,6 +9,9 @@ const OrganizationPage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [organization, setOrganization] = useState<Organization | null>(null)
+  const [organizationStatus, setOrganizationStatus] = useState<OrganizationStatus | null>(null)
+  const [organizationOperation, setOrganizationOperation] = useState<any | null>(null)
+  const [organizationRegistration, setOrganizationRegistration] = useState<OrganizationRegistration | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeMenu, setActiveMenu] = useState<MenuItem>('details')
@@ -23,8 +26,45 @@ const OrganizationPage: React.FC = () => {
     try {
       setLoading(true)
       setError(null)
-      const orgData = await OrganizationService.getOrganizationById(orgId)
-      setOrganization(orgData)
+
+      // Call all 4 endpoints in parallel
+      const [orgResult, statusResult, operationResult, registrationResult] = await Promise.allSettled([
+        OrganizationService.getOrganizationById(orgId),
+        OrganizationService.getOrganizationStatus(orgId),
+        OrganizationService.getOrganizationOperation(orgId),
+        OrganizationService.getOrganizationRegistration(orgId)
+      ])
+
+      // Handle organization data
+      if (orgResult.status === 'fulfilled') {
+        setOrganization(orgResult.value)
+      } else {
+        console.error('Failed to load organization:', orgResult.reason)
+        setError('Failed to load organization details')
+        return
+      }
+
+      // Handle status data (optional - don't fail if this fails)
+      if (statusResult.status === 'fulfilled') {
+        setOrganizationStatus(statusResult.value)
+      } else {
+        console.warn('Failed to load organization status:', statusResult.reason)
+      }
+
+      // Handle operation data (optional - don't fail if this fails)
+      if (operationResult.status === 'fulfilled') {
+        setOrganizationOperation(operationResult.value)
+      } else {
+        console.warn('Failed to load organization operation:', operationResult.reason)
+      }
+
+      // Handle registration data (optional - don't fail if this fails)
+      if (registrationResult.status === 'fulfilled') {
+        setOrganizationRegistration(registrationResult.value)
+      } else {
+        console.warn('Failed to load organization registration:', registrationResult.reason)
+      }
+
     } catch (err) {
       console.error('Failed to load organization:', err)
       setError('Failed to load organization details')
@@ -81,7 +121,14 @@ const OrganizationPage: React.FC = () => {
 
     switch (activeMenu) {
       case 'details':
-        return <OrganizationDetails organization={organization} />
+        return (
+          <OrganizationDetails
+            organization={organization}
+            organizationStatus={organizationStatus}
+            organizationOperation={organizationOperation}
+            organizationRegistration={organizationRegistration}
+          />
+        )
       case 'contacts':
         return <Contacts organization={organization} />
       case 'obligations':
@@ -91,7 +138,14 @@ const OrganizationPage: React.FC = () => {
       case 'settings':
         return <Settings organization={organization} />
       default:
-        return <OrganizationDetails organization={organization} />
+        return (
+          <OrganizationDetails
+            organization={organization}
+            organizationStatus={organizationStatus}
+            organizationOperation={organizationOperation}
+            organizationRegistration={organizationRegistration}
+          />
+        )
     }
   }
 
@@ -146,10 +200,16 @@ const OrganizationPage: React.FC = () => {
 }
 
 // Placeholder components for each menu section
-const OrganizationDetails: React.FC<{ organization: Organization }> = ({ organization }) => (
+const OrganizationDetails: React.FC<{
+  organization: Organization
+  organizationStatus: OrganizationStatus | null
+  organizationOperation: any | null
+  organizationRegistration: OrganizationRegistration | null
+}> = ({ organization, organizationStatus, organizationOperation, organizationRegistration }) => (
   <div>
     <h2 className="text-xl font-semibold mb-4">Organization Details</h2>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* Basic Information */}
       <div>
         <h3 className="text-lg font-medium mb-2">Basic Information</h3>
         <dl className="space-y-2">
@@ -171,55 +231,150 @@ const OrganizationDetails: React.FC<{ organization: Organization }> = ({ organiz
           </div>
         </dl>
       </div>
+
+      {/* Business Status */}
       <div>
-        <h3 className="text-lg font-medium mb-2">Registration Information</h3>
+        <h3 className="text-lg font-medium mb-2">Business Status</h3>
         <dl className="space-y-2">
-          <div>
-            <dt className="text-sm font-medium text-gray-500">Registration Date</dt>
-            <dd className="text-sm text-gray-900">
-              {organization.registration_date
-                ? new Date(organization.registration_date).toLocaleDateString()
-                : 'Not provided'}
-            </dd>
-          </div>
-          <div>
-            <dt className="text-sm font-medium text-gray-500">Address</dt>
-            <dd className="text-sm text-gray-900">{organization.address || 'Not provided'}</dd>
-          </div>
           <div>
             <dt className="text-sm font-medium text-gray-500">Status</dt>
             <dd className="text-sm text-gray-900">
-              {organization.status ? organization.status.status : 'Unknown'}
+              {organizationStatus ? organizationStatus.status : 'Not available'}
             </dd>
           </div>
+          {organizationStatus?.reason && (
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Reason</dt>
+              <dd className="text-sm text-gray-900">{organizationStatus.reason}</dd>
+            </div>
+          )}
+          {organizationStatus?.description && (
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Description</dt>
+              <dd className="text-sm text-gray-900">{organizationStatus.description}</dd>
+            </div>
+          )}
+          {organizationStatus?.last_update && (
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Last Update</dt>
+              <dd className="text-sm text-gray-900">
+                {new Date(organizationStatus.last_update).toLocaleDateString()}
+              </dd>
+            </div>
+          )}
+        </dl>
+      </div>
+
+      {/* Operation Details */}
+      <div>
+        <h3 className="text-lg font-medium mb-2">Operation Details</h3>
+        <dl className="space-y-2">
+          {organizationOperation?.fy_start && organizationOperation?.fy_end && (
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Fiscal Year</dt>
+              <dd className="text-sm text-gray-900">
+                {new Date(organizationOperation.fy_start).getFullYear()} - {new Date(organizationOperation.fy_end).getFullYear()}
+              </dd>
+            </div>
+          )}
+          {organizationOperation?.accounting_method && (
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Accounting Method</dt>
+              <dd className="text-sm text-gray-900">{organizationOperation.accounting_method}</dd>
+            </div>
+          )}
+          {organizationOperation?.payroll_cut_off && organizationOperation.payroll_cut_off.length > 0 && (
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Payroll Cut-off</dt>
+              <dd className="text-sm text-gray-900">{organizationOperation.payroll_cut_off.join(', ')}</dd>
+            </div>
+          )}
+          {organizationOperation?.payment_cut_off && organizationOperation.payment_cut_off.length > 0 && (
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Payment Cut-off</dt>
+              <dd className="text-sm text-gray-900">{organizationOperation.payment_cut_off.join(', ')}</dd>
+            </div>
+          )}
+          {organizationOperation?.has_employees !== undefined && (
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Has Employees</dt>
+              <dd className="text-sm text-gray-900">{organizationOperation.has_employees ? 'Yes' : 'No'}</dd>
+            </div>
+          )}
+        </dl>
+      </div>
+
+      {/* Registration Information */}
+      <div>
+        <h3 className="text-lg font-medium mb-2">Registration Information</h3>
+        <dl className="space-y-2">
+          {organizationRegistration && (
+            <>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Name</dt>
+                <dd className="text-sm text-gray-900">
+                  {organizationRegistration.first_name} {organizationRegistration.middle_name} {organizationRegistration.last_name}
+                </dd>
+              </div>
+              {organizationRegistration.trade_name && (
+                <div>
+                  <dt className="text-sm font-medium text-gray-500">Trade Name</dt>
+                  <dd className="text-sm text-gray-900">{organizationRegistration.trade_name}</dd>
+                </div>
+              )}
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Line of Business</dt>
+                <dd className="text-sm text-gray-900">{organizationRegistration.line_of_business}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Address</dt>
+                <dd className="text-sm text-gray-900">
+                  {organizationRegistration.address_line}, {organizationRegistration.city}, {organizationRegistration.region} {organizationRegistration.zip_code}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Contact</dt>
+                <dd className="text-sm text-gray-900">{organizationRegistration.contact_number}</dd>
+              </div>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Email</dt>
+                <dd className="text-sm text-gray-900">{organizationRegistration.email_address}</dd>
+              </div>
+            </>
+          )}
+          {!organizationRegistration && (
+            <div>
+              <dd className="text-sm text-gray-500">Registration details not available</dd>
+            </div>
+          )}
         </dl>
       </div>
     </div>
   </div>
 )
 
-const Contacts: React.FC<{ organization: Organization }> = ({ organization }) => (
+const Contacts: React.FC<{ organization: Organization }> = ({ organization: _organization }) => (
   <div>
     <h2 className="text-xl font-semibold mb-4">Contacts</h2>
     <p className="text-gray-600">Contact management functionality coming soon.</p>
   </div>
 )
 
-const TaxObligations: React.FC<{ organization: Organization }> = ({ organization }) => (
+const TaxObligations: React.FC<{ organization: Organization }> = ({ organization: _organization }) => (
   <div>
     <h2 className="text-xl font-semibold mb-4">Tax Obligations</h2>
     <p className="text-gray-600">Tax obligations functionality coming soon.</p>
   </div>
 )
 
-const History: React.FC<{ organization: Organization }> = ({ organization }) => (
+const History: React.FC<{ organization: Organization }> = ({ organization: _organization }) => (
   <div>
     <h2 className="text-xl font-semibold mb-4">History</h2>
     <p className="text-gray-600">Organization history functionality coming soon.</p>
   </div>
 )
 
-const Settings: React.FC<{ organization: Organization }> = ({ organization }) => (
+const Settings: React.FC<{ organization: Organization }> = ({ organization: _organization }) => (
   <div>
     <h2 className="text-xl font-semibold mb-4">Settings</h2>
     <p className="text-gray-600">Organization settings functionality coming soon.</p>

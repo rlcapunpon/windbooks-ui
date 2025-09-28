@@ -27,6 +27,30 @@ export interface OrganizationStatus {
   updated_at: string
 }
 
+export interface OrganizationRegistration {
+  organization_id: string
+  first_name: string
+  middle_name?: string
+  last_name: string
+  trade_name?: string
+  line_of_business: string
+  address_line: string
+  region: string
+  city: string
+  zip_code: string
+  tin: string
+  rdo_code: string
+  contact_number: string
+  email_address: string
+  tax_type: 'VAT' | 'NON_VAT' | 'EXCEMPT'
+  start_date: string
+  reg_date: string
+  update_date: string
+  update_by: string
+  created_at: string
+  updated_at: string
+}
+
 export interface CreateOrganizationRequestDto {
   category: 'INDIVIDUAL' | 'NON_INDIVIDUAL'
   tax_classification: 'VAT' | 'NON_VAT'
@@ -253,6 +277,19 @@ export class OrganizationService {
       return response.data
     } catch (error: any) {
       console.error('Failed to fetch organization operation:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Gets organization registration details
+   */
+  static async getOrganizationRegistration(id: string): Promise<OrganizationRegistration> {
+    try {
+      const response = await orgApiClient.get<OrganizationRegistration>(`${this.BASE_ENDPOINT}/${id}/registration`)
+      return response.data
+    } catch (error: any) {
+      console.error('Failed to fetch organization registration:', error)
       throw error
     }
   }
