@@ -194,37 +194,26 @@ import { OrganizationService } from '../services/organizationService'
       // Verify API call
       await waitFor(() => {
         expect(OrganizationService.createOrganization).toHaveBeenCalledWith({
-          name: 'ABC Corporation Inc.',
-          tin: '001234567890',
           category: 'NON_INDIVIDUAL',
-          subcategory: 'CORPORATION',
           tax_classification: 'VAT',
+          tin: '001234567890',
           registration_date: '2024-01-01',
-          address: '123 Business Street, Makati, NCR 1223',
-          first_name: '',
-          middle_name: '',
-          last_name: '',
-          trade_name: 'ABC Corp',
           line_of_business: '6201',
           address_line: '123 Business Street',
           region: 'NCR',
           city: 'Makati',
           zip_code: '1223',
-          tin_registration: '001234567890',
           rdo_code: '001',
           contact_number: '+639123456789',
           email_address: 'contact@abc.com',
-          tax_type: 'VAT',
           start_date: '2024-01-01',
-          reg_date: '2024-01-01',
+          registered_name: 'ABC Corporation Inc.',
+          trade_name: 'ABC Corp',
+          subcategory: 'CORPORATION',
           fy_start: '2024-01-01',
-          fy_end: '',
           accounting_method: 'ACCRUAL',
-          has_foreign: false,
           has_employees: true,
-          is_ewt: true,
-          is_fwt: false,
-          is_bir_withholding_agent: false
+          is_ewt: true
         })
       })
 
@@ -336,7 +325,6 @@ import { OrganizationService } from '../services/organizationService'
       await waitFor(() => {
         expect(OrganizationService.createOrganization).toHaveBeenCalledWith(
           expect.objectContaining({
-            name: 'John Michael Doe',
             category: 'INDIVIDUAL',
             first_name: 'John',
             middle_name: 'Michael',
@@ -686,6 +674,513 @@ import { OrganizationService } from '../services/organizationService'
       // Wait for completion
       await waitFor(() => {
         expect(mockOnSuccess).toHaveBeenCalled()
+      })
+    })
+
+    it('should display autosave checkbox in Step 1', async () => {
+      render(
+        <CreateOrganizationModal
+          isOpen={true}
+          onClose={mockOnClose}
+          onSuccess={mockOnSuccess}
+        />
+      )
+
+      // Check that autosave checkbox is present in Step 1
+      const autosaveCheckbox = screen.getByRole('checkbox', { name: /enable autosave/i })
+      expect(autosaveCheckbox).toBeInTheDocument()
+      expect(autosaveCheckbox).not.toBeChecked()
+    })
+
+    it('should display updated region options in Step 4', async () => {
+      render(
+        <CreateOrganizationModal
+          isOpen={true}
+          onClose={mockOnClose}
+          onSuccess={mockOnSuccess}
+        />
+      )
+
+      const user = userEvent.setup()
+
+      // Navigate to Step 4
+      const individualRadio = screen.getByLabelText('Individual')
+      const vatRadio = screen.getByLabelText('VAT')
+      await user.click(individualRadio)
+      await user.click(vatRadio)
+
+      const nextButton = screen.getByText('Next Step')
+      await user.click(nextButton) // Step 2
+
+      const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
+      const registrationDateInput = screen.getByLabelText('Registration Date *')
+      await user.type(tinInput, '001234567890')
+      fireEvent.change(registrationDateInput, { target: { value: '2024-01-01' } })
+
+      await user.click(nextButton) // Step 3
+
+      const firstNameInput = screen.getByLabelText('First Name')
+      const lastNameInput = screen.getByLabelText('Last Name')
+      await user.type(firstNameInput, 'John')
+      await user.type(lastNameInput, 'Doe')
+
+      await user.click(nextButton) // Step 4
+
+      // Check that all required region options are present
+      expect(screen.getByRole('option', { name: 'Region 1 – Ilocos Region' })).toBeInTheDocument()
+      expect(screen.getByRole('option', { name: 'Region 2 – Cagayan Valley' })).toBeInTheDocument()
+      expect(screen.getByRole('option', { name: 'Region 3 – Central Luzon' })).toBeInTheDocument()
+      expect(screen.getByRole('option', { name: 'Region 4 – CALABARZON (Cavite, Laguna, Batangas, Rizal, Quezon)' })).toBeInTheDocument()
+      expect(screen.getByRole('option', { name: 'Region 5 – Bicol Region' })).toBeInTheDocument()
+      expect(screen.getByRole('option', { name: 'Region 6 – Western Visayas' })).toBeInTheDocument()
+      expect(screen.getByRole('option', { name: 'Region 7 – Central Visayas' })).toBeInTheDocument()
+      expect(screen.getByRole('option', { name: 'Region 8 – Eastern Visayas' })).toBeInTheDocument()
+      expect(screen.getByRole('option', { name: 'Region 9 – Zamboanga Peninsula' })).toBeInTheDocument()
+      expect(screen.getByRole('option', { name: 'Region 10 – Northern Mindanao' })).toBeInTheDocument()
+      expect(screen.getByRole('option', { name: 'Region 11 – Davao Region' })).toBeInTheDocument()
+      expect(screen.getByRole('option', { name: 'Region 12 – SOCCSKSARGEN (South Cotabato, Cotabato, Sultan Kudarat, Sarangani, GenSan)' })).toBeInTheDocument()
+      expect(screen.getByRole('option', { name: 'Region 13 – Caraga' })).toBeInTheDocument()
+      expect(screen.getByRole('option', { name: 'CAR – Cordillera Administrative Region' })).toBeInTheDocument()
+      expect(screen.getByRole('option', { name: 'NCR – National Capital Region (subdivided further into NCR East, West, North, South for RDOs)' })).toBeInTheDocument()
+      expect(screen.getByRole('option', { name: 'ARMM / BARMM – Bangsamoro Autonomous Region in Muslim Mindanao' })).toBeInTheDocument()
+    })
+
+    it('should display EXCEMPT tax classification option in Step 1', async () => {
+      render(
+        <CreateOrganizationModal
+          isOpen={true}
+          onClose={mockOnClose}
+          onSuccess={mockOnSuccess}
+        />
+      )
+
+      // Check that EXCEMPT tax classification option is present
+      const excemptRadio = screen.getByLabelText('Tax Excempted')
+      expect(excemptRadio).toBeInTheDocument()
+      expect(excemptRadio).toHaveAttribute('value', 'EXCEMPT')
+    })
+
+    it('should have updated TIN placeholder without dashes', async () => {
+      render(
+        <CreateOrganizationModal
+          isOpen={true}
+          onClose={mockOnClose}
+          onSuccess={mockOnSuccess}
+        />
+      )
+
+      const user = userEvent.setup()
+
+      // Navigate to Step 2 where TIN input is located
+      const individualRadio = screen.getByLabelText('Individual')
+      const vatRadio = screen.getByLabelText('VAT')
+      await user.click(individualRadio)
+      await user.click(vatRadio)
+
+      const nextButton = screen.getByText('Next Step')
+      await user.click(nextButton) // Step 2
+
+      const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
+      
+      // Check that placeholder does not contain dashes
+      expect(tinInput).not.toHaveAttribute('placeholder', 'XXX-XXX-XXX-XXX')
+      // Should have a placeholder that indicates numeric input without special characters
+      expect(tinInput).toHaveAttribute('placeholder')
+      const placeholder = tinInput.getAttribute('placeholder')
+      expect(placeholder).not.toContain('-')
+    })
+
+    it('should send correct POST request DTO without invalid properties', async () => {
+      render(
+        <CreateOrganizationModal
+          isOpen={true}
+          onClose={mockOnClose}
+          onSuccess={mockOnSuccess}
+        />
+      )
+
+      const user = userEvent.setup()
+
+      // Fill form and submit
+      const individualRadio = screen.getByLabelText('Individual')
+      const vatRadio = screen.getByLabelText('VAT')
+      await user.click(individualRadio)
+      await user.click(vatRadio)
+
+      const nextButton = screen.getByText('Next Step')
+      await user.click(nextButton) // Step 2
+
+      const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
+      const registrationDateInput = screen.getByLabelText('Registration Date *')
+      await user.type(tinInput, '001234567890')
+      fireEvent.change(registrationDateInput, { target: { value: '2024-01-01' } })
+
+      await user.click(nextButton) // Step 3
+
+      const firstNameInput = screen.getByLabelText('First Name')
+      const lastNameInput = screen.getByLabelText('Last Name')
+      await user.type(firstNameInput, 'John')
+      await user.type(lastNameInput, 'Doe')
+
+      await user.click(nextButton) // Step 4
+
+      const addressInput = screen.getByPlaceholderText('Street address')
+      const cityInput = screen.getByPlaceholderText('City')
+      const regionSelect = screen.getByDisplayValue('Select region')
+      const zipInput = screen.getByPlaceholderText('ZIP code')
+      const contactInput = screen.getByPlaceholderText('+63XXXXXXXXXX')
+      const emailInput = screen.getByPlaceholderText('email@example.com')
+
+      await user.type(addressInput, '123 Test St')
+      await user.type(cityInput, 'Test City')
+      await user.selectOptions(regionSelect, 'NCR')
+      await user.type(zipInput, '1234')
+      await user.type(contactInput, '+639123456789')
+      await user.type(emailInput, 'test@example.com')
+
+      await user.click(nextButton) // Step 5
+
+      const lineOfBusinessInput = screen.getByLabelText('Line of Business (PSIC Code) *')
+      const rdoCodeInput = screen.getByLabelText('RDO Code *')
+      const startDateInput = screen.getByLabelText('Start Date *')
+
+      await user.type(lineOfBusinessInput, '6201')
+      await user.type(rdoCodeInput, '001')
+      fireEvent.change(startDateInput, { target: { value: '2024-01-01' } })
+
+      await user.click(nextButton) // Step 6
+
+      const createButton = screen.getByText('Create Organization')
+      await user.click(createButton)
+
+      // Verify the API call contains the correct DTO structure
+      await waitFor(() => {
+        const callArgs = vi.mocked(OrganizationService.createOrganization).mock.calls[0][0]
+        
+        // Check that required properties are present
+        expect(callArgs).toHaveProperty('category')
+        expect(callArgs).toHaveProperty('tax_classification')
+        expect(callArgs).toHaveProperty('tin')
+        expect(callArgs).toHaveProperty('registration_date')
+        expect(callArgs).toHaveProperty('line_of_business')
+        expect(callArgs).toHaveProperty('address_line')
+        expect(callArgs).toHaveProperty('region')
+        expect(callArgs).toHaveProperty('city')
+        expect(callArgs).toHaveProperty('zip_code')
+        expect(callArgs).toHaveProperty('rdo_code')
+        expect(callArgs).toHaveProperty('contact_number')
+        expect(callArgs).toHaveProperty('email_address')
+        expect(callArgs).toHaveProperty('start_date')
+        
+        // Check that invalid properties are NOT present
+        expect(callArgs).not.toHaveProperty('property name')
+        expect(callArgs).not.toHaveProperty('property address')
+        expect(callArgs).not.toHaveProperty('property tin_registration')
+        expect(callArgs).not.toHaveProperty('property tax_type')
+        expect(callArgs).not.toHaveProperty('property reg_date')
+        
+        // Check that the name field is NOT present (Step 7 requirement)
+        expect(callArgs).not.toHaveProperty('name')
+      })
+    })
+
+    it('should NOT include name field in organization creation API request', async () => {
+      render(
+        <CreateOrganizationModal
+          isOpen={true}
+          onClose={mockOnClose}
+          onSuccess={mockOnSuccess}
+        />
+      )
+
+      const user = userEvent.setup()
+
+      // Fill form and submit
+      const individualRadio = screen.getByLabelText('Individual')
+      const vatRadio = screen.getByLabelText('VAT')
+      await user.click(individualRadio)
+      await user.click(vatRadio)
+
+      const nextButton = screen.getByText('Next Step')
+      await user.click(nextButton) // Step 2
+
+      const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
+      const registrationDateInput = screen.getByLabelText('Registration Date *')
+      await user.type(tinInput, '001234567890')
+      fireEvent.change(registrationDateInput, { target: { value: '2024-01-01' } })
+
+      await user.click(nextButton) // Step 3
+
+      const firstNameInput = screen.getByLabelText('First Name')
+      const lastNameInput = screen.getByLabelText('Last Name')
+      await user.type(firstNameInput, 'John')
+      await user.type(lastNameInput, 'Doe')
+
+      await user.click(nextButton) // Step 4
+
+      const addressInput = screen.getByPlaceholderText('Street address')
+      const cityInput = screen.getByPlaceholderText('City')
+      const regionSelect = screen.getByDisplayValue('Select region')
+      const zipInput = screen.getByPlaceholderText('ZIP code')
+      const contactInput = screen.getByPlaceholderText('+63XXXXXXXXXX')
+      const emailInput = screen.getByPlaceholderText('email@example.com')
+
+      await user.type(addressInput, '123 Test St')
+      await user.type(cityInput, 'Test City')
+      await user.selectOptions(regionSelect, 'NCR')
+      await user.type(zipInput, '1234')
+      await user.type(contactInput, '+639123456789')
+      await user.type(emailInput, 'test@example.com')
+
+      await user.click(nextButton) // Step 5
+
+      const lineOfBusinessInput = screen.getByLabelText('Line of Business (PSIC Code) *')
+      const rdoCodeInput = screen.getByLabelText('RDO Code *')
+      const startDateInput = screen.getByLabelText('Start Date *')
+
+      await user.type(lineOfBusinessInput, '6201')
+      await user.type(rdoCodeInput, '001')
+      fireEvent.change(startDateInput, { target: { value: '2024-01-01' } })
+
+      await user.click(nextButton) // Step 6
+
+      const createButton = screen.getByText('Create Organization')
+      await user.click(createButton)
+
+      // Verify the API call does NOT contain the name field
+      await waitFor(() => {
+        const callArgs = vi.mocked(OrganizationService.createOrganization).mock.calls[0][0]
+        
+        // Check that the name field is NOT present in the API request
+        expect(callArgs).not.toHaveProperty('name')
+        
+        // Verify other required fields are still present
+        expect(callArgs).toHaveProperty('category')
+        expect(callArgs).toHaveProperty('tax_classification')
+        expect(callArgs).toHaveProperty('first_name')
+        expect(callArgs).toHaveProperty('last_name')
+      })
+    })
+
+    describe('Radio Button Visual State', () => {
+      it('should update organization category radio button visual state when selected', async () => {
+        render(
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        )
+
+        const user = userEvent.setup()
+
+        // Step 1: Organization Type Selection
+        expect(screen.getByText('Organization Type')).toBeInTheDocument()
+
+        // Get the organization category radio buttons
+        const individualRadio = screen.getByLabelText('Individual')
+        const nonIndividualRadio = screen.getByLabelText('Non-Individual')
+
+        // Initially, no category should be selected
+        expect(individualRadio).not.toBeChecked()
+        expect(nonIndividualRadio).not.toBeChecked()
+
+        // Check visual state - Individual option should not have selected styling
+        const individualLabel = individualRadio.closest('label')
+        const individualContainer = individualLabel?.querySelector('.p-4')
+        expect(individualContainer).toHaveClass('border-gray-200')
+        expect(individualContainer).not.toHaveClass('border-blue-500', 'bg-blue-50')
+
+        // Select Individual category
+        await user.click(individualRadio)
+
+        // Now Individual should be checked
+        expect(individualRadio).toBeChecked()
+        expect(nonIndividualRadio).not.toBeChecked()
+
+        // Check visual state - Individual option should have selected styling
+        expect(individualContainer).toHaveClass('border-blue-500', 'bg-blue-50')
+        expect(individualContainer).not.toHaveClass('border-gray-200')
+
+        // Check that the inner radio button dot is visible
+        const individualInnerDot = individualContainer?.querySelector('.w-2.h-2')
+        expect(individualInnerDot).toHaveClass('bg-blue-500')
+
+        // Select Non-Individual category
+        await user.click(nonIndividualRadio)
+
+        // Now Non-Individual should be checked, Individual should be unchecked
+        expect(individualRadio).not.toBeChecked()
+        expect(nonIndividualRadio).toBeChecked()
+
+        // Check visual state - Individual should lose selected styling, Non-Individual should gain it
+        expect(individualContainer).toHaveClass('border-gray-200')
+        expect(individualContainer).not.toHaveClass('border-blue-500', 'bg-blue-50')
+
+        const nonIndividualLabel = nonIndividualRadio.closest('label')
+        const nonIndividualContainer = nonIndividualLabel?.querySelector('.p-4')
+        expect(nonIndividualContainer).toHaveClass('border-blue-500', 'bg-blue-50')
+        expect(nonIndividualContainer).not.toHaveClass('border-gray-200')
+
+        // Check that Non-Individual inner radio button dot is visible
+        const nonIndividualInnerDot = nonIndividualContainer?.querySelector('.w-2.h-2')
+        expect(nonIndividualInnerDot).toHaveClass('bg-blue-500')
+
+        // Verify Individual inner dot is no longer visible (has no bg-blue-500)
+        expect(individualInnerDot).not.toHaveClass('bg-blue-500')
+      })
+
+      it('should update tax classification radio button visual state when selected', async () => {
+        render(
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        )
+
+        const user = userEvent.setup()
+
+        // Step 1: Organization Type Selection
+        expect(screen.getByText('Organization Type')).toBeInTheDocument()
+
+        // Select INDIVIDUAL category first
+        const individualRadio = screen.getByLabelText('Individual')
+        await user.click(individualRadio)
+
+        // Get the tax classification radio buttons
+        const vatRadio = screen.getByLabelText('VAT')
+        const nonVatRadio = screen.getByLabelText('Non-VAT')
+        const excemptRadio = screen.getByLabelText('Tax Excempted')
+
+        // Initially, no tax classification should be selected
+        expect(vatRadio).not.toBeChecked()
+        expect(nonVatRadio).not.toBeChecked()
+        expect(excemptRadio).not.toBeChecked()
+
+        // Check visual state - VAT option should not have selected styling
+        const vatLabel = vatRadio.closest('label')
+        const vatContainer = vatLabel?.querySelector('.p-4')
+        expect(vatContainer).toHaveClass('border-gray-200')
+        expect(vatContainer).not.toHaveClass('border-blue-500', 'bg-blue-50')
+
+        // Select VAT classification
+        await user.click(vatRadio)
+
+        // Now VAT should be checked
+        expect(vatRadio).toBeChecked()
+        expect(nonVatRadio).not.toBeChecked()
+        expect(excemptRadio).not.toBeChecked()
+
+        // Check visual state - VAT option should have selected styling
+        expect(vatContainer).toHaveClass('border-blue-500', 'bg-blue-50')
+        expect(vatContainer).not.toHaveClass('border-gray-200')
+
+        // Check that the inner radio button dot is visible
+        const vatInnerDot = vatContainer?.querySelector('.w-2.h-2')
+        expect(vatInnerDot).toHaveClass('bg-blue-500')
+
+        // Select NON_VAT classification
+        await user.click(nonVatRadio)
+
+        // Now NON_VAT should be checked, VAT should be unchecked
+        expect(vatRadio).not.toBeChecked()
+        expect(nonVatRadio).toBeChecked()
+        expect(excemptRadio).not.toBeChecked()
+
+        // Check visual state - VAT should lose selected styling, NON_VAT should gain it
+        expect(vatContainer).toHaveClass('border-gray-200')
+        expect(vatContainer).not.toHaveClass('border-blue-500', 'bg-blue-50')
+
+        const nonVatLabel = nonVatRadio.closest('label')
+        const nonVatContainer = nonVatLabel?.querySelector('.p-4')
+        expect(nonVatContainer).toHaveClass('border-blue-500', 'bg-blue-50')
+        expect(nonVatContainer).not.toHaveClass('border-gray-200')
+
+        // Check that NON_VAT inner radio button dot is visible
+        const nonVatInnerDot = nonVatContainer?.querySelector('.w-2.h-2')
+        expect(nonVatInnerDot).toHaveClass('bg-blue-500')
+
+        // Select EXCEMPT classification
+        await user.click(excemptRadio)
+
+        // Now EXCEMPT should be checked, others should be unchecked
+        expect(vatRadio).not.toBeChecked()
+        expect(nonVatRadio).not.toBeChecked()
+        expect(excemptRadio).toBeChecked()
+
+        // Check visual state - EXCEMPT should have selected styling
+        const excemptLabel = excemptRadio.closest('label')
+        const excemptContainer = excemptLabel?.querySelector('.p-4')
+        expect(excemptContainer).toHaveClass('border-blue-500', 'bg-blue-50')
+        expect(excemptContainer).not.toHaveClass('border-gray-200')
+
+        // Check that EXCEMPT inner radio button dot is visible
+        const excemptInnerDot = excemptContainer?.querySelector('.w-2.h-2')
+        expect(excemptInnerDot).toHaveClass('bg-blue-500')
+      })
+
+      it('should handle complete Step 1 interaction flow with both radio button groups', async () => {
+        render(
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        )
+
+        const user = userEvent.setup()
+
+        // Get all radio buttons
+        const individualRadio = screen.getByLabelText('Individual')
+        const nonIndividualRadio = screen.getByLabelText('Non-Individual')
+        const vatRadio = screen.getByLabelText('VAT')
+        const nonVatRadio = screen.getByLabelText('Non-VAT')
+        const excemptRadio = screen.getByLabelText('Tax Excempted')
+
+        // Initially nothing should be selected
+        expect(individualRadio).not.toBeChecked()
+        expect(nonIndividualRadio).not.toBeChecked()
+        expect(vatRadio).not.toBeChecked()
+        expect(nonVatRadio).not.toBeChecked()
+        expect(excemptRadio).not.toBeChecked()
+
+        // Next Step button should be disabled without both selections
+        const nextButton = screen.getByText('Next Step')
+        expect(nextButton).toBeDisabled()
+
+        // Select organization category
+        await user.click(individualRadio)
+        expect(individualRadio).toBeChecked()
+        // Still disabled without tax classification
+        expect(nextButton).toBeDisabled()
+
+        // Select tax classification
+        await user.click(vatRadio)
+        expect(vatRadio).toBeChecked()
+        // Now should be enabled
+        expect(nextButton).not.toBeDisabled()
+
+        // Change selections and verify visual state updates
+        await user.click(nonIndividualRadio)
+        expect(nonIndividualRadio).toBeChecked()
+        expect(individualRadio).not.toBeChecked()
+
+        await user.click(excemptRadio)
+        expect(excemptRadio).toBeChecked()
+        expect(vatRadio).not.toBeChecked()
+
+        // Verify visual styling is correct for final selections
+        const nonIndividualLabel = nonIndividualRadio.closest('label')
+        const nonIndividualContainer = nonIndividualLabel?.querySelector('.p-4')
+        expect(nonIndividualContainer).toHaveClass('border-blue-500', 'bg-blue-50')
+
+        const excemptLabel = excemptRadio.closest('label')
+        const excemptContainer = excemptLabel?.querySelector('.p-4')
+        expect(excemptContainer).toHaveClass('border-blue-500', 'bg-blue-50')
+
+        // Button should still be enabled
+        expect(nextButton).not.toBeDisabled()
       })
     })
   })

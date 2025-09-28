@@ -28,7 +28,6 @@ export interface OrganizationStatus {
 }
 
 export interface CreateOrganizationRequestDto {
-  name: string
   category: 'INDIVIDUAL' | 'NON_INDIVIDUAL'
   tax_classification: 'VAT' | 'NON_VAT'
   first_name: string

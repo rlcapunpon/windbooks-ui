@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { OrganizationService } from '../../services/organizationService'
 
 interface CreateOrganizationModalProps {
@@ -18,6 +18,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
     category: '',
     subcategory: '',
     tax_classification: '',
+    enable_autosave: false,
 
     // Step 2: Basic Information
     registered_name: '',
@@ -62,6 +63,38 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
   const [uploadedFile, setUploadedFile] = useState<File | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  // Autosave functionality
+  useEffect(() => {
+    if (formData.enable_autosave) {
+      const autosaveData = {
+        ...formData,
+        uploadedFile: uploadedFile ? {
+          name: uploadedFile.name,
+          size: uploadedFile.size,
+          type: uploadedFile.type
+        } : null
+      }
+      localStorage.setItem('organizationCreationDraft', JSON.stringify(autosaveData))
+    }
+  }, [formData, uploadedFile])
+
+  // Load autosave data on component mount
+  useEffect(() => {
+    const savedData = localStorage.getItem('organizationCreationDraft')
+    if (savedData) {
+      try {
+        const parsedData = JSON.parse(savedData)
+        // Only load if autosave was enabled
+        if (parsedData.enable_autosave) {
+          setFormData(prev => ({ ...prev, ...parsedData }))
+          // Note: File upload cannot be restored from localStorage
+        }
+      } catch (error) {
+        console.warn('Failed to load autosave data:', error)
+      }
+    }
+  }, [])
+
   if (!isOpen) return null
 
   const totalSteps = 6
@@ -69,7 +102,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
   const updateFormData = (field: string, value: any) => {
     let safeValue = value
     if (value === undefined || value === null) {
-      if (['has_foreign', 'has_employees', 'is_ewt', 'is_fwt', 'is_bir_withholding_agent'].includes(field)) {
+      if (['has_foreign', 'has_employees', 'is_ewt', 'is_fwt', 'is_bir_withholding_agent', 'enable_autosave'].includes(field)) {
         safeValue = false
       } else if (['payroll_cut_off', 'payment_cut_off', 'quarter_closing'].includes(field)) {
         safeValue = []
@@ -185,13 +218,19 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                         value="INDIVIDUAL"
                         checked={formData.category === 'INDIVIDUAL'}
                         onChange={(e) => updateFormData('category', e.target.value)}
-                        className="sr-only peer"
+                        className="sr-only"
                         aria-label="Individual"
                       />
-                      <div className="p-4 border-2 border-gray-200 rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-gray-300 transition-all duration-200">
+                      <div className={`p-4 border-2 rounded-lg cursor-pointer hover:border-gray-300 transition-all duration-200 ${
+                        formData.category === 'INDIVIDUAL'
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200'
+                      }`}>
                         <div className="flex items-center">
-                          <div className="w-4 h-4 border-2 border-gray-300 rounded-full mr-3 peer-checked:border-blue-500 peer-checked:bg-blue-500">
-                            <div className="w-2 h-2 bg-white rounded-full m-0.5 peer-checked:block hidden"></div>
+                          <div className="w-4 h-4 border-2 border-gray-300 rounded-full mr-3 flex items-center justify-center">
+                            <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                              formData.category === 'INDIVIDUAL' ? 'bg-blue-500' : 'bg-white'
+                            }`}></div>
                           </div>
                           <div>
                             <div className="font-medium text-gray-900">Individual</div>
@@ -207,13 +246,19 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                         value="NON_INDIVIDUAL"
                         checked={formData.category === 'NON_INDIVIDUAL'}
                         onChange={(e) => updateFormData('category', e.target.value)}
-                        className="sr-only peer"
+                        className="sr-only"
                         aria-label="Non-Individual"
                       />
-                      <div className="p-4 border-2 border-gray-200 rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-gray-300 transition-all duration-200">
+                      <div className={`p-4 border-2 rounded-lg cursor-pointer hover:border-gray-300 transition-all duration-200 ${
+                        formData.category === 'NON_INDIVIDUAL'
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200'
+                      }`}>
                         <div className="flex items-center">
-                          <div className="w-4 h-4 border-2 border-gray-300 rounded-full mr-3 peer-checked:border-blue-500 peer-checked:bg-blue-500">
-                            <div className="w-2 h-2 bg-white rounded-full m-0.5 peer-checked:block hidden"></div>
+                          <div className="w-4 h-4 border-2 border-gray-300 rounded-full mr-3 flex items-center justify-center">
+                            <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                              formData.category === 'NON_INDIVIDUAL' ? 'bg-blue-500' : 'bg-white'
+                            }`}></div>
                           </div>
                           <div>
                             <div className="font-medium text-gray-900">Non-Individual</div>
@@ -237,13 +282,19 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                         value="VAT"
                         checked={formData.tax_classification === 'VAT'}
                         onChange={(e) => updateFormData('tax_classification', e.target.value)}
-                        className="sr-only peer"
+                        className="sr-only"
                         aria-label="VAT"
                       />
-                      <div className="p-4 border-2 border-gray-200 rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-gray-300 transition-all duration-200">
+                      <div className={`p-4 border-2 rounded-lg cursor-pointer hover:border-gray-300 transition-all duration-200 ${
+                        formData.tax_classification === 'VAT'
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200'
+                      }`}>
                         <div className="flex items-center">
-                          <div className="w-4 h-4 border-2 border-gray-300 rounded-full mr-3 peer-checked:border-blue-500 peer-checked:bg-blue-500">
-                            <div className="w-2 h-2 bg-white rounded-full m-0.5 peer-checked:block hidden"></div>
+                          <div className="w-4 h-4 border-2 border-gray-300 rounded-full mr-3 flex items-center justify-center">
+                            <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                              formData.tax_classification === 'VAT' ? 'bg-blue-500' : 'bg-white'
+                            }`}></div>
                           </div>
                           <div>
                             <div className="font-medium text-gray-900">VAT Registered</div>
@@ -259,17 +310,51 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                         value="NON_VAT"
                         checked={formData.tax_classification === 'NON_VAT'}
                         onChange={(e) => updateFormData('tax_classification', e.target.value)}
-                        className="sr-only peer"
+                        className="sr-only"
                         aria-label="Non-VAT"
                       />
-                      <div className="p-4 border-2 border-gray-200 rounded-lg cursor-pointer peer-checked:border-blue-500 peer-checked:bg-blue-50 hover:border-gray-300 transition-all duration-200">
+                      <div className={`p-4 border-2 rounded-lg cursor-pointer hover:border-gray-300 transition-all duration-200 ${
+                        formData.tax_classification === 'NON_VAT'
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200'
+                      }`}>
                         <div className="flex items-center">
-                          <div className="w-4 h-4 border-2 border-gray-300 rounded-full mr-3 peer-checked:border-blue-500 peer-checked:bg-blue-500">
-                            <div className="w-2 h-2 bg-white rounded-full m-0.5 peer-checked:block hidden"></div>
+                          <div className="w-4 h-4 border-2 border-gray-300 rounded-full mr-3 flex items-center justify-center">
+                            <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                              formData.tax_classification === 'NON_VAT' ? 'bg-blue-500' : 'bg-white'
+                            }`}></div>
                           </div>
                           <div>
-                            <div className="font-medium text-gray-900">Non-VAT</div>
+                            <div className="font-medium text-gray-900">Percentage Tax</div>
                             <div className="text-sm text-gray-600">Not subject to VAT</div>
+                          </div>
+                        </div>
+                      </div>
+                    </label>
+                    <label className="relative">
+                      <input
+                        type="radio"
+                        name="tax_classification"
+                        value="EXCEMPT"
+                        checked={formData.tax_classification === 'EXCEMPT'}
+                        onChange={(e) => updateFormData('tax_classification', e.target.value)}
+                        className="sr-only"
+                        aria-label="Tax Excempted"
+                      />
+                      <div className={`p-4 border-2 rounded-lg cursor-pointer hover:border-gray-300 transition-all duration-200 ${
+                        formData.tax_classification === 'EXCEMPT'
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-gray-200'
+                      }`}>
+                        <div className="flex items-center">
+                          <div className="w-4 h-4 border-2 border-gray-300 rounded-full mr-3 flex items-center justify-center">
+                            <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
+                              formData.tax_classification === 'EXCEMPT' ? 'bg-blue-500' : 'bg-white'
+                            }`}></div>
+                          </div>
+                          <div>
+                            <div className="font-medium text-gray-900">Tax Excempted</div>
+                            <div className="text-sm text-gray-600">Excempt from tax</div>
                           </div>
                         </div>
                       </div>
@@ -317,6 +402,22 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                     </select>
                   </div>
                 )}
+
+                <div>
+                  <label htmlFor="enable-autosave" className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200 cursor-pointer">
+                    <input
+                      id="enable-autosave"
+                      type="checkbox"
+                      checked={formData.enable_autosave}
+                      onChange={(e) => updateFormData('enable_autosave', e.target.checked)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <div className="ml-3">
+                      <span className="text-sm font-medium text-gray-900">Enable Autosave</span>
+                      <p className="text-xs text-gray-500">Automatically save your progress as you fill out the form</p>
+                    </div>
+                  </label>
+                </div>
               </div>
             </div>
           </div>
@@ -358,7 +459,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                     value={formData.tin}
                     onChange={(e) => updateFormData('tin', e.target.value)}
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white font-mono"
-                    placeholder="XXX-XXX-XXX-XXX"
+                    placeholder="123456789 or 123456789012"
                     maxLength={15}
                     aria-label="Tax Identification Number (TIN) *"
                   />
@@ -608,22 +709,22 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                       aria-label="Region"
                     >
                       <option value="">Select region</option>
-                      <option value="NCR">National Capital Region</option>
-                      <option value="Region I">Ilocos Region</option>
-                      <option value="Region II">Cagayan Valley</option>
-                      <option value="Region III">Central Luzon</option>
-                      <option value="Region IV-A">CALABARZON</option>
-                      <option value="Region IV-B">MIMAROPA</option>
-                      <option value="Region V">Bicol Region</option>
-                      <option value="Region VI">Western Visayas</option>
-                      <option value="Region VII">Central Visayas</option>
-                      <option value="Region VIII">Eastern Visayas</option>
-                      <option value="Region IX">Zamboanga Peninsula</option>
-                      <option value="Region X">Northern Mindanao</option>
-                      <option value="Region XI">Davao Region</option>
-                      <option value="Region XII">SOCCSKSARGEN</option>
-                      <option value="Region XIII">Caraga</option>
-                      <option value="BARMM">Bangsamoro Autonomous Region</option>
+                      <option value="Region I">Region 1 – Ilocos Region</option>
+                      <option value="Region II">Region 2 – Cagayan Valley</option>
+                      <option value="Region III">Region 3 – Central Luzon</option>
+                      <option value="Region IV-A">Region 4 – CALABARZON (Cavite, Laguna, Batangas, Rizal, Quezon)</option>
+                      <option value="Region V">Region 5 – Bicol Region</option>
+                      <option value="Region VI">Region 6 – Western Visayas</option>
+                      <option value="Region VII">Region 7 – Central Visayas</option>
+                      <option value="Region VIII">Region 8 – Eastern Visayas</option>
+                      <option value="Region IX">Region 9 – Zamboanga Peninsula</option>
+                      <option value="Region X">Region 10 – Northern Mindanao</option>
+                      <option value="Region XI">Region 11 – Davao Region</option>
+                      <option value="Region XII">Region 12 – SOCCSKSARGEN (South Cotabato, Cotabato, Sultan Kudarat, Sarangani, GenSan)</option>
+                      <option value="Region XIII">Region 13 – Caraga</option>
+                      <option value="CAR">CAR – Cordillera Administrative Region</option>
+                      <option value="NCR">NCR – National Capital Region (subdivided further into NCR East, West, North, South for RDOs)</option>
+                      <option value="BARMM">ARMM / BARMM – Bangsamoro Autonomous Region in Muslim Mindanao</option>
                     </select>
                   </div>
                 </div>
@@ -968,49 +1069,51 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
   const handleSubmit = async () => {
     setIsSubmitting(true)
     try {
-      // Build full address from components
-      const addressParts = [formData.address_line, formData.city, formData.region].filter(Boolean)
-      const fullAddress = addressParts.length > 0 
-        ? `${addressParts.join(', ')} ${formData.zip_code}`.trim()
-        : formData.zip_code
-
       // Transform form data to match API requirements
       const submitData: any = {
-        name: getOrganizationNamePreview(),
         category: formData.category as 'INDIVIDUAL' | 'NON_INDIVIDUAL',
-        tax_classification: formData.tax_classification as 'VAT' | 'NON_VAT',
-        first_name: formData.first_name || '',
-        last_name: formData.last_name || '',
-        middle_name: formData.middle_name || '',
+        tax_classification: formData.tax_classification as 'VAT' | 'NON_VAT' | 'EXCEMPT',
+        tin: formData.tin,
+        registration_date: formData.registration_date,
         line_of_business: formData.line_of_business,
-        address: fullAddress,
         address_line: formData.address_line,
         region: formData.region,
         city: formData.city,
         zip_code: formData.zip_code,
-        tin: formData.tin,
-        tin_registration: formData.tin,
         rdo_code: formData.rdo_code,
         contact_number: formData.contact_number,
         email_address: formData.email_address,
-        tax_type: formData.tax_classification,
-        start_date: formData.start_date,
-        reg_date: formData.registration_date,
-        registration_date: formData.registration_date,
-        subcategory: formData.subcategory || '',
-        trade_name: formData.trade_name || '',
-        // Advanced settings
-        fy_start: formData.fy_start || '',
-        fy_end: formData.fy_end || '',
-        accounting_method: formData.accounting_method || '',
-        has_foreign: formData.has_foreign || false,
-        has_employees: formData.has_employees || false,
-        is_ewt: formData.is_ewt || false,
-        is_fwt: formData.is_fwt || false,
-        is_bir_withholding_agent: formData.is_bir_withholding_agent || false
+        start_date: formData.start_date
       }
 
+      // Add conditional fields based on category
+      if (formData.category === 'INDIVIDUAL') {
+        submitData.first_name = formData.first_name
+        submitData.last_name = formData.last_name
+        if (formData.middle_name) submitData.middle_name = formData.middle_name
+      } else {
+        submitData.registered_name = formData.registered_name
+        if (formData.trade_name) submitData.trade_name = formData.trade_name
+      }
+
+      // Add optional subcategory
+      if (formData.subcategory) submitData.subcategory = formData.subcategory
+
+      // Add advanced settings if they exist
+      if (formData.fy_start) submitData.fy_start = formData.fy_start
+      if (formData.fy_end) submitData.fy_end = formData.fy_end
+      if (formData.accounting_method) submitData.accounting_method = formData.accounting_method
+      if (formData.has_foreign) submitData.has_foreign = formData.has_foreign
+      if (formData.has_employees) submitData.has_employees = formData.has_employees
+      if (formData.is_ewt) submitData.is_ewt = formData.is_ewt
+      if (formData.is_fwt) submitData.is_fwt = formData.is_fwt
+      if (formData.is_bir_withholding_agent) submitData.is_bir_withholding_agent = formData.is_bir_withholding_agent
+
       const result = await OrganizationService.createOrganization(submitData)
+      
+      // Clear autosave data after successful submission
+      localStorage.removeItem('organizationCreationDraft')
+      
       onSuccess(result)
     } catch (error) {
       // Error is handled by the component - modal remains open for user to retry
