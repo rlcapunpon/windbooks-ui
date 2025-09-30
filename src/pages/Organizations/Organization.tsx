@@ -22,6 +22,19 @@ const formatCutOff = (cutOffs: string[]) => {
   }).join(' and ')
 }
 
+const formatTaxType = (taxType: string) => {
+  switch (taxType) {
+    case 'VAT':
+      return 'VAT'
+    case 'NON_VAT':
+      return 'Percentage Tax'
+    case 'EXCEMPT':
+      return 'Tax Excempted'
+    default:
+      return taxType
+  }
+}
+
 const OrganizationPage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -398,6 +411,10 @@ const OrganizationDetails: React.FC<{
         <dl className="space-y-2">
           {organizationRegistration && (
             <>
+              <div>
+                <dt className="text-sm font-medium text-gray-500">Tax Classification</dt>
+                <dd className="text-sm text-gray-900">{formatTaxType(organizationRegistration.tax_type)}</dd>
+              </div>
               <div>
                 <dt className="text-sm font-medium text-gray-500">Name</dt>
                 <dd className="text-sm text-gray-900">

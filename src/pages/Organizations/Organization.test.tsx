@@ -114,6 +114,16 @@ const mockOrganizationRegistration: OrganizationRegistration = {
   updated_at: '2024-01-01T00:00:00.000Z'
 }
 
+const mockOrganizationRegistrationNonVat: OrganizationRegistration = {
+  ...mockOrganizationRegistration,
+  tax_type: 'NON_VAT'
+}
+
+const mockOrganizationRegistrationExcempt: OrganizationRegistration = {
+  ...mockOrganizationRegistration,
+  tax_type: 'EXCEMPT'
+}
+
 describe('Organization Page', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -319,7 +329,7 @@ describe('Organization Page', () => {
       // Basic organization info
       expect(screen.getByText('001234567890')).toBeInTheDocument()
       expect(screen.getByText('NON_INDIVIDUAL')).toBeInTheDocument()
-      expect(screen.getByText('VAT')).toBeInTheDocument()
+      expect(screen.getAllByText('VAT')).toHaveLength(2) // One in Basic Information, one in Registration Information
 
       // Status information
       expect(screen.getByText('ACTIVE')).toBeInTheDocument()
@@ -510,6 +520,69 @@ describe('Organization Page', () => {
       // await waitFor(() => {
       //   expect(screen.getByText('REGISTERED')).toBeInTheDocument()
       // })
+    })
+  })
+
+  describe('Registration Information Display', () => {
+    it('should display VAT as Tax Classification for VAT tax_type', async () => {
+      ;(OrganizationService.getOrganizationById as any).mockResolvedValue(mockOrganization)
+      ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(mockOrganizationStatus)
+      ;(OrganizationService.getOrganizationOperation as any).mockResolvedValue(mockOrganizationOperation)
+      ;(OrganizationService.getOrganizationRegistration as any).mockResolvedValue(mockOrganizationRegistration)
+
+      render(
+        <BrowserRouter>
+          <Organization />
+        </BrowserRouter>
+      )
+
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { level: 1, name: 'Test Organization' })).toBeInTheDocument()
+      })
+
+      // Check that Tax Classification in Registration Information shows VAT
+      const registrationSection = screen.getByText('Registration Information').closest('div')
+      expect(registrationSection).toBeInTheDocument()
+      expect(registrationSection?.textContent).toContain('Tax Classification')
+      expect(registrationSection?.textContent).toContain('VAT')
+    })
+
+    it('should display Percentage Tax as Tax Classification for NON_VAT tax_type', async () => {
+      ;(OrganizationService.getOrganizationById as any).mockResolvedValue(mockOrganization)
+      ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(mockOrganizationStatus)
+      ;(OrganizationService.getOrganizationOperation as any).mockResolvedValue(mockOrganizationOperation)
+      ;(OrganizationService.getOrganizationRegistration as any).mockResolvedValue(mockOrganizationRegistrationNonVat)
+
+      render(
+        <BrowserRouter>
+          <Organization />
+        </BrowserRouter>
+      )
+
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { level: 1, name: 'Test Organization' })).toBeInTheDocument()
+      })
+
+      expect(screen.getByText('Percentage Tax')).toBeInTheDocument()
+    })
+
+    it('should display Tax Excempted as Tax Classification for EXCEMPT tax_type', async () => {
+      ;(OrganizationService.getOrganizationById as any).mockResolvedValue(mockOrganization)
+      ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(mockOrganizationStatus)
+      ;(OrganizationService.getOrganizationOperation as any).mockResolvedValue(mockOrganizationOperation)
+      ;(OrganizationService.getOrganizationRegistration as any).mockResolvedValue(mockOrganizationRegistrationExcempt)
+
+      render(
+        <BrowserRouter>
+          <Organization />
+        </BrowserRouter>
+      )
+
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { level: 1, name: 'Test Organization' })).toBeInTheDocument()
+      })
+
+      expect(screen.getByText('Tax Excempted')).toBeInTheDocument()
     })
   })
 })
