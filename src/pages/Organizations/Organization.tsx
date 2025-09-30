@@ -1,9 +1,26 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { OrganizationService } from '../../services/organizationService'
+import { UserService } from '../../services/userService'
 import type { Organization, OrganizationStatus, OrganizationRegistration } from '../../services/organizationService'
 
 type MenuItem = 'details' | 'contacts' | 'obligations' | 'history' | 'settings'
+
+// Helper functions
+const formatDateMMMYYYY = (dateString: string) => {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })
+}
+
+const formatCutOff = (cutOffs: string[]) => {
+  return cutOffs.map(cutOff => {
+    if (cutOff.includes('/')) {
+      return cutOff.split('/').map(day => `${day}th`).join(' and ')
+    } else {
+      return `${cutOff}th`
+    }
+  }).join(' and ')
+}
 
 const OrganizationPage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
@@ -127,6 +144,7 @@ const OrganizationPage: React.FC = () => {
             organizationStatus={organizationStatus}
             organizationOperation={organizationOperation}
             organizationRegistration={organizationRegistration}
+            onStatusUpdate={setOrganizationStatus}
           />
         )
       case 'contacts':
@@ -144,6 +162,7 @@ const OrganizationPage: React.FC = () => {
             organizationStatus={organizationStatus}
             organizationOperation={organizationOperation}
             organizationRegistration={organizationRegistration}
+            onStatusUpdate={setOrganizationStatus}
           />
         )
     }
@@ -205,7 +224,8 @@ const OrganizationDetails: React.FC<{
   organizationStatus: OrganizationStatus | null
   organizationOperation: any | null
   organizationRegistration: OrganizationRegistration | null
-}> = ({ organization, organizationStatus, organizationOperation, organizationRegistration }) => (
+  onStatusUpdate: (status: OrganizationStatus) => void
+}> = ({ organization, organizationStatus, organizationOperation, organizationRegistration, onStatusUpdate }) => (
   <div>
     <h2 className="text-xl font-semibold mb-4">Organization Details</h2>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -235,45 +255,89 @@ const OrganizationDetails: React.FC<{
       {/* Business Status */}
       <div>
         <h3 className="text-lg font-medium mb-2">Business Status</h3>
-        <dl className="space-y-2">
+        <div className="space-y-3">
+          {/* Status Badge */}
           <div>
-            <dt className="text-sm font-medium text-gray-500">Status</dt>
-            <dd className="text-sm text-gray-900">
-              {organizationStatus ? organizationStatus.status : 'Not available'}
-            </dd>
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+              organizationStatus?.status === 'ACTIVE' ? 'bg-green-100 text-green-800 border border-green-200' :
+              organizationStatus?.status === 'PENDING_REG' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
+              organizationStatus?.status === 'REGISTERED' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
+              organizationStatus?.status === 'INACTIVE' ? 'bg-gray-100 text-gray-800 border border-gray-200' :
+              organizationStatus?.status === 'CESSATION' ? 'bg-orange-100 text-orange-800 border border-orange-200' :
+              organizationStatus?.status === 'CLOSED' ? 'bg-red-100 text-red-800 border border-red-200' :
+              organizationStatus?.status === 'NON_COMPLIANT' ? 'bg-red-100 text-red-800 border border-red-200' :
+              organizationStatus?.status === 'UNDER_AUDIT' ? 'bg-purple-100 text-purple-800 border border-purple-200' :
+              organizationStatus?.status === 'SUSPENDED' ? 'bg-red-100 text-red-800 border border-red-200' :
+              'bg-gray-100 text-gray-800 border border-gray-200'
+            }`}>
+              {organizationStatus?.status || 'Not available'}
+            </span>
           </div>
+
+          {/* Approval Button or Pending Message for PENDING_REG */}
+          {organizationStatus?.status === 'PENDING_REG' && (
+            <div>
+              {(UserService.hasRole('APPROVER') || UserService.isSuperAdmin()) ? (
+                <button
+                  onClick={async () => {
+                    try {
+                      const updatedStatus = await OrganizationService.updateOrganizationStatus(organization.id, {
+                        status: 'REGISTERED',
+                        reason: 'APPROVED',
+                        description: 'Registration to Windbooks approved.'
+                      })
+                      // Update the local state via the callback
+                      onStatusUpdate(updatedStatus)
+                    } catch (error) {
+                      console.error('Failed to approve organization:', error)
+                      // TODO: Show error message to user
+                    }
+                  }}
+                  className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                >
+                  Approve Registration
+                </button>
+              ) : (
+                <p className="text-sm text-gray-600 bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                  Ask ADMIN or APPROVER to approve application to Windbooks.
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Additional Status Details */}
           {organizationStatus?.reason && (
             <div>
               <dt className="text-sm font-medium text-gray-500">Reason</dt>
-              <dd className="text-sm text-gray-900">{organizationStatus.reason}</dd>
+              <dd className="text-sm text-gray-900 mt-1">{organizationStatus.reason}</dd>
             </div>
           )}
           {organizationStatus?.description && (
             <div>
               <dt className="text-sm font-medium text-gray-500">Description</dt>
-              <dd className="text-sm text-gray-900">{organizationStatus.description}</dd>
+              <dd className="text-sm text-gray-900 mt-1">{organizationStatus.description}</dd>
             </div>
           )}
           {organizationStatus?.last_update && (
             <div>
               <dt className="text-sm font-medium text-gray-500">Last Update</dt>
-              <dd className="text-sm text-gray-900">
+              <dd className="text-sm text-gray-900 mt-1">
                 {new Date(organizationStatus.last_update).toLocaleDateString()}
               </dd>
             </div>
           )}
-        </dl>
+        </div>
       </div>
 
       {/* Operation Details */}
       <div>
         <h3 className="text-lg font-medium mb-2">Operation Details</h3>
         <dl className="space-y-2">
-          {organizationOperation?.fy_start && organizationOperation?.fy_end && (
+          {organizationOperation?.fy_end && (
             <div>
-              <dt className="text-sm font-medium text-gray-500">Fiscal Year</dt>
+              <dt className="text-sm font-medium text-gray-500">Fiscal Year End</dt>
               <dd className="text-sm text-gray-900">
-                {new Date(organizationOperation.fy_start).getFullYear()} - {new Date(organizationOperation.fy_end).getFullYear()}
+                {formatDateMMMYYYY(organizationOperation.fy_end)}
               </dd>
             </div>
           )}
@@ -286,19 +350,43 @@ const OrganizationDetails: React.FC<{
           {organizationOperation?.payroll_cut_off && organizationOperation.payroll_cut_off.length > 0 && (
             <div>
               <dt className="text-sm font-medium text-gray-500">Payroll Cut-off</dt>
-              <dd className="text-sm text-gray-900">{organizationOperation.payroll_cut_off.join(', ')}</dd>
+              <dd className="text-sm text-gray-900">{formatCutOff(organizationOperation.payroll_cut_off)}</dd>
             </div>
           )}
           {organizationOperation?.payment_cut_off && organizationOperation.payment_cut_off.length > 0 && (
             <div>
               <dt className="text-sm font-medium text-gray-500">Payment Cut-off</dt>
-              <dd className="text-sm text-gray-900">{organizationOperation.payment_cut_off.join(', ')}</dd>
+              <dd className="text-sm text-gray-900">{formatCutOff(organizationOperation.payment_cut_off)}</dd>
+            </div>
+          )}
+          {organizationOperation?.quarter_closing && organizationOperation.quarter_closing.length > 0 && (
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Quarter Closing</dt>
+              <dd className="text-sm text-gray-900">{organizationOperation.quarter_closing.join(', ')}</dd>
             </div>
           )}
           {organizationOperation?.has_employees !== undefined && (
             <div>
               <dt className="text-sm font-medium text-gray-500">Has Employees</dt>
               <dd className="text-sm text-gray-900">{organizationOperation.has_employees ? 'Yes' : 'No'}</dd>
+            </div>
+          )}
+          {organizationOperation?.is_ewt !== undefined && (
+            <div>
+              <dt className="text-sm font-medium text-gray-500">EWT</dt>
+              <dd className="text-sm text-gray-900">{organizationOperation.is_ewt ? 'Yes' : 'No'}</dd>
+            </div>
+          )}
+          {organizationOperation?.is_fwt !== undefined && (
+            <div>
+              <dt className="text-sm font-medium text-gray-500">FWT</dt>
+              <dd className="text-sm text-gray-900">{organizationOperation.is_fwt ? 'Yes' : 'No'}</dd>
+            </div>
+          )}
+          {organizationOperation?.is_bir_withholding_agent !== undefined && (
+            <div>
+              <dt className="text-sm font-medium text-gray-500">Withholding Agent</dt>
+              <dd className="text-sm text-gray-900">{organizationOperation.is_bir_withholding_agent ? 'Yes' : 'No'}</dd>
             </div>
           )}
         </dl>

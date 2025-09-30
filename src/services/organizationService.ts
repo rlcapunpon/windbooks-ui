@@ -20,7 +20,7 @@ export interface OrganizationStatus {
   id: string
   organization_id: string
   status: 'REGISTERED' | 'PENDING_REG' | 'ACTIVE' | 'INACTIVE' | 'CESSATION' | 'CLOSED' | 'NON_COMPLIANT' | 'UNDER_AUDIT' | 'SUSPENDED'
-  reason?: 'EXPIRED' | 'OPTED_OUT' | 'PAYMENT_PENDING' | 'VIOLATIONS'
+  reason?: 'APPROVED' | 'REMOVED' | 'EXPIRED' | 'OPTED_OUT' | 'PAYMENT_PENDING' | 'VIOLATIONS'
   description?: string
   last_update: string
   created_at: string
@@ -88,7 +88,7 @@ export interface UpdateOrganizationRequestDto {
 
 export interface UpdateOrganizationStatusRequestDto {
   status: 'REGISTERED' | 'PENDING_REG' | 'ACTIVE' | 'INACTIVE' | 'CESSATION' | 'CLOSED' | 'NON_COMPLIANT' | 'UNDER_AUDIT' | 'SUSPENDED'
-  reason?: 'EXPIRED' | 'OPTED_OUT' | 'PAYMENT_PENDING' | 'VIOLATIONS'
+  reason?: 'APPROVED' | 'REMOVED' | 'EXPIRED' | 'OPTED_OUT' | 'PAYMENT_PENDING' | 'VIOLATIONS'
   description?: string
 }
 
