@@ -7,7 +7,7 @@ export interface Organization {
   tin?: string
   category: 'INDIVIDUAL' | 'NON_INDIVIDUAL'
   subcategory?: 'SELF_EMPLOYED' | 'SOLE_PROPRIETOR' | 'FREELANCER' | 'CORPORATION' | 'PARTNERSHIP' | 'OTHERS'
-  tax_classification: 'VAT' | 'NON_VAT'
+  tax_classification: 'VAT' | 'NON_VAT' | 'EXCEMPT'
   registration_date?: string
   address?: string
   created_at: string
@@ -53,7 +53,7 @@ export interface OrganizationRegistration {
 
 export interface CreateOrganizationRequestDto {
   category: 'INDIVIDUAL' | 'NON_INDIVIDUAL'
-  tax_classification: 'VAT' | 'NON_VAT'
+  tax_classification: 'VAT' | 'NON_VAT' | 'EXCEMPT'
   first_name: string
   last_name: string
   line_of_business: string
@@ -81,7 +81,7 @@ export interface UpdateOrganizationRequestDto {
   tin?: string
   category?: 'INDIVIDUAL' | 'NON_INDIVIDUAL'
   subcategory?: 'SELF_EMPLOYED' | 'SOLE_PROPRIETOR' | 'FREELANCER' | 'CORPORATION' | 'PARTNERSHIP' | 'OTHERS'
-  tax_classification?: 'VAT' | 'NON_VAT'
+  tax_classification?: 'VAT' | 'NON_VAT' | 'EXCEMPT'
   registration_date?: string
   address?: string
 }
@@ -129,7 +129,7 @@ export interface UpdateOrganizationRegistrationRequestDto {
 
 export interface OrganizationFilters {
   category?: 'INDIVIDUAL' | 'NON_INDIVIDUAL'
-  tax_classification?: 'VAT' | 'NON_VAT'
+  tax_classification?: 'VAT' | 'NON_VAT' | 'EXCEMPT'
   subcategory?: 'SELF_EMPLOYED' | 'SOLE_PROPRIETOR' | 'FREELANCER' | 'CORPORATION' | 'PARTNERSHIP' | 'OTHERS'
 }
 

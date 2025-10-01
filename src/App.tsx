@@ -9,6 +9,10 @@ import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Organizations from './pages/Organizations';
 import OrganizationsDashboard from './pages/Organizations/OrganizationsDashboard';
+import OrganizationsVAT from './pages/Organizations/OrganizationsVAT';
+import OrganizationsPercentageTax from './pages/Organizations/OrganizationsPercentageTax';
+import OrganizationsTaxExcempt from './pages/Organizations/OrganizationsTaxExcempt';
+import OrganizationAssignee from './pages/Organizations/OrganizationAssignee';
 import Organization from './pages/Organizations/Organization';
 import Unauthorized from './pages/Error/Unauthorized';
 import NotFound from './pages/Error/NotFound';
@@ -32,6 +36,10 @@ function App() {
             <Route path="/settings" element={<ProtectedRoute><MainLayout><Settings /></MainLayout></ProtectedRoute>} />
             <Route path="/organizations" element={<ProtectedRoute><MainLayout><Organizations /></MainLayout></ProtectedRoute>} />
             <Route path="/organizations/dashboard" element={<ProtectedRoute><MainLayout><OrganizationsDashboard /></MainLayout></ProtectedRoute>} />
+            <Route path="/organizations/vat" element={<ProtectedRoute><MainLayout><OrganizationsVAT /></MainLayout></ProtectedRoute>} />
+            <Route path="/organizations/percentage-tax" element={<ProtectedRoute><MainLayout><OrganizationsPercentageTax /></MainLayout></ProtectedRoute>} />
+            <Route path="/organizations/tax-excempt" element={<ProtectedRoute><MainLayout><OrganizationsTaxExcempt /></MainLayout></ProtectedRoute>} />
+            <Route path="/organizations/assignee" element={<ProtectedRoute><MainLayout><OrganizationAssignee /></MainLayout></ProtectedRoute>} />
             <Route path="/organizations/:id" element={<ProtectedRoute><MainLayout><Organization /></MainLayout></ProtectedRoute>} />
             <Route path="/unauthorized" element={<Unauthorized />} />
             <Route path="*" element={<NotFound />} />

@@ -869,14 +869,14 @@ describe('MainLayout Component', () => {
       fireEvent.click(organizationsToggle);
     });
 
-    // Click on the Dashboard submenu item under Organizations
-    const orgDashboardItem = screen.getByTestId('submenu-item-org-dashboard');
+    // Click on the All Organizations submenu item under Organizations
+    const orgAllItem = screen.getByTestId('submenu-item-org-all');
     await act(async () => {
-      fireEvent.click(orgDashboardItem);
+      fireEvent.click(orgAllItem);
     });
 
     // Submenu item should become active, not the parent
-    expect(localStorageMock.setItem).toHaveBeenCalledWith('activeMenuItem', 'org-dashboard');
+    expect(localStorageMock.setItem).toHaveBeenCalledWith('activeMenuItem', 'org-all');
     expect(localStorageMock.setItem).not.toHaveBeenCalledWith('activeMenuItem', 'organizations');
   });
 
@@ -951,7 +951,7 @@ describe('MainLayout Component', () => {
     );
 
     // Should detect the specific submenu item as active, not the parent
-    expect(localStorageMock.setItem).toHaveBeenCalledWith('activeMenuItem', 'org-dashboard');
+    expect(localStorageMock.setItem).toHaveBeenCalledWith('activeMenuItem', 'org-all');
     expect(localStorageMock.setItem).not.toHaveBeenCalledWith('activeMenuItem', 'organizations');
   });
 
@@ -1021,9 +1021,9 @@ describe('MainLayout Component', () => {
     );
 
     // When the page loads and the current path is /organizations/dashboard,
-    // it should detect and set 'org-dashboard' as the active menu item,
+    // it should detect and set 'org-all' as the active menu item,
     // NOT the parent 'organizations' or the previously saved 'profile'
-    expect(localStorageMock.setItem).toHaveBeenCalledWith('activeMenuItem', 'org-dashboard');
+    expect(localStorageMock.setItem).toHaveBeenCalledWith('activeMenuItem', 'org-all');
     expect(localStorageMock.setItem).toHaveBeenCalledWith('currentPage', '/organizations/dashboard');
   });
 
@@ -1056,12 +1056,12 @@ describe('MainLayout Component', () => {
     // Wait for initial render and route detection
     await waitFor(() => {
       // The active menu item should be set to the submenu item
-      expect(localStorageMock.setItem).toHaveBeenCalledWith('activeMenuItem', 'org-dashboard');
+      expect(localStorageMock.setItem).toHaveBeenCalledWith('activeMenuItem', 'org-all');
     });
 
     // Note: With our current mock, submenu items use 'submenu-item-*' test IDs
     // In the real implementation, we need the Menu component to auto-expand when activeItem is a child
-    const dashboardSubmenuItem = screen.getByTestId('submenu-item-org-dashboard');
+    const dashboardSubmenuItem = screen.getByTestId('submenu-item-org-all');
     expect(dashboardSubmenuItem).toBeInTheDocument();
     
     // The issue is that the submenu is not automatically expanded on page load
@@ -1089,16 +1089,16 @@ describe('MainLayout Component', () => {
       </BrowserRouter>
     );
 
-    // First, expand Organizations submenu and select Dashboard
+    // First, expand Organizations submenu and select All Organizations
     const organizationsToggle = screen.getByTestId('submenu-toggle-organizations');
     await act(async () => {
       fireEvent.click(organizationsToggle);
     });
 
-    // Click on Dashboard submenu item to make it active
-    const dashboardSubmenu = screen.getByTestId('submenu-item-org-dashboard');
+    // Click on All Organizations submenu item to make it active
+    const allOrganizationsSubmenu = screen.getByTestId('submenu-item-org-all');
     await act(async () => {
-      fireEvent.click(dashboardSubmenu);
+      fireEvent.click(allOrganizationsSubmenu);
     });
 
     // Now try to expand Tasks submenu - this should work
@@ -1149,19 +1149,19 @@ describe('MainLayout Component', () => {
 
     // Wait for route detection
     await waitFor(() => {
-      expect(localStorageMock.setItem).toHaveBeenCalledWith('activeMenuItem', 'org-dashboard');
+      expect(localStorageMock.setItem).toHaveBeenCalledWith('activeMenuItem', 'org-all');
     });
 
-    // The Dashboard submenu item should be highlighted (in our mock, we don't have CSS classes)
+    // The All Organizations submenu item should be highlighted (in our mock, we don't have CSS classes)
     // But we can verify that the active item is correctly identified
-    const dashboardSubmenu = screen.getByTestId('submenu-item-org-dashboard');
-    expect(dashboardSubmenu).toBeInTheDocument();
+    const allOrganizationsSubmenu = screen.getByTestId('submenu-item-org-all');
+    expect(allOrganizationsSubmenu).toBeInTheDocument();
 
-    // The Settings submenu item should NOT be highlighted
-    const settingsSubmenu = screen.getByTestId('submenu-item-org-settings');
-    expect(settingsSubmenu).toBeInTheDocument();
+    // The Organization Assignee submenu item should NOT be highlighted
+    const assigneeSubmenu = screen.getByTestId('submenu-item-org-assignee');
+    expect(assigneeSubmenu).toBeInTheDocument();
     
     // Note: In our mock, we can't test CSS classes, but this test documents the expected behavior
-    // The real fix needs to ensure only org-dashboard gets the active styling
+    // The real fix needs to ensure only org-all gets the active styling
   });
 });

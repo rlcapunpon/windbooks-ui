@@ -119,15 +119,33 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
       permissions: ['USER.READ'], // Basic permission to view organizations
       children: [
         {
-          id: 'org-dashboard',
-          label: 'Dashboard',
+          id: 'org-all',
+          label: 'All Organizations',
           href: '/organizations/dashboard',
           permissions: ['USER.READ'],
         },
         {
-          id: 'org-settings',
-          label: 'Settings',
-          href: '/organizations/settings',
+          id: 'org-vat',
+          label: 'VAT',
+          href: '/organizations/vat',
+          permissions: ['USER.READ'],
+        },
+        {
+          id: 'org-percentage-tax',
+          label: 'Percentage Tax',
+          href: '/organizations/percentage-tax',
+          permissions: ['USER.READ'],
+        },
+        {
+          id: 'org-tax-excempt',
+          label: 'Tax Excempt',
+          href: '/organizations/tax-excempt',
+          permissions: ['USER.READ'],
+        },
+        {
+          id: 'org-assignee',
+          label: 'Organization Assignee',
+          href: '/organizations/assignee',
           permissions: ['SETTINGS.MANAGE'],
         },
       ],
