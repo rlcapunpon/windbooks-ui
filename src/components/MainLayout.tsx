@@ -12,18 +12,18 @@ interface MainLayoutProps {
 // Helper function to determine active menu item based on current path
 const determineActiveMenuItem = (menuItems: MenuItem[], currentPath: string): string | null => {
   for (const item of menuItems) {
-    // Check if current path matches the item's href
-    if (item.href === currentPath) {
-      return item.id;
-    }
-
-    // Check if current path matches any submenu item's href
+    // Check if current path matches any submenu item's href first
     if (item.children) {
       for (const child of item.children) {
         if (child.href === currentPath) {
-          return item.id; // Return parent item id for submenu matches
+          return child.id; // Return specific submenu item id for submenu matches
         }
       }
+    }
+
+    // Check if current path matches the item's href (for leaf items only)
+    if (item.href === currentPath && (!item.children || item.children.length === 0)) {
+      return item.id;
     }
   }
   return null;
@@ -45,17 +45,18 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     const savedActiveMenuItem = localStorage.getItem('activeMenuItem');
     localStorage.getItem('currentPage'); // For test compatibility - restoring current page state
     
-    if (savedActiveMenuItem) {
+    // Always determine active menu item based on current route
+    const currentPath = window.location.pathname;
+    const activeItem = determineActiveMenuItem(menuItems, currentPath);
+    
+    if (activeItem) {
+      // Route-based detection takes precedence - always update to match current route
+      setActiveMenuItem(activeItem);
+      localStorage.setItem('activeMenuItem', activeItem);
+      localStorage.setItem('currentPage', currentPath);
+    } else if (savedActiveMenuItem) {
+      // Fallback to saved state only if no route match found
       setActiveMenuItem(savedActiveMenuItem);
-    } else {
-      // Determine active menu item based on current route
-      const currentPath = window.location.pathname;
-      const activeItem = determineActiveMenuItem(menuItems, currentPath);
-      if (activeItem) {
-        setActiveMenuItem(activeItem);
-        localStorage.setItem('activeMenuItem', activeItem);
-        localStorage.setItem('currentPage', currentPath);
-      }
     }
   }, []);
 
@@ -226,7 +227,13 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
       setIsSidebarCollapsed(false);
     }
 
-    // Update active menu item state
+    // Don't set parent menus with children as active - only toggle submenu
+    if (item.children && item.children.length > 0) {
+      // Parent menu with submenus should only expand/collapse, not become active
+      return;
+    }
+
+    // Update active menu item state only for leaf items (no children)
     setActiveMenuItem(item.id);
     
     // Persist active menu item and current page to localStorage
@@ -305,6 +312,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
             showIcons={true}
             collapsed={isSidebarCollapsed}
             activeItem={activeMenuItem}
+            multipleOpen={true}
           />
         </div>
       </aside>

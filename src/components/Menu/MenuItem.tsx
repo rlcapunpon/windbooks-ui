@@ -17,6 +17,7 @@ export const MenuItemComponent = ({
   onSubmenuToggle,
   renderItem,
   collapsible = true,
+  activeItem,
 }: MenuItemProps & { isLoading?: boolean; onAsyncLoad?: (parentId: string) => void }) => {
   const [childrenLoaded, setChildrenLoaded] = useState(false);
   const hasChildren = item.children && item.children.length > 0;
@@ -188,13 +189,14 @@ export const MenuItemComponent = ({
               item={child}
               level={level + 1}
               isOpen={false} // Children don't have their own open state in this implementation
-              isActive={isActive}
+              isActive={activeItem === child.id} // Check if this specific child is the active item
               onToggle={() => {}} // Children don't toggle in this implementation
               onItemClick={onItemClick}
               showIcons={showIcons}
               userPermissions={userPermissions}
               renderItem={renderItem}
               collapsible={false} // Disable collapsible for children to avoid complexity
+              activeItem={activeItem} // Pass down activeItem to nested children
             />
           ))}
         </ul>

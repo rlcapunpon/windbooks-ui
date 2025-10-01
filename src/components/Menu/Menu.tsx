@@ -107,6 +107,45 @@ export const Menu = ({
     }
   }, [asyncLoader]);
 
+  // Auto-expand parent menus when activeItem is a child of those menus
+  useEffect(() => {
+    if (!activeItem) return;
+
+    // Helper function to find parent item ID for a given child item ID
+    const findParentItemId = (childId: string, items: MenuItem[]): string | null => {
+      for (const item of items) {
+        if (item.children) {
+          for (const child of item.children) {
+            if (child.id === childId) {
+              return item.id;
+            }
+          }
+        }
+      }
+      return null;
+    };
+
+    const parentId = findParentItemId(activeItem, filteredItems);
+    
+    if (parentId) {
+      setState(prev => {
+        const newOpenItems = new Set(prev.openItems);
+        // Auto-expand the parent menu if the active item is a child
+        if (!newOpenItems.has(parentId)) {
+          if (!multipleOpen) {
+            // Close all other items if multipleOpen is false
+            newOpenItems.clear();
+          }
+          newOpenItems.add(parentId);
+        }
+        return {
+          ...prev,
+          openItems: newOpenItems,
+        };
+      });
+    }
+  }, [activeItem, filteredItems, multipleOpen]);
+
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -179,6 +218,7 @@ export const Menu = ({
             onSubmenuToggle={onSubmenuToggle}
             renderItem={renderItem}
             collapsible={collapsible}
+            activeItem={activeItem}
           />
         ))}
       </ul>

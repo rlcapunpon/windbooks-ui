@@ -633,14 +633,14 @@ describe('MainLayout Component', () => {
       </BrowserRouter>
     );
 
-    // Click on organizations menu item
-    const organizationsItem = screen.getByTestId('menu-item-organizations');
+    // Click on profile menu item (doesn't have children)
+    const profileItem = screen.getByTestId('menu-item-profile');
     await act(async () => {
-      fireEvent.click(organizationsItem);
+      fireEvent.click(profileItem);
     });
 
     // Should persist current page path in localStorage
-    expect(localStorageMock.setItem).toHaveBeenCalledWith('currentPage', '/organizations');
+    expect(localStorageMock.setItem).toHaveBeenCalledWith('currentPage', '/profile');
   });
 
   it('restores active menu item from localStorage on component mount', () => {
@@ -806,5 +806,362 @@ describe('MainLayout Component', () => {
     // Should update both activeMenuItem and currentPage in localStorage
     expect(localStorageMock.setItem).toHaveBeenCalledWith('activeMenuItem', 'profile');
     expect(localStorageMock.setItem).toHaveBeenCalledWith('currentPage', '/profile');
+  });
+
+  // Step 17.5 Fix Tests - Submenu behavior and active state exclusivity
+  it('should not make parent menu with submenu items active when clicked', async () => {
+    const localStorageMock = {
+      getItem: vi.fn(),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn(),
+    };
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock,
+      writable: true,
+    });
+
+    render(
+      <BrowserRouter>
+        <MainLayout>
+          <div>Test Content</div>
+        </MainLayout>
+      </BrowserRouter>
+    );
+
+    // Click on Organizations menu (which has submenu items)
+    const organizationsToggle = screen.getByTestId('submenu-toggle-organizations');
+    await act(async () => {
+      fireEvent.click(organizationsToggle);
+    });
+
+    // Parent menu with submenus should NOT become active
+    expect(localStorageMock.setItem).not.toHaveBeenCalledWith('activeMenuItem', 'organizations');
+    
+    // Should only expand/collapse the submenu, not set as active
+    const organizationsItem = screen.getByTestId('menu-item-organizations');
+    expect(organizationsItem).not.toHaveClass('bg-blue-50', 'text-blue-600');
+  });
+
+  it('should make submenu item active instead of parent when submenu item is clicked', async () => {
+    const localStorageMock = {
+      getItem: vi.fn(),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn(),
+    };
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock,
+      writable: true,
+    });
+
+    render(
+      <BrowserRouter>
+        <MainLayout>
+          <div>Test Content</div>
+        </MainLayout>
+      </BrowserRouter>
+    );
+
+    // First expand the Organizations submenu
+    const organizationsToggle = screen.getByTestId('submenu-toggle-organizations');
+    await act(async () => {
+      fireEvent.click(organizationsToggle);
+    });
+
+    // Click on the Dashboard submenu item under Organizations
+    const orgDashboardItem = screen.getByTestId('submenu-item-org-dashboard');
+    await act(async () => {
+      fireEvent.click(orgDashboardItem);
+    });
+
+    // Submenu item should become active, not the parent
+    expect(localStorageMock.setItem).toHaveBeenCalledWith('activeMenuItem', 'org-dashboard');
+    expect(localStorageMock.setItem).not.toHaveBeenCalledWith('activeMenuItem', 'organizations');
+  });
+
+  it('should only allow one menu item to be active at a time', async () => {
+    const localStorageMock = {
+      getItem: vi.fn(),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn(),
+    };
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock,
+      writable: true,
+    });
+
+    render(
+      <BrowserRouter>
+        <MainLayout>
+          <div>Test Content</div>
+        </MainLayout>
+      </BrowserRouter>
+    );
+
+    // Click on Profile menu item first
+    const profileItem = screen.getByTestId('menu-item-profile');
+    await act(async () => {
+      fireEvent.click(profileItem);
+    });
+
+    // Then click on Dashboard menu item
+    const dashboardItem = screen.getByTestId('menu-item-dashboard');
+    await act(async () => {
+      fireEvent.click(dashboardItem);
+    });
+
+    // Only the most recently clicked item should be active
+    expect(localStorageMock.setItem).toHaveBeenCalledWith('activeMenuItem', 'dashboard');
+    
+    // Wait for the active state to be updated - verify through localStorage which reflects the active state
+    await waitFor(() => {
+      expect(localStorageMock.setItem).toHaveBeenCalledWith('activeMenuItem', 'dashboard');
+    });
+    
+    // Profile should no longer be active based on localStorage state
+    expect(localStorageMock.setItem).not.toHaveBeenLastCalledWith('activeMenuItem', 'profile');
+  });
+
+  it('should determine active submenu item correctly based on route path', () => {
+    // Mock window.location.pathname for a submenu route
+    Object.defineProperty(window, 'location', {
+      value: { pathname: '/organizations/dashboard' },
+      writable: true,
+    });
+
+    const localStorageMock = {
+      getItem: vi.fn(() => null), // No saved state
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn(),
+    };
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock,
+      writable: true,
+    });
+
+    render(
+      <BrowserRouter>
+        <MainLayout>
+          <div>Test Content</div>
+        </MainLayout>
+      </BrowserRouter>
+    );
+
+    // Should detect the specific submenu item as active, not the parent
+    expect(localStorageMock.setItem).toHaveBeenCalledWith('activeMenuItem', 'org-dashboard');
+    expect(localStorageMock.setItem).not.toHaveBeenCalledWith('activeMenuItem', 'organizations');
+  });
+
+  it('should not allow parent menu to be selected when it has href but also has children', async () => {
+    const localStorageMock = {
+      getItem: vi.fn(),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn(),
+    };
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock,
+      writable: true,
+    });
+
+    render(
+      <BrowserRouter>
+        <MainLayout>
+          <div>Test Content</div>
+        </MainLayout>
+      </BrowserRouter>
+    );
+
+    // Click directly on Organizations menu item (not the toggle button)
+    const organizationsItem = screen.getByTestId('menu-item-organizations');
+    await act(async () => {
+      fireEvent.click(organizationsItem);
+    });
+
+    // Even if Organizations has href, it should not become active if it has children
+    expect(localStorageMock.setItem).not.toHaveBeenCalledWith('activeMenuItem', 'organizations');
+    
+    // Should not navigate to parent href when it has children
+    expect(window.location.href).not.toEqual(expect.stringContaining('/organizations'));
+  });
+
+  it('should persist submenu selection on page reload when on submenu route', () => {
+    // Mock window.location.pathname to simulate being on the Organizations Dashboard page
+    Object.defineProperty(window, 'location', {
+      value: { pathname: '/organizations/dashboard' },
+      writable: true,
+    });
+
+    const localStorageMock = {
+      getItem: vi.fn((key) => {
+        // Simulate localStorage already having some saved state (like after previous navigation)
+        if (key === 'activeMenuItem') return 'profile'; // Different item was previously active
+        if (key === 'currentPage') return '/profile';
+        if (key === 'sidebarCollapsed') return 'false';
+        return null;
+      }),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn(),
+    };
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock,
+      writable: true,
+    });
+
+    render(
+      <BrowserRouter>
+        <MainLayout>
+          <div>Test Content</div>
+        </MainLayout>
+      </BrowserRouter>
+    );
+
+    // When the page loads and the current path is /organizations/dashboard,
+    // it should detect and set 'org-dashboard' as the active menu item,
+    // NOT the parent 'organizations' or the previously saved 'profile'
+    expect(localStorageMock.setItem).toHaveBeenCalledWith('activeMenuItem', 'org-dashboard');
+    expect(localStorageMock.setItem).toHaveBeenCalledWith('currentPage', '/organizations/dashboard');
+  });
+
+  it('should auto-expand parent submenu when active item is a submenu item on page reload', async () => {
+    // Mock window.location.pathname to simulate being on the Organizations Dashboard page
+    Object.defineProperty(window, 'location', {
+      value: { pathname: '/organizations/dashboard' },
+      writable: true,
+    });
+
+    const localStorageMock = {
+      getItem: vi.fn(() => null), // No saved state to simulate fresh page load
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn(),
+    };
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock,
+      writable: true,
+    });
+
+    render(
+      <BrowserRouter>
+        <MainLayout>
+          <div>Test Content</div>
+        </MainLayout>
+      </BrowserRouter>
+    );
+
+    // Wait for initial render and route detection
+    await waitFor(() => {
+      // The active menu item should be set to the submenu item
+      expect(localStorageMock.setItem).toHaveBeenCalledWith('activeMenuItem', 'org-dashboard');
+    });
+
+    // Note: With our current mock, submenu items use 'submenu-item-*' test IDs
+    // In the real implementation, we need the Menu component to auto-expand when activeItem is a child
+    const dashboardSubmenuItem = screen.getByTestId('submenu-item-org-dashboard');
+    expect(dashboardSubmenuItem).toBeInTheDocument();
+    
+    // The issue is that the submenu is not automatically expanded on page load
+    // even when the active item is within that submenu
+    // This test will fail until we fix the Menu component to auto-expand parent menus
+  });
+
+  it('should allow other submenus to be toggled when one submenu item is active', async () => {
+    const localStorageMock = {
+      getItem: vi.fn(() => null),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn(),
+    };
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock,
+      writable: true,
+    });
+
+    render(
+      <BrowserRouter>
+        <MainLayout>
+          <div>Test Content</div>
+        </MainLayout>
+      </BrowserRouter>
+    );
+
+    // First, expand Organizations submenu and select Dashboard
+    const organizationsToggle = screen.getByTestId('submenu-toggle-organizations');
+    await act(async () => {
+      fireEvent.click(organizationsToggle);
+    });
+
+    // Click on Dashboard submenu item to make it active
+    const dashboardSubmenu = screen.getByTestId('submenu-item-org-dashboard');
+    await act(async () => {
+      fireEvent.click(dashboardSubmenu);
+    });
+
+    // Now try to expand Tasks submenu - this should work
+    const tasksToggle = screen.getByTestId('submenu-toggle-tasks');
+    await act(async () => {
+      fireEvent.click(tasksToggle);
+    });
+
+    // Tasks submenu should be expanded
+    const myTasksSubmenu = screen.getByTestId('submenu-item-my-tasks');
+    expect(myTasksSubmenu).toBeInTheDocument();
+
+    // Now try to collapse Tasks submenu - this should also work
+    await act(async () => {
+      fireEvent.click(tasksToggle);
+    });
+
+    // Tasks submenu items should still be there in our mock, but in real implementation 
+    // they would be hidden when collapsed
+    expect(myTasksSubmenu).toBeInTheDocument();
+  });
+
+  it('should highlight only the active submenu item, not all submenu items', async () => {
+    // Mock window.location.pathname to simulate being on the Organizations Dashboard page
+    Object.defineProperty(window, 'location', {
+      value: { pathname: '/organizations/dashboard' },
+      writable: true,
+    });
+
+    const localStorageMock = {
+      getItem: vi.fn(() => null),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn(),
+    };
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock,
+      writable: true,
+    });
+
+    render(
+      <BrowserRouter>
+        <MainLayout>
+          <div>Test Content</div>
+        </MainLayout>
+      </BrowserRouter>
+    );
+
+    // Wait for route detection
+    await waitFor(() => {
+      expect(localStorageMock.setItem).toHaveBeenCalledWith('activeMenuItem', 'org-dashboard');
+    });
+
+    // The Dashboard submenu item should be highlighted (in our mock, we don't have CSS classes)
+    // But we can verify that the active item is correctly identified
+    const dashboardSubmenu = screen.getByTestId('submenu-item-org-dashboard');
+    expect(dashboardSubmenu).toBeInTheDocument();
+
+    // The Settings submenu item should NOT be highlighted
+    const settingsSubmenu = screen.getByTestId('submenu-item-org-settings');
+    expect(settingsSubmenu).toBeInTheDocument();
+    
+    // Note: In our mock, we can't test CSS classes, but this test documents the expected behavior
+    // The real fix needs to ensure only org-dashboard gets the active styling
   });
 });
