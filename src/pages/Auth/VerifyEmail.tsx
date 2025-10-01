@@ -8,11 +8,11 @@ const VerifyEmail = () => {
   const [message, setMessage] = useState('');
   const [email, setEmail] = useState('');
   const [isResending, setIsResending] = useState(false);
-
+  
   const verifyEmail = useCallback(async (verificationCode: string) => {
     try {
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/verify/${verificationCode}`, {
-        method: 'GET',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
@@ -21,7 +21,7 @@ const VerifyEmail = () => {
       if (response.ok) {
         setStatus('success');
         setMessage('Email verified successfully! Redirecting to login page...');
-
+        
         // Auto redirect after 10 seconds
         setTimeout(() => {
           navigate('/auth/login');
