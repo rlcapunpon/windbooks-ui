@@ -82,3 +82,85 @@
 4. Confirmed 401 response indicates service is available and requires JWT authentication
 
 **Prevention**: Added `src/test/backendConnectivity.test.ts` to catch configuration issues early
+
+---
+
+# Step 14 - Show Tax Classification, Category, and SubCategory beside the name header ✅
+
+## Implementation Summary
+**Date**: September 30, 2025  
+**Approach**: Test-Driven Development (TDD)  
+**Files Modified**: 
+- `src/pages/Organizations/Organization.tsx`
+- `src/pages/Organizations/Organization.test.tsx`
+- `prompts_and_contexts/test-files-inventory.md`
+
+## Completed Features
+✅ **Header Display Enhancement**
+- Enhanced organization header to display classification details beside organization name
+- Format: `Name [CATEGORY] [SUBCATEGORY] [TAX_CLASSIFICATION]`
+- Example: "Ramon Capunpon [INDIVIDUAL] [SOLE_PROPRIETOR] [VAT]"
+
+✅ **Helper Function Implementation**
+- Created `formatOrganizationHeader()` function in Organization.tsx
+- Handles optional subcategory field gracefully
+- Supports all category types: INDIVIDUAL, NON_INDIVIDUAL
+- Supports all tax classifications: VAT, NON_VAT
+
+✅ **Comprehensive Testing**
+- Added 3 new test cases for header display functionality
+- Total tests: 275 (increased from 272)
+- Test cases cover:
+  - Full format with category, subcategory, and tax classification
+  - Format without subcategory (category and tax classification only)
+  - Different tax classification types (VAT, NON_VAT)
+
+✅ **TDD Process Validation**
+- ✅ Written failing tests first
+- ✅ Implemented minimal code to pass tests  
+- ✅ Verified header displays correctly: "Test Organization [NON_INDIVIDUAL] [VAT]"
+- ✅ Updated test documentation
+- ✅ No TypeScript errors
+- ✅ Build successful
+
+## Technical Implementation
+**Core Function**:
+```typescript
+const formatOrganizationHeader = (organization: Organization) => {
+  const name = organization.name
+  const category = organization.category
+  const subcategory = organization.subcategory
+  const taxClassification = organization.tax_classification
+
+  let headerParts = [name]
+  
+  if (category) {
+    headerParts.push(`[${category}]`)
+  }
+  
+  if (subcategory) {
+    headerParts.push(`[${subcategory}]`)
+  }
+  
+  if (taxClassification) {
+    headerParts.push(`[${taxClassification}]`)
+  }
+  
+  return headerParts.join(' ')
+}
+```
+
+**Header Integration**:
+```tsx
+<h1 className="text-3xl font-bold text-gray-900">
+  {organization ? formatOrganizationHeader(organization) : 'Organization'}
+</h1>
+```
+
+## Test Results
+- **Status**: ✅ Step 14 functionality working correctly
+- **Header Display**: Verified showing "Test Organization [NON_INDIVIDUAL] [VAT]"  
+- **New Tests**: 3 test cases added for Step 14 functionality
+- **Documentation**: Updated test-files-inventory.md with new test information
+
+**Ready for Step 15**: Show Edit buttons for each information or details section

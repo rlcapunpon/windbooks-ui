@@ -35,6 +35,34 @@ const formatTaxType = (taxType: string) => {
   }
 }
 
+const formatOrganizationHeader = (organization: Organization) => {
+  const name = organization.name
+  const category = organization.category
+  const subcategory = organization.subcategory
+  const taxClassification = organization.tax_classification
+
+  return (
+    <span className="flex items-center gap-2 flex-wrap">
+      <span>{name}</span>
+      {category && (
+        <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200 rounded-md">
+          {category}
+        </span>
+      )}
+      {subcategory && (
+        <span className="px-2 py-1 text-xs font-medium bg-gradient-to-r from-blue-100 to-green-100 text-blue-800 border border-blue-200 rounded-md">
+          {subcategory}
+        </span>
+      )}
+      {taxClassification && (
+        <span className="px-2 py-1 text-xs font-medium bg-blue-600 text-white border border-blue-700 rounded-md">
+          {taxClassification}
+        </span>
+      )}
+    </span>
+  )
+}
+
 const OrganizationPage: React.FC = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -196,7 +224,7 @@ const OrganizationPage: React.FC = () => {
             Back to Organizations
           </button>
           <h1 className="text-3xl font-bold text-gray-900">
-            {organization ? organization.name : 'Organization'}
+            {organization ? formatOrganizationHeader(organization) : 'Organization'}
           </h1>
         </div>
 
@@ -244,30 +272,42 @@ const OrganizationDetails: React.FC<{
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Basic Information */}
       <div>
-        <h3 className="text-lg font-medium mb-2">Basic Information</h3>
-        <dl className="space-y-2">
-          <div>
-            <dt className="text-sm font-medium text-gray-500">Name</dt>
-            <dd className="text-sm text-gray-900">{organization.name}</dd>
-          </div>
-          <div>
-            <dt className="text-sm font-medium text-gray-500">TIN</dt>
-            <dd className="text-sm text-gray-900">{organization.tin || 'Not provided'}</dd>
-          </div>
-          <div>
-            <dt className="text-sm font-medium text-gray-500">Category</dt>
-            <dd className="text-sm text-gray-900">{organization.category}</dd>
-          </div>
-          <div>
-            <dt className="text-sm font-medium text-gray-500">Tax Classification</dt>
-            <dd className="text-sm text-gray-900">{organization.tax_classification}</dd>
-          </div>
-        </dl>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-lg font-medium">Basic Information</h3>
+          <button className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+            Edit
+          </button>
+        </div>
+        <table className="w-full border border-gray-100">
+          <tbody>
+            <tr className="border-b border-gray-50">
+              <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Name</td>
+              <td className="py-2 px-3 text-sm text-gray-900">{organization.name}</td>
+            </tr>
+            <tr className="border-b border-gray-50">
+              <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">TIN</td>
+              <td className="py-2 px-3 text-sm text-gray-900">{organization.tin || 'Not provided'}</td>
+            </tr>
+            <tr className="border-b border-gray-50">
+              <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Category</td>
+              <td className="py-2 px-3 text-sm text-gray-900">{organization.category}</td>
+            </tr>
+            <tr>
+              <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Tax Classification</td>
+              <td className="py-2 px-3 text-sm text-gray-900">{organization.tax_classification}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
 
       {/* Business Status */}
       <div>
-        <h3 className="text-lg font-medium mb-2">Business Status</h3>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-lg font-medium">Business Status</h3>
+          <button className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+            Edit
+          </button>
+        </div>
         <div className="space-y-3">
           {/* Status Badge */}
           <div>
@@ -344,115 +384,129 @@ const OrganizationDetails: React.FC<{
 
       {/* Operation Details */}
       <div>
-        <h3 className="text-lg font-medium mb-2">Operation Details</h3>
-        <dl className="space-y-2">
-          {organizationOperation?.fy_end && (
-            <div>
-              <dt className="text-sm font-medium text-gray-500">Fiscal Year End</dt>
-              <dd className="text-sm text-gray-900">
-                {formatDateMMMYYYY(organizationOperation.fy_end)}
-              </dd>
-            </div>
-          )}
-          {organizationOperation?.accounting_method && (
-            <div>
-              <dt className="text-sm font-medium text-gray-500">Accounting Method</dt>
-              <dd className="text-sm text-gray-900">{organizationOperation.accounting_method}</dd>
-            </div>
-          )}
-          {organizationOperation?.payroll_cut_off && organizationOperation.payroll_cut_off.length > 0 && (
-            <div>
-              <dt className="text-sm font-medium text-gray-500">Payroll Cut-off</dt>
-              <dd className="text-sm text-gray-900">{formatCutOff(organizationOperation.payroll_cut_off)}</dd>
-            </div>
-          )}
-          {organizationOperation?.payment_cut_off && organizationOperation.payment_cut_off.length > 0 && (
-            <div>
-              <dt className="text-sm font-medium text-gray-500">Payment Cut-off</dt>
-              <dd className="text-sm text-gray-900">{formatCutOff(organizationOperation.payment_cut_off)}</dd>
-            </div>
-          )}
-          {organizationOperation?.quarter_closing && organizationOperation.quarter_closing.length > 0 && (
-            <div>
-              <dt className="text-sm font-medium text-gray-500">Quarter Closing</dt>
-              <dd className="text-sm text-gray-900">{organizationOperation.quarter_closing.join(', ')}</dd>
-            </div>
-          )}
-          {organizationOperation?.has_employees !== undefined && (
-            <div>
-              <dt className="text-sm font-medium text-gray-500">Has Employees</dt>
-              <dd className="text-sm text-gray-900">{organizationOperation.has_employees ? 'Yes' : 'No'}</dd>
-            </div>
-          )}
-          {organizationOperation?.is_ewt !== undefined && (
-            <div>
-              <dt className="text-sm font-medium text-gray-500">EWT</dt>
-              <dd className="text-sm text-gray-900">{organizationOperation.is_ewt ? 'Yes' : 'No'}</dd>
-            </div>
-          )}
-          {organizationOperation?.is_fwt !== undefined && (
-            <div>
-              <dt className="text-sm font-medium text-gray-500">FWT</dt>
-              <dd className="text-sm text-gray-900">{organizationOperation.is_fwt ? 'Yes' : 'No'}</dd>
-            </div>
-          )}
-          {organizationOperation?.is_bir_withholding_agent !== undefined && (
-            <div>
-              <dt className="text-sm font-medium text-gray-500">Withholding Agent</dt>
-              <dd className="text-sm text-gray-900">{organizationOperation.is_bir_withholding_agent ? 'Yes' : 'No'}</dd>
-            </div>
-          )}
-        </dl>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-lg font-medium">Operation Details</h3>
+          <button className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+            Edit
+          </button>
+        </div>
+        <table className="w-full border border-gray-100">
+          <tbody>
+            {organizationOperation?.fy_end && (
+              <tr className="border-b border-gray-50">
+                <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Fiscal Year End</td>
+                <td className="py-2 px-3 text-sm text-gray-900">
+                  {formatDateMMMYYYY(organizationOperation.fy_end)}
+                </td>
+              </tr>
+            )}
+            {organizationOperation?.accounting_method && (
+              <tr className="border-b border-gray-50">
+                <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Accounting Method</td>
+                <td className="py-2 px-3 text-sm text-gray-900">{organizationOperation.accounting_method}</td>
+              </tr>
+            )}
+            {organizationOperation?.payroll_cut_off && organizationOperation.payroll_cut_off.length > 0 && (
+              <tr className="border-b border-gray-50">
+                <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Payroll Cut-off</td>
+                <td className="py-2 px-3 text-sm text-gray-900">{formatCutOff(organizationOperation.payroll_cut_off)}</td>
+              </tr>
+            )}
+            {organizationOperation?.payment_cut_off && organizationOperation.payment_cut_off.length > 0 && (
+              <tr className="border-b border-gray-50">
+                <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Payment Cut-off</td>
+                <td className="py-2 px-3 text-sm text-gray-900">{formatCutOff(organizationOperation.payment_cut_off)}</td>
+              </tr>
+            )}
+            {organizationOperation?.quarter_closing && organizationOperation.quarter_closing.length > 0 && (
+              <tr className="border-b border-gray-50">
+                <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Quarter Closing</td>
+                <td className="py-2 px-3 text-sm text-gray-900">{organizationOperation.quarter_closing.join(', ')}</td>
+              </tr>
+            )}
+            {organizationOperation?.has_employees !== undefined && (
+              <tr className="border-b border-gray-50">
+                <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Has Employees</td>
+                <td className="py-2 px-3 text-sm text-gray-900">{organizationOperation.has_employees ? 'Yes' : 'No'}</td>
+              </tr>
+            )}
+            {organizationOperation?.is_ewt !== undefined && (
+              <tr className="border-b border-gray-50">
+                <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">EWT</td>
+                <td className="py-2 px-3 text-sm text-gray-900">{organizationOperation.is_ewt ? 'Yes' : 'No'}</td>
+              </tr>
+            )}
+            {organizationOperation?.is_fwt !== undefined && (
+              <tr className="border-b border-gray-50">
+                <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">FWT</td>
+                <td className="py-2 px-3 text-sm text-gray-900">{organizationOperation.is_fwt ? 'Yes' : 'No'}</td>
+              </tr>
+            )}
+            {organizationOperation?.is_bir_withholding_agent !== undefined && (
+              <tr>
+                <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Withholding Agent</td>
+                <td className="py-2 px-3 text-sm text-gray-900">{organizationOperation.is_bir_withholding_agent ? 'Yes' : 'No'}</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* Registration Information */}
       <div>
-        <h3 className="text-lg font-medium mb-2">Registration Information</h3>
-        <dl className="space-y-2">
-          {organizationRegistration && (
-            <>
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Tax Classification</dt>
-                <dd className="text-sm text-gray-900">{formatTaxType(organizationRegistration.tax_type)}</dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Name</dt>
-                <dd className="text-sm text-gray-900">
-                  {organizationRegistration.first_name} {organizationRegistration.middle_name} {organizationRegistration.last_name}
-                </dd>
-              </div>
-              {organizationRegistration.trade_name && (
-                <div>
-                  <dt className="text-sm font-medium text-gray-500">Trade Name</dt>
-                  <dd className="text-sm text-gray-900">{organizationRegistration.trade_name}</dd>
-                </div>
-              )}
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Line of Business</dt>
-                <dd className="text-sm text-gray-900">{organizationRegistration.line_of_business}</dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Address</dt>
-                <dd className="text-sm text-gray-900">
-                  {organizationRegistration.address_line}, {organizationRegistration.city}, {organizationRegistration.region} {organizationRegistration.zip_code}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Contact</dt>
-                <dd className="text-sm text-gray-900">{organizationRegistration.contact_number}</dd>
-              </div>
-              <div>
-                <dt className="text-sm font-medium text-gray-500">Email</dt>
-                <dd className="text-sm text-gray-900">{organizationRegistration.email_address}</dd>
-              </div>
-            </>
-          )}
-          {!organizationRegistration && (
-            <div>
-              <dd className="text-sm text-gray-500">Registration details not available</dd>
-            </div>
-          )}
-        </dl>
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-lg font-medium">Registration Information</h3>
+          <button className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+            Edit
+          </button>
+        </div>
+        <table className="w-full border border-gray-100">
+          <tbody>
+            {organizationRegistration && (
+              <>
+                <tr className="border-b border-gray-50">
+                  <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Tax Classification</td>
+                  <td className="py-2 px-3 text-sm text-gray-900">{formatTaxType(organizationRegistration.tax_type)}</td>
+                </tr>
+                <tr className="border-b border-gray-50">
+                  <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Name</td>
+                  <td className="py-2 px-3 text-sm text-gray-900">
+                    {organizationRegistration.first_name} {organizationRegistration.middle_name} {organizationRegistration.last_name}
+                  </td>
+                </tr>
+                {organizationRegistration.trade_name && (
+                  <tr className="border-b border-gray-50">
+                    <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Trade Name</td>
+                    <td className="py-2 px-3 text-sm text-gray-900">{organizationRegistration.trade_name}</td>
+                  </tr>
+                )}
+                <tr className="border-b border-gray-50">
+                  <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Line of Business</td>
+                  <td className="py-2 px-3 text-sm text-gray-900">{organizationRegistration.line_of_business}</td>
+                </tr>
+                <tr className="border-b border-gray-50">
+                  <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Address</td>
+                  <td className="py-2 px-3 text-sm text-gray-900">
+                    {organizationRegistration.address_line}, {organizationRegistration.city}, {organizationRegistration.region} {organizationRegistration.zip_code}
+                  </td>
+                </tr>
+                <tr className="border-b border-gray-50">
+                  <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Contact</td>
+                  <td className="py-2 px-3 text-sm text-gray-900">{organizationRegistration.contact_number}</td>
+                </tr>
+                <tr>
+                  <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Email</td>
+                  <td className="py-2 px-3 text-sm text-gray-900">{organizationRegistration.email_address}</td>
+                </tr>
+              </>
+            )}
+            {!organizationRegistration && (
+              <tr>
+                <td className="py-2 px-3 text-sm text-gray-500" colSpan={2}>Registration details not available</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   </div>
