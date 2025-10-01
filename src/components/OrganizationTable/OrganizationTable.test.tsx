@@ -351,4 +351,168 @@ describe('OrganizationTable', () => {
       expect(editButtons).toHaveLength(0)
     })
   })
-})
+
+  describe('Search Functionality', () => {
+    it('should display search input when onSearchChange prop is provided', () => {
+      const mockOnSearchChange = vi.fn()
+      
+      render(
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+            searchQuery=""
+            onSearchChange={mockOnSearchChange}
+          />
+        </BrowserRouter>
+      );
+
+      const searchInput = screen.getByTestId('search-input');
+      expect(searchInput).toBeInTheDocument();
+      expect(searchInput).toHaveAttribute('placeholder', 'Search organizations...');
+    });
+
+    it('should not display search input when onSearchChange prop is not provided', () => {
+      render(
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+          />
+        </BrowserRouter>
+      );
+
+      const searchInput = screen.queryByTestId('search-input');
+      expect(searchInput).not.toBeInTheDocument();
+    });
+
+    it('should call onSearchChange when search input value changes', async () => {
+      const mockOnSearchChange = vi.fn()
+      const user = userEvent.setup()
+      
+      render(
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+            searchQuery=""
+            onSearchChange={mockOnSearchChange}
+          />
+        </BrowserRouter>
+      );
+
+      const searchInput = screen.getByTestId('search-input');
+      await user.type(searchInput, 'test search');
+      
+      expect(mockOnSearchChange).toHaveBeenCalledTimes(11); // 'test search' has 11 characters
+    });
+
+    it('should filter organizations based on search query', () => {
+      const mockOnSearchChange = vi.fn()
+      
+      render(
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+            searchQuery="Test Organization 1"
+            onSearchChange={mockOnSearchChange}
+          />
+        </BrowserRouter>
+      );
+
+      // Should show only the filtered organization
+      const rows = screen.getAllByRole('row');
+      // Header row + 1 data row
+      expect(rows).toHaveLength(2);
+      
+      // Check that the filtered organization is displayed
+      expect(screen.getByText('Test Organization 1')).toBeInTheDocument();
+      expect(screen.queryByText('Test Organization 2')).not.toBeInTheDocument();
+    });
+
+    it('should show filtered count in header when searching', () => {
+      const mockOnSearchChange = vi.fn()
+      
+      render(
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+            searchQuery="Test Organization 1"
+            onSearchChange={mockOnSearchChange}
+          />
+        </BrowserRouter>
+      );
+
+      // Should show "Organizations (1 of 2)" when filtered
+      expect(screen.getByText('Organizations (1 of 2)')).toBeInTheDocument();
+    });
+
+    it('should show all organizations when search query is empty', () => {
+      const mockOnSearchChange = vi.fn()
+      
+      render(
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+            searchQuery=""
+            onSearchChange={mockOnSearchChange}
+          />
+        </BrowserRouter>
+      );
+
+      // Should show all organizations
+      expect(screen.getByText('Test Organization 1')).toBeInTheDocument();
+      expect(screen.getByText('Test Organization 2')).toBeInTheDocument();
+      expect(screen.getByText('Organizations (2)')).toBeInTheDocument();
+    });
+
+    it('should search across multiple fields (name, TIN, category, tax_classification, address)', () => {
+      const mockOnSearchChange = vi.fn()
+      
+      render(
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+            searchQuery="VAT"
+            onSearchChange={mockOnSearchChange}
+          />
+        </BrowserRouter>
+      );
+
+      // Should find organization with VAT tax classification
+      expect(screen.getByText('Test Organization 1')).toBeInTheDocument();
+      expect(screen.queryByText('Test Organization 2')).not.toBeInTheDocument();
+    });
+
+    it('should be case insensitive when searching', () => {
+      const mockOnSearchChange = vi.fn()
+      
+      render(
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+            searchQuery="test organization"
+            onSearchChange={mockOnSearchChange}
+          />
+        </BrowserRouter>
+      );
+
+      // Should find both organizations (case insensitive)
+      expect(screen.getByText('Test Organization 1')).toBeInTheDocument();
+      expect(screen.getByText('Test Organization 2')).toBeInTheDocument();
+    });
+  });
+});

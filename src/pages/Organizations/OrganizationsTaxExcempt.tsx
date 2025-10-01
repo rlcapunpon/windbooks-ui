@@ -10,6 +10,7 @@ const OrganizationsTaxExcempt: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   const loadOrganizations = useCallback(async () => {
     try {
@@ -83,6 +84,8 @@ const OrganizationsTaxExcempt: React.FC = () => {
           organizations={organizations}
           loading={loading}
           onRefresh={handleRefresh}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
         />
       </div>
 
