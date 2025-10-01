@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Menu } from '../components/Menu/Menu';
 import { useAuth } from '../contexts/AuthContextTypes';
 import { UserService } from '../services/userService';
@@ -12,6 +12,20 @@ interface MainLayoutProps {
 export const MainLayout = ({ children }: MainLayoutProps) => {
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
+  // Load sidebar collapse state from localStorage on mount
+  useEffect(() => {
+    const savedCollapsedState = localStorage.getItem('sidebarCollapsed');
+    if (savedCollapsedState === 'true') {
+      setIsSidebarCollapsed(true);
+    }
+  }, []);
+
+  // Save sidebar collapse state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('sidebarCollapsed', isSidebarCollapsed.toString());
+  }, [isSidebarCollapsed]);
 
   // Get user roles from the new structure
   const userRoles = user?.resources?.map((resource: { role: string }) => resource.role) || [];
@@ -54,29 +68,6 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
       ),
       href: '/user',
       permissions: ['USER.READ'], // All authenticated users can access dashboard
-    },
-    {
-      id: 'profile',
-      label: 'Profile',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-        </svg>
-      ),
-      href: '/profile',
-      permissions: ['USER.READ'], // All authenticated users can view their profile
-    },
-    {
-      id: 'settings',
-      label: 'Settings',
-      icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-      ),
-      href: '/settings',
-      permissions: ['*'], // Only super administrators
     },
     {
       id: 'organizations',
@@ -164,17 +155,52 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
         },
       ],
     },
+    {
+      id: 'profile',
+      label: 'Profile',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+      ),
+      href: '/profile',
+      permissions: ['USER.READ'], // All authenticated users can view their profile
+    },
+    {
+      id: 'settings',
+      label: 'Settings',
+      icon: (
+        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      ),
+      href: '/settings',
+      permissions: ['*'], // Only super administrators
+    },
   ];
 
   const handleMenuItemClick = (item: MenuItem) => {
     // Close mobile menu when item is clicked
     setIsMobileMenuOpen(false);
     
+    // Auto-expand sidebar when menu item with submenu is clicked while collapsed
+    if (item.children && item.children.length > 0 && isSidebarCollapsed) {
+      setIsSidebarCollapsed(false);
+    }
+    
     // Handle navigation or other actions
     if (item.href) {
       window.location.href = item.href;
     } else if (item.onClick) {
       item.onClick();
+    }
+  };
+
+  const handleSubmenuToggle = (_itemId: string) => {
+    // Auto-expand sidebar when submenu is toggled
+    if (isSidebarCollapsed) {
+      setIsSidebarCollapsed(false);
     }
   };
 
@@ -189,20 +215,49 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
       )}
 
       {/* Sidebar Menu - Hidden on mobile, visible on md and above, or shown when mobile menu is open */}
-      <aside className={`fixed md:relative inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 shadow-sm flex-shrink-0 transform transition-transform duration-300 ease-in-out md:translate-x-0 ${
+      <aside className={`fixed md:relative inset-y-0 left-0 z-50 ${isSidebarCollapsed ? 'w-16' : 'w-64'} bg-white border-r border-gray-200 shadow-sm flex-shrink-0 transform transition-all duration-300 ease-in-out md:translate-x-0 ${
         isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
-      } md:block`} id="sidebar">
-        <div className="p-4 border-b border-gray-200" id="sidebar-header">
-          <h2 className="text-lg font-semibold text-gray-900" id="sidebar-title">Windbooks</h2>
-          <p className="text-sm text-gray-600" id="sidebar-welcome">Welcome, {user?.email?.split('@')[0]}</p>
+      } md:block`} id="sidebar" data-testid="sidebar">
+        <div className={`p-4 border-b border-gray-200 ${isSidebarCollapsed ? 'hidden' : ''}`} id="sidebar-header" data-testid="sidebar-header">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900" id="sidebar-title">Windbooks</h2>
+              <p className="text-sm text-gray-600" id="sidebar-welcome">Welcome, {user?.email?.split('@')[0]}</p>
+            </div>
+            <button
+              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+              aria-label="Collapse sidebar"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+              </svg>
+            </button>
+          </div>
         </div>
-        <div className="p-4" id="sidebar-menu">
+        {/* Show maximize button when collapsed */}
+        {isSidebarCollapsed && (
+          <div className="p-4 border-b border-gray-200 flex justify-center" id="sidebar-header-collapsed">
+            <button
+              onClick={() => setIsSidebarCollapsed(false)}
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+              aria-label="Expand sidebar"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        )}
+        <div className={`${isSidebarCollapsed ? 'p-2' : 'p-4'}`} id="sidebar-menu">
           <Menu
             items={menuItems}
             userPermissions={userPermissions}
             onItemClick={handleMenuItemClick}
+            onSubmenuToggle={handleSubmenuToggle}
             variant="sidebar"
             showIcons={true}
+            collapsed={isSidebarCollapsed}
           />
         </div>
       </aside>

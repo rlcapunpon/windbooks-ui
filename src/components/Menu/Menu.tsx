@@ -10,8 +10,10 @@ export const Menu = ({
   collapsible = true,
   multipleOpen = false,
   showIcons = true,
+  collapsed = false,
   userPermissions = [],
   onItemClick,
+  onSubmenuToggle,
   renderItem,
   asyncLoader,
 }: MenuProps) => {
@@ -171,7 +173,9 @@ export const Menu = ({
             onItemClick={handleItemClick}
             onAsyncLoad={handleAsyncLoad}
             showIcons={showIcons}
+            collapsed={collapsed}
             userPermissions={userPermissions}
+            onSubmenuToggle={onSubmenuToggle}
             renderItem={renderItem}
             collapsible={collapsible}
           />

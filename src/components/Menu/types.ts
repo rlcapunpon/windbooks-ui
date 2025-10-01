@@ -20,8 +20,10 @@ export interface MenuProps {
   collapsible?: boolean;
   multipleOpen?: boolean;
   showIcons?: boolean;
+  collapsed?: boolean;
   userPermissions?: string[];
   onItemClick?: (item: MenuItem) => void;
+  onSubmenuToggle?: (itemId: string) => void;
   renderItem?: (item: MenuItem, isActive: boolean, level: number) => ReactNode;
   asyncLoader?: (parentId: string) => Promise<MenuItem[]>;
 }
@@ -34,7 +36,9 @@ export interface MenuItemProps {
   onToggle: () => void;
   onItemClick: (item: MenuItem) => void;
   showIcons: boolean;
+  collapsed?: boolean;
   userPermissions: string[];
+  onSubmenuToggle?: (itemId: string) => void;
   renderItem?: (item: MenuItem, isActive: boolean, level: number) => ReactNode;
   collapsible?: boolean;
 }

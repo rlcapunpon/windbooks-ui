@@ -363,4 +363,26 @@ describe('Menu Component', () => {
     // The menu should fill its container width without overflowing
     // CSS ensures menu-sidebar has w-full and overflow-x-hidden
   });
+
+  it('renders icons with appropriate size when collapsed', () => {
+    const itemsWithIcons: MenuItem[] = [
+      {
+        id: 'test',
+        label: 'Test Item',
+        icon: <span data-testid="test-icon">Icon</span>,
+      },
+    ];
+
+    render(
+      <Menu
+        items={itemsWithIcons}
+        userPermissions={[]}
+        collapsed={true}
+        showIcons={true}
+      />
+    );
+
+    const icon = screen.getByTestId('test-icon').parentElement;
+    expect(icon).toHaveClass('w-5', 'h-5');
+  });
 });

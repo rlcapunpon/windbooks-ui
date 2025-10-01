@@ -12,7 +12,9 @@ export const MenuItemComponent = ({
   onItemClick,
   onAsyncLoad,
   showIcons,
+  collapsed = false,
   userPermissions,
+  onSubmenuToggle,
   renderItem,
   collapsible = true,
 }: MenuItemProps & { isLoading?: boolean; onAsyncLoad?: (parentId: string) => void }) => {
@@ -55,22 +57,26 @@ export const MenuItemComponent = ({
 
   const itemClasses = cn(
     'menu-item',
-    'group relative flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200',
+    'group relative flex items-center py-2 text-sm font-medium rounded-lg transition-all duration-200',
     'hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50',
     {
+      'px-3': !collapsed,
+      'px-1': collapsed,
+      'justify-center': collapsed, // Center all items when collapsed
       'bg-blue-50 text-blue-600': isActive,
       'text-gray-900 hover:text-blue-600': !isActive,
       'cursor-pointer': !item.disabled,
       'cursor-not-allowed opacity-50': item.disabled,
-      'pl-6': level > 0,
-      'pl-9': level > 1,
-      'pl-12': level > 2,
+      'pl-6': level > 0 && !collapsed,
+      'pl-9': level > 1 && !collapsed,
+      'pl-12': level > 2 && !collapsed,
     }
   );
 
   const linkClasses = cn(
-    'flex items-center flex-1 min-w-0',
+    'flex items-center min-w-0',
     {
+      'flex-1': !collapsed || hasChildren || collapsed, // Always flex-1 when collapsed for centering
       'pointer-events-none': item.disabled,
     }
   );
@@ -91,7 +97,10 @@ export const MenuItemComponent = ({
             aria-current={isActive ? 'page' : undefined}
           >
             {showIcons && item.icon && (
-              <span className="mr-3 flex-shrink-0" aria-hidden="true">
+              <span className={cn(
+                "flex-shrink-0", 
+                collapsed ? "w-5 h-5 mr-2" : "mr-3"
+              )} aria-hidden="true">
                 {item.icon}
               </span>
             )}
@@ -113,7 +122,10 @@ export const MenuItemComponent = ({
             aria-current={isActive ? 'page' : undefined}
           >
             {showIcons && item.icon && (
-              <span className="mr-3 flex-shrink-0" aria-hidden="true">
+              <span className={cn(
+                "flex-shrink-0", 
+                collapsed ? "w-5 h-5 mr-2" : "mr-3"
+              )} aria-hidden="true">
                 {item.icon}
               </span>
             )}
@@ -134,10 +146,17 @@ export const MenuItemComponent = ({
           </div>
         )}
 
-        {hasChildren && collapsible && (
+        {hasChildren && collapsible && !collapsed && (
           <button
-            onClick={onToggle}
-            className="ml-2 p-1 rounded hover:bg-gray-100 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggle();
+              onSubmenuToggle?.(item.id);
+            }}
+            className={cn(
+              "p-1 rounded hover:bg-gray-100 transition-colors flex-shrink-0",
+              collapsed ? "ml-2" : "ml-2"
+            )}
             aria-expanded={isOpen}
             aria-label={`Toggle ${item.label} submenu`}
           >
