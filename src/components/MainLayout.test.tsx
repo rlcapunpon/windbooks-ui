@@ -5,17 +5,20 @@ import { MainLayout } from './MainLayout';
 
 // Mock the Menu component
 vi.mock('../components/Menu/Menu', () => ({
-  Menu: ({ items, showIcons, collapsed, collapsible = true, onSubmenuToggle }: any) => (
+  Menu: ({ items, showIcons, collapsed, collapsible = true, onItemClick, onSubmenuToggle }: any) => (
     <div data-testid="menu-component" data-show-icons={showIcons ? 'true' : 'false'} data-collapsed={collapsed ? 'true' : 'false'}>
       {items.map((item: any) => (
-        <div key={item.id} data-testid={`menu-item-${item.id}`} className={collapsed ? 'justify-center' : ''}>
+        <div key={item.id} data-testid={`menu-item-${item.id}`} className={collapsed ? 'justify-center' : ''} onClick={() => onItemClick?.(item)}>
           {showIcons && item.icon && <span data-testid={`icon-${item.id}`}>Icon</span>}
           <span>{item.label}</span>
           {item.children && collapsible && !collapsed && (
             <button
               data-testid={`submenu-toggle-${item.id}`}
               className={collapsed ? "ml-2" : "ml-2"}
-              onClick={() => onSubmenuToggle?.(item.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                onSubmenuToggle?.(item.id);
+              }}
             >
               Toggle
             </button>
