@@ -42,6 +42,7 @@ const mockOrganization: OrganizationType = {
   name: 'Test Organization',
   tin: '001234567890',
   category: 'NON_INDIVIDUAL' as const,
+  subcategory: 'SOLE_PROPRIETOR' as const,
   tax_classification: 'VAT' as const,
   registration_date: '2024-01-01T00:00:00.000Z',
   address: 'Test Address',
@@ -864,5 +865,115 @@ describe('Organization Page', () => {
     // Should contain an edit icon (SVG)
     const svgIcon = editButton?.querySelector('svg')
     expect(svgIcon).toBeInTheDocument()
+  })
+})
+
+// Step 15.3 - Organization Details Page Layout Updates
+describe('Step 15.3 - Organization Details Page Layout Updates', () => {
+  beforeEach(() => {
+    ;(OrganizationService.getOrganizationById as any).mockResolvedValue(mockOrganization)
+    ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(mockOrganizationStatus)
+    ;(OrganizationService.getOrganizationOperation as any).mockResolvedValue(mockOrganizationOperation)
+    ;(OrganizationService.getOrganizationRegistration as any).mockResolvedValue(mockOrganizationRegistration)
+  })
+
+  it('should display General tab with single column layout (Business Status first, then Basic Information)', async () => {
+    render(
+      <BrowserRouter>
+        <Organization />
+      </BrowserRouter>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+    })
+
+    // General tab should be active by default
+    const generalTab = screen.getByRole('button', { name: /general/i })
+    expect(generalTab).toHaveClass('border-blue-500', 'text-blue-600')
+
+    // Should show Business Status section first
+    const businessStatusSection = screen.getByText('Business Status')
+    const basicInfoSection = screen.getByText('Basic Information')
+
+    // Business Status should appear before Basic Information in the DOM
+    expect(businessStatusSection.compareDocumentPosition(basicInfoSection)).toBe(Node.DOCUMENT_POSITION_FOLLOWING)
+
+    // Should not use grid-cols-2 layout (single column)
+    const generalContainer = businessStatusSection.closest('.space-y-6')
+    expect(generalContainer).toBeInTheDocument()
+  })
+
+  it('should display Sub-category field in Basic Information table', async () => {
+    render(
+      <BrowserRouter>
+        <Organization />
+      </BrowserRouter>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+    })
+
+    // Should display Sub-category in Basic Information table
+    expect(screen.getByText('Sub-category')).toBeInTheDocument()
+    const subCategoryCells = screen.getAllByText('SOLE_PROPRIETOR')
+    expect(subCategoryCells.length).toBeGreaterThanOrEqual(2) // One in header badge, one in table
+  })
+
+  it('should display Operations tab instead of Operation tab', async () => {
+    render(
+      <BrowserRouter>
+        <Organization />
+      </BrowserRouter>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+    })
+
+    // Should have Operations tab, not Operation tab
+    expect(screen.getByRole('button', { name: /operations/i })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^operation$/i })).not.toBeInTheDocument()
+  })
+
+  it('should display Expanded Withholding Tax (EWT) instead of EWT', async () => {
+    render(
+      <BrowserRouter>
+        <Organization />
+      </BrowserRouter>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+    })
+
+    // Click Operations tab
+    const operationsTab = screen.getByRole('button', { name: /operations/i })
+    await userEvent.click(operationsTab)
+
+    // Should display full label "Expanded Withholding Tax (EWT)"
+    expect(screen.getByText('Expanded Withholding Tax (EWT)')).toBeInTheDocument()
+    expect(screen.queryByText(/^EWT$/)).not.toBeInTheDocument()
+  })
+
+  it('should display Final Withholding Tax (FWT) instead of FWT', async () => {
+    render(
+      <BrowserRouter>
+        <Organization />
+      </BrowserRouter>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+    })
+
+    // Click Operations tab
+    const operationsTab = screen.getByRole('button', { name: /operations/i })
+    await userEvent.click(operationsTab)
+
+    // Should display full label "Final Withholding Tax (FWT)"
+    expect(screen.getByText('Final Withholding Tax (FWT)')).toBeInTheDocument()
+    expect(screen.queryByText(/^FWT$/)).not.toBeInTheDocument()
   })
 })

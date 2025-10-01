@@ -276,7 +276,7 @@ const OrganizationDetails: React.FC<{
 
   const tabs = [
     { id: 'general' as const, label: 'General', icon: '📋' },
-    { id: 'operation' as const, label: 'Operation', icon: '⚙️' },
+    { id: 'operation' as const, label: 'Operations', icon: '⚙️' },
     { id: 'bir' as const, label: 'BIR Registration', icon: '📄' }
   ]
 
@@ -284,39 +284,8 @@ const OrganizationDetails: React.FC<{
     switch (activeTab) {
       case 'general':
         return (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Basic Information */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-medium">Basic Information</h3>
-                <button 
-                  className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md"
-                  aria-label="Edit Basic Information"
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                </button>
-              </div>
-              <table className="w-full border border-gray-100">
-                <tbody>
-                  <tr className="border-b border-gray-50">
-                    <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Name</td>
-                    <td className="py-2 px-3 text-sm text-gray-900">{organization.name}</td>
-                  </tr>
-                  <tr className="border-b border-gray-50">
-                    <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Category</td>
-                    <td className="py-2 px-3 text-sm text-gray-900">{organization.category}</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Tax Classification</td>
-                    <td className="py-2 px-3 text-sm text-gray-900">{organization.tax_classification}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            {/* Business Status */}
+          <div className="space-y-6">
+            {/* Business Status - First */}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-lg font-medium">Business Status</h3>
@@ -402,6 +371,41 @@ const OrganizationDetails: React.FC<{
                 )}
               </div>
             </div>
+
+            {/* Basic Information - Second */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-medium">Basic Information</h3>
+                <button 
+                  className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md"
+                  aria-label="Edit Basic Information"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+              </div>
+              <table className="w-full border border-gray-100">
+                <tbody>
+                  <tr className="border-b border-gray-50">
+                    <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Name</td>
+                    <td className="py-2 px-3 text-sm text-gray-900">{organization.name}</td>
+                  </tr>
+                  <tr className="border-b border-gray-50">
+                    <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Category</td>
+                    <td className="py-2 px-3 text-sm text-gray-900">{organization.category}</td>
+                  </tr>
+                  <tr className="border-b border-gray-50">
+                    <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Sub-category</td>
+                    <td className="py-2 px-3 text-sm text-gray-900">{organization.subcategory || 'N/A'}</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Tax Classification</td>
+                    <td className="py-2 px-3 text-sm text-gray-900">{organization.tax_classification}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         )
       case 'operation':
@@ -460,13 +464,13 @@ const OrganizationDetails: React.FC<{
                 )}
                 {organizationOperation?.is_ewt !== undefined && (
                   <tr className="border-b border-gray-50">
-                    <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">EWT</td>
+                    <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Expanded Withholding Tax (EWT)</td>
                     <td className="py-2 px-3 text-sm text-gray-900">{organizationOperation.is_ewt ? 'Yes' : 'No'}</td>
                   </tr>
                 )}
                 {organizationOperation?.is_fwt !== undefined && (
                   <tr className="border-b border-gray-50">
-                    <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">FWT</td>
+                    <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Final Withholding Tax (FWT)</td>
                     <td className="py-2 px-3 text-sm text-gray-900">{organizationOperation.is_fwt ? 'Yes' : 'No'}</td>
                   </tr>
                 )}
