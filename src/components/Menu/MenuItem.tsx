@@ -38,9 +38,10 @@ export const MenuItemComponent = ({
 
     if (hasChildren && collapsible) {
       onToggle();
-    } else {
-      onItemClick(item);
     }
+    
+    // Always call onItemClick for all menu items, regardless of whether they have children
+    onItemClick(item);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
