@@ -3,6 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { OrganizationService } from '../../services/organizationService'
 import { UserService } from '../../services/userService'
 import type { Organization, OrganizationStatus, OrganizationRegistration } from '../../services/organizationService'
+import { UpdateOrganizationStatusModal, type UpdateStatusFormData } from '../../components/UpdateOrganizationStatusModal'
+import { UpdateOrganizationOperationsModal, type UpdateOperationFormData } from '../../components/UpdateOrganizationOperationsModal/UpdateOrganizationOperationsModal'
+import { canEditOrganizationStatus } from '../../utils/organizationPermissions'
 
 type MenuItem = 'details' | 'contacts' | 'obligations' | 'history' | 'settings'
 
@@ -186,6 +189,7 @@ const OrganizationPage: React.FC = () => {
             organizationOperation={organizationOperation}
             organizationRegistration={organizationRegistration}
             onStatusUpdate={setOrganizationStatus}
+            onOperationUpdate={setOrganizationOperation}
           />
         )
       case 'contacts':
@@ -204,6 +208,7 @@ const OrganizationPage: React.FC = () => {
             organizationOperation={organizationOperation}
             organizationRegistration={organizationRegistration}
             onStatusUpdate={setOrganizationStatus}
+            onOperationUpdate={setOrganizationOperation}
           />
         )
     }
@@ -271,8 +276,110 @@ const OrganizationDetails: React.FC<{
   organizationOperation: any | null
   organizationRegistration: OrganizationRegistration | null
   onStatusUpdate: (status: OrganizationStatus) => void
-}> = ({ organization, organizationStatus, organizationOperation, organizationRegistration, onStatusUpdate }) => {
+  onOperationUpdate: (operation: any) => void
+}> = ({ organization, organizationStatus, organizationOperation, organizationRegistration, onStatusUpdate, onOperationUpdate }) => {
   const [activeTab, setActiveTab] = useState<'general' | 'operation' | 'bir'>('general')
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false)
+  const [canEditStatus, setCanEditStatus] = useState(false)
+  const [statusUpdateLoading, setStatusUpdateLoading] = useState(false)
+  const [isOperationsModalOpen, setIsOperationsModalOpen] = useState(false)
+  const [canEditOperations, setCanEditOperations] = useState(false)
+  const [operationsUpdateLoading, setOperationsUpdateLoading] = useState(false)
+  const [canEditRegistration, setCanEditRegistration] = useState(false)
+
+  // Check edit permissions on component mount and when organization changes
+  useEffect(() => {
+    const checkPermissions = async () => {
+      try {
+        // Ensure user data is loaded
+        if (!UserService.hasUserData()) {
+          await UserService.fetchAndStoreUserData()
+        }
+
+        const hasPermission = await canEditOrganizationStatus(organization.id)
+        setCanEditStatus(hasPermission)
+        setCanEditOperations(hasPermission)
+        setCanEditRegistration(hasPermission)
+      } catch (error) {
+        console.error('Failed to check edit permissions:', error)
+        setCanEditStatus(false)
+        setCanEditOperations(false)
+        setCanEditRegistration(false)
+      }
+    }
+
+    checkPermissions()
+  }, [organization.id])
+
+  const handleEditStatusClick = () => {
+    if (canEditStatus) {
+      setIsStatusModalOpen(true)
+    }
+  }
+
+  const handleStatusModalClose = () => {
+    setIsStatusModalOpen(false)
+  }
+
+  const handleStatusSave = async (formData: UpdateStatusFormData) => {
+    try {
+      setStatusUpdateLoading(true)
+      // Convert form data to the correct API type
+      const requestData = {
+        status: formData.status as any, // Type assertion needed due to string vs enum
+        reason: formData.reason as any,
+        description: formData.description || undefined
+      }
+      const updatedStatus = await OrganizationService.updateOrganizationStatus(organization.id, requestData)
+      onStatusUpdate(updatedStatus)
+      setIsStatusModalOpen(false)
+    } catch (error) {
+      console.error('Failed to update organization status:', error)
+      // TODO: Show error message to user
+    } finally {
+      setStatusUpdateLoading(false)
+    }
+  }
+
+  const handleEditOperationsClick = () => {
+    if (canEditOperations) {
+      setIsOperationsModalOpen(true)
+    }
+  }
+
+  const handleOperationsModalClose = () => {
+    setIsOperationsModalOpen(false)
+  }
+
+  const handleOperationsSave = async (formData: UpdateOperationFormData) => {
+    try {
+      setOperationsUpdateLoading(true)
+      // Convert form data to the correct API type
+      const requestData = {
+        fy_start: formData.fy_start || undefined,
+        fy_end: formData.fy_end || undefined,
+        vat_reg_effectivity: formData.vat_reg_effectivity || undefined,
+        registration_effectivity: formData.registration_effectivity || undefined,
+        payroll_cut_off: formData.payroll_cut_off,
+        payment_cut_off: formData.payment_cut_off,
+        quarter_closing: formData.quarter_closing,
+        has_foreign: formData.has_foreign,
+        has_employees: formData.has_employees,
+        is_ewt: formData.is_ewt,
+        is_fwt: formData.is_fwt,
+        is_bir_withholding_agent: formData.is_bir_withholding_agent,
+        accounting_method: formData.accounting_method as 'ACCRUAL' | 'CASH' | 'OTHERS' | undefined
+      }
+      const updatedOperation = await OrganizationService.updateOrganizationOperation(organization.id, requestData)
+      onOperationUpdate(updatedOperation)
+      setIsOperationsModalOpen(false)
+    } catch (error) {
+      console.error('Failed to update organization operation:', error)
+      // TODO: Show error message to user
+    } finally {
+      setOperationsUpdateLoading(false)
+    }
+  }
 
   const tabs = [
     { id: 'general' as const, label: 'General', icon: '📋' },
@@ -289,14 +396,17 @@ const OrganizationDetails: React.FC<{
             <div>
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-lg font-medium">Business Status</h3>
-                <button 
-                  className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md"
-                  aria-label="Edit Business Status"
-                >
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                </button>
+                {canEditStatus && (
+                  <button 
+                    onClick={handleEditStatusClick}
+                    className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md"
+                    aria-label="Edit Business Status"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                  </button>
+                )}
               </div>
               <div className="space-y-3">
                 {/* Status Badge */}
@@ -413,17 +523,28 @@ const OrganizationDetails: React.FC<{
           <div>
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-lg font-medium">Operation Details</h3>
-              <button 
-                className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md"
-                aria-label="Edit Operation Details"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-              </button>
+              {canEditOperations && (
+                <button 
+                  onClick={handleEditOperationsClick}
+                  className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md"
+                  aria-label="Edit Operation Details"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+              )}
             </div>
             <table className="w-full border border-gray-100">
               <tbody>
+                {organizationOperation?.fy_start && (
+                  <tr className="border-b border-gray-50">
+                    <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Fiscal Year Start</td>
+                    <td className="py-2 px-3 text-sm text-gray-900">
+                      {formatDateMMMYYYY(organizationOperation.fy_start)}
+                    </td>
+                  </tr>
+                )}
                 {organizationOperation?.fy_end && (
                   <tr className="border-b border-gray-50">
                     <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Fiscal Year End</td>
@@ -489,14 +610,16 @@ const OrganizationDetails: React.FC<{
           <div>
             <div className="flex items-center justify-between mb-2">
               <h3 className="text-lg font-medium">Registration Information</h3>
-              <button 
-                className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md"
-                aria-label="Edit Registration Information"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-              </button>
+              {canEditRegistration && (
+                <button 
+                  className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md"
+                  aria-label="Edit Registration Information"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                </button>
+              )}
             </div>
             <table className="w-full border border-gray-100">
               <tbody>
@@ -578,6 +701,31 @@ const OrganizationDetails: React.FC<{
 
       {/* Tab Content */}
       {renderTabContent()}
+
+      {/* Status Update Modal */}
+      <UpdateOrganizationStatusModal
+        isOpen={isStatusModalOpen}
+        onClose={handleStatusModalClose}
+        onSave={handleStatusSave}
+        currentStatus={organizationStatus || {
+          id: '',
+          organization_id: organization.id,
+          status: 'PENDING_REG',
+          last_update: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }}
+        loading={statusUpdateLoading}
+      />
+
+      {/* Operations Update Modal */}
+      <UpdateOrganizationOperationsModal
+        isOpen={isOperationsModalOpen}
+        onClose={handleOperationsModalClose}
+        onSave={handleOperationsSave}
+        currentOperation={organizationOperation}
+        loading={operationsUpdateLoading}
+      />
     </div>
   )
 }

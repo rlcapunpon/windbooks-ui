@@ -6,6 +6,7 @@ import Organization from './Organization'
 import { OrganizationService } from '../../services/organizationService'
 import { UserService } from '../../services/userService'
 import type { Organization as OrganizationType, OrganizationStatus, OrganizationRegistration } from '../../services/organizationService'
+import { canEditOrganizationStatus } from '../../utils/organizationPermissions'
 
 // Mock the organization service
 vi.mock('../../services/organizationService', () => ({
@@ -22,9 +23,18 @@ vi.mock('../../services/organizationService', () => ({
 vi.mock('../../services/userService', () => ({
   UserService: {
     hasRole: vi.fn(),
-    isSuperAdmin: vi.fn()
+    isSuperAdmin: vi.fn(),
+    hasUserData: vi.fn(),
+    fetchAndStoreUserData: vi.fn()
   }
 }))
+
+// Mock the organization permissions
+vi.mock('../../utils/organizationPermissions', () => ({
+  canEditOrganizationStatus: vi.fn()
+}))
+
+const mockCanEditOrganizationStatus = vi.mocked(canEditOrganizationStatus)
 
 // Mock useNavigate
 const mockNavigate = vi.fn()
@@ -129,6 +139,13 @@ describe('Organization Page', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockNavigate.mockClear()
+    mockCanEditOrganizationStatus.mockReset()
+    
+    // Set up default UserService mocks
+    ;(UserService.hasUserData as any).mockReturnValue(true)
+    ;(UserService.fetchAndStoreUserData as any).mockResolvedValue({})
+    ;(UserService.hasRole as any).mockReturnValue(false)
+    ;(UserService.isSuperAdmin as any).mockReturnValue(false)
   })
 
   describe('Loading State', () => {
@@ -756,6 +773,8 @@ describe('Organization Page', () => {
   })
 
   it('should display edit icon button in Basic Information section', async () => {
+    mockCanEditOrganizationStatus.mockResolvedValue(true)
+
     render(
       <BrowserRouter>
         <Organization />
@@ -782,6 +801,8 @@ describe('Organization Page', () => {
   })
 
   it('should display edit icon button in Business Status section', async () => {
+    mockCanEditOrganizationStatus.mockResolvedValue(true)
+
     render(
       <BrowserRouter>
         <Organization />
@@ -797,9 +818,12 @@ describe('Organization Page', () => {
     
     // The edit button should be next to the header
     const headerContainer = businessStatusHeader.closest('div')
+    await waitFor(() => {
+      const editButton = headerContainer?.querySelector('button')
+      expect(editButton).toBeInTheDocument()
+    })
     const editButton = headerContainer?.querySelector('button')
     
-    expect(editButton).toBeInTheDocument()
     expect(editButton).toHaveAttribute('aria-label', 'Edit Business Status')
     
     // Should contain an edit icon (SVG)
@@ -808,6 +832,8 @@ describe('Organization Page', () => {
   })
 
   it('should display edit icon button in Operation Details section', async () => {
+    mockCanEditOrganizationStatus.mockResolvedValue(true)
+
     render(
       <BrowserRouter>
         <Organization />
@@ -838,6 +864,8 @@ describe('Organization Page', () => {
   })
 
   it('should display edit icon button in Registration Information section', async () => {
+    mockCanEditOrganizationStatus.mockResolvedValue(true)
+
     render(
       <BrowserRouter>
         <Organization />
@@ -866,9 +894,84 @@ describe('Organization Page', () => {
     const svgIcon = editButton?.querySelector('svg')
     expect(svgIcon).toBeInTheDocument()
   })
-})
 
-// Step 15.3 - Organization Details Page Layout Updates
+  it('should not display edit icon button in Operation Details section when user lacks permission', async () => {
+    mockCanEditOrganizationStatus.mockResolvedValue(false)
+
+    render(
+      <BrowserRouter>
+        <Organization />
+      </BrowserRouter>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+    })
+
+    // Click Operations tab first
+    const operationsTab = screen.getByRole('button', { name: /operations/i })
+    await userEvent.click(operationsTab)
+
+    // Find Operation Details section header
+    const operationHeader = screen.getByText('Operation Details')
+    
+    // The edit button should not be present
+    const headerContainer = operationHeader.closest('div')
+    const editButton = headerContainer?.querySelector('button')
+    
+    expect(editButton).not.toBeInTheDocument()
+  })
+
+  it('should not display edit icon button in Business Status section when user lacks permission', async () => {
+    mockCanEditOrganizationStatus.mockResolvedValue(false)
+
+    render(
+      <BrowserRouter>
+        <Organization />
+      </BrowserRouter>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+    })
+
+    // Find Business Status section header
+    const businessStatusHeader = screen.getByText('Business Status')
+    
+    // The edit button should not be present
+    const headerContainer = businessStatusHeader.closest('div')
+    const editButton = headerContainer?.querySelector('button')
+    
+    expect(editButton).not.toBeInTheDocument()
+  })
+
+  it('should not display edit icon button in Registration Information section when user lacks permission', async () => {
+    mockCanEditOrganizationStatus.mockResolvedValue(false)
+
+    render(
+      <BrowserRouter>
+        <Organization />
+      </BrowserRouter>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+    })
+
+    // Click BIR Registration tab first
+    const birTab = screen.getByRole('button', { name: /bir registration/i })
+    await userEvent.click(birTab)
+
+    // Find Registration Information section header
+    const registrationHeader = screen.getByText('Registration Information')
+    
+    // The edit button should not be present
+    const headerContainer = registrationHeader.closest('div')
+    const editButton = headerContainer?.querySelector('button')
+    
+    expect(editButton).not.toBeInTheDocument()
+  })
+})
 describe('Step 15.3 - Organization Details Page Layout Updates', () => {
   beforeEach(() => {
     ;(OrganizationService.getOrganizationById as any).mockResolvedValue(mockOrganization)

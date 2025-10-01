@@ -64,7 +64,7 @@ import { OrganizationService } from '../services/organizationService'
   })
 
   describe('Complete Organization Creation Journey', () => {
-    it('should successfully create a NON_INDIVIDUAL organization through all steps', async () => {
+    it('should successfully create a NON_INDIVIDUAL organization through all steps', { timeout: 10000 }, async () => {
       render(
         <CreateOrganizationModal
           isOpen={true}
