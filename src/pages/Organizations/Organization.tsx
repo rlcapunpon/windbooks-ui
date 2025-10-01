@@ -226,6 +226,11 @@ const OrganizationPage: React.FC = () => {
           <h1 className="text-3xl font-bold text-gray-900">
             {organization ? formatOrganizationHeader(organization) : 'Organization'}
           </h1>
+          {organization?.tin && (
+            <p className="text-lg text-gray-600 mt-2">
+              TIN: {organization.tin}
+            </p>
+          )}
         </div>
 
         <div className="bg-white shadow rounded-lg">
@@ -266,251 +271,312 @@ const OrganizationDetails: React.FC<{
   organizationOperation: any | null
   organizationRegistration: OrganizationRegistration | null
   onStatusUpdate: (status: OrganizationStatus) => void
-}> = ({ organization, organizationStatus, organizationOperation, organizationRegistration, onStatusUpdate }) => (
-  <div>
-    <h2 className="text-xl font-semibold mb-4">Organization Details</h2>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {/* Basic Information */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-medium">Basic Information</h3>
-          <button className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-            Edit
-          </button>
-        </div>
-        <table className="w-full border border-gray-100">
-          <tbody>
-            <tr className="border-b border-gray-50">
-              <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Name</td>
-              <td className="py-2 px-3 text-sm text-gray-900">{organization.name}</td>
-            </tr>
-            <tr className="border-b border-gray-50">
-              <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">TIN</td>
-              <td className="py-2 px-3 text-sm text-gray-900">{organization.tin || 'Not provided'}</td>
-            </tr>
-            <tr className="border-b border-gray-50">
-              <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Category</td>
-              <td className="py-2 px-3 text-sm text-gray-900">{organization.category}</td>
-            </tr>
-            <tr>
-              <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Tax Classification</td>
-              <td className="py-2 px-3 text-sm text-gray-900">{organization.tax_classification}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+}> = ({ organization, organizationStatus, organizationOperation, organizationRegistration, onStatusUpdate }) => {
+  const [activeTab, setActiveTab] = useState<'general' | 'operation' | 'bir'>('general')
 
-      {/* Business Status */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-medium">Business Status</h3>
-          <button className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-            Edit
-          </button>
-        </div>
-        <div className="space-y-3">
-          {/* Status Badge */}
-          <div>
-            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-              organizationStatus?.status === 'ACTIVE' ? 'bg-green-100 text-green-800 border border-green-200' :
-              organizationStatus?.status === 'PENDING_REG' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
-              organizationStatus?.status === 'REGISTERED' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
-              organizationStatus?.status === 'INACTIVE' ? 'bg-gray-100 text-gray-800 border border-gray-200' :
-              organizationStatus?.status === 'CESSATION' ? 'bg-orange-100 text-orange-800 border border-orange-200' :
-              organizationStatus?.status === 'CLOSED' ? 'bg-red-100 text-red-800 border border-red-200' :
-              organizationStatus?.status === 'NON_COMPLIANT' ? 'bg-red-100 text-red-800 border border-red-200' :
-              organizationStatus?.status === 'UNDER_AUDIT' ? 'bg-purple-100 text-purple-800 border border-purple-200' :
-              organizationStatus?.status === 'SUSPENDED' ? 'bg-red-100 text-red-800 border border-red-200' :
-              'bg-gray-100 text-gray-800 border border-gray-200'
-            }`}>
-              {organizationStatus?.status || 'Not available'}
-            </span>
-          </div>
+  const tabs = [
+    { id: 'general' as const, label: 'General', icon: '📋' },
+    { id: 'operation' as const, label: 'Operation', icon: '⚙️' },
+    { id: 'bir' as const, label: 'BIR Registration', icon: '📄' }
+  ]
 
-          {/* Approval Button or Pending Message for PENDING_REG */}
-          {organizationStatus?.status === 'PENDING_REG' && (
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case 'general':
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Basic Information */}
             <div>
-              {(UserService.hasRole('APPROVER') || UserService.isSuperAdmin()) ? (
-                <button
-                  onClick={async () => {
-                    try {
-                      const updatedStatus = await OrganizationService.updateOrganizationStatus(organization.id, {
-                        status: 'REGISTERED',
-                        reason: 'APPROVED',
-                        description: 'Registration to Windbooks approved.'
-                      })
-                      // Update the local state via the callback
-                      onStatusUpdate(updatedStatus)
-                    } catch (error) {
-                      console.error('Failed to approve organization:', error)
-                      // TODO: Show error message to user
-                    }
-                  }}
-                  className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-medium">Basic Information</h3>
+                <button 
+                  className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md"
+                  aria-label="Edit Basic Information"
                 >
-                  Approve Registration
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
                 </button>
-              ) : (
-                <p className="text-sm text-gray-600 bg-yellow-50 border border-yellow-200 rounded-md p-3">
-                  Ask ADMIN or APPROVER to approve application to Windbooks.
-                </p>
-              )}
-            </div>
-          )}
-
-          {/* Additional Status Details */}
-          {organizationStatus?.reason && (
-            <div>
-              <dt className="text-sm font-medium text-gray-500">Reason</dt>
-              <dd className="text-sm text-gray-900 mt-1">{organizationStatus.reason}</dd>
-            </div>
-          )}
-          {organizationStatus?.description && (
-            <div>
-              <dt className="text-sm font-medium text-gray-500">Description</dt>
-              <dd className="text-sm text-gray-900 mt-1">{organizationStatus.description}</dd>
-            </div>
-          )}
-          {organizationStatus?.last_update && (
-            <div>
-              <dt className="text-sm font-medium text-gray-500">Last Update</dt>
-              <dd className="text-sm text-gray-900 mt-1">
-                {new Date(organizationStatus.last_update).toLocaleDateString()}
-              </dd>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Operation Details */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-medium">Operation Details</h3>
-          <button className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-            Edit
-          </button>
-        </div>
-        <table className="w-full border border-gray-100">
-          <tbody>
-            {organizationOperation?.fy_end && (
-              <tr className="border-b border-gray-50">
-                <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Fiscal Year End</td>
-                <td className="py-2 px-3 text-sm text-gray-900">
-                  {formatDateMMMYYYY(organizationOperation.fy_end)}
-                </td>
-              </tr>
-            )}
-            {organizationOperation?.accounting_method && (
-              <tr className="border-b border-gray-50">
-                <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Accounting Method</td>
-                <td className="py-2 px-3 text-sm text-gray-900">{organizationOperation.accounting_method}</td>
-              </tr>
-            )}
-            {organizationOperation?.payroll_cut_off && organizationOperation.payroll_cut_off.length > 0 && (
-              <tr className="border-b border-gray-50">
-                <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Payroll Cut-off</td>
-                <td className="py-2 px-3 text-sm text-gray-900">{formatCutOff(organizationOperation.payroll_cut_off)}</td>
-              </tr>
-            )}
-            {organizationOperation?.payment_cut_off && organizationOperation.payment_cut_off.length > 0 && (
-              <tr className="border-b border-gray-50">
-                <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Payment Cut-off</td>
-                <td className="py-2 px-3 text-sm text-gray-900">{formatCutOff(organizationOperation.payment_cut_off)}</td>
-              </tr>
-            )}
-            {organizationOperation?.quarter_closing && organizationOperation.quarter_closing.length > 0 && (
-              <tr className="border-b border-gray-50">
-                <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Quarter Closing</td>
-                <td className="py-2 px-3 text-sm text-gray-900">{organizationOperation.quarter_closing.join(', ')}</td>
-              </tr>
-            )}
-            {organizationOperation?.has_employees !== undefined && (
-              <tr className="border-b border-gray-50">
-                <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Has Employees</td>
-                <td className="py-2 px-3 text-sm text-gray-900">{organizationOperation.has_employees ? 'Yes' : 'No'}</td>
-              </tr>
-            )}
-            {organizationOperation?.is_ewt !== undefined && (
-              <tr className="border-b border-gray-50">
-                <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">EWT</td>
-                <td className="py-2 px-3 text-sm text-gray-900">{organizationOperation.is_ewt ? 'Yes' : 'No'}</td>
-              </tr>
-            )}
-            {organizationOperation?.is_fwt !== undefined && (
-              <tr className="border-b border-gray-50">
-                <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">FWT</td>
-                <td className="py-2 px-3 text-sm text-gray-900">{organizationOperation.is_fwt ? 'Yes' : 'No'}</td>
-              </tr>
-            )}
-            {organizationOperation?.is_bir_withholding_agent !== undefined && (
-              <tr>
-                <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Withholding Agent</td>
-                <td className="py-2 px-3 text-sm text-gray-900">{organizationOperation.is_bir_withholding_agent ? 'Yes' : 'No'}</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Registration Information */}
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-lg font-medium">Registration Information</h3>
-          <button className="px-3 py-1 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-            Edit
-          </button>
-        </div>
-        <table className="w-full border border-gray-100">
-          <tbody>
-            {organizationRegistration && (
-              <>
-                <tr className="border-b border-gray-50">
-                  <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Tax Classification</td>
-                  <td className="py-2 px-3 text-sm text-gray-900">{formatTaxType(organizationRegistration.tax_type)}</td>
-                </tr>
-                <tr className="border-b border-gray-50">
-                  <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Name</td>
-                  <td className="py-2 px-3 text-sm text-gray-900">
-                    {organizationRegistration.first_name} {organizationRegistration.middle_name} {organizationRegistration.last_name}
-                  </td>
-                </tr>
-                {organizationRegistration.trade_name && (
+              </div>
+              <table className="w-full border border-gray-100">
+                <tbody>
                   <tr className="border-b border-gray-50">
-                    <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Trade Name</td>
-                    <td className="py-2 px-3 text-sm text-gray-900">{organizationRegistration.trade_name}</td>
+                    <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Name</td>
+                    <td className="py-2 px-3 text-sm text-gray-900">{organization.name}</td>
+                  </tr>
+                  <tr className="border-b border-gray-50">
+                    <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Category</td>
+                    <td className="py-2 px-3 text-sm text-gray-900">{organization.category}</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Tax Classification</td>
+                    <td className="py-2 px-3 text-sm text-gray-900">{organization.tax_classification}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* Business Status */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-medium">Business Status</h3>
+                <button 
+                  className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md"
+                  aria-label="Edit Business Status"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+              </div>
+              <div className="space-y-3">
+                {/* Status Badge */}
+                <div>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    organizationStatus?.status === 'ACTIVE' ? 'bg-green-100 text-green-800 border border-green-200' :
+                    organizationStatus?.status === 'PENDING_REG' ? 'bg-yellow-100 text-yellow-800 border border-yellow-200' :
+                    organizationStatus?.status === 'REGISTERED' ? 'bg-blue-100 text-blue-800 border border-blue-200' :
+                    organizationStatus?.status === 'INACTIVE' ? 'bg-gray-100 text-gray-800 border border-gray-200' :
+                    organizationStatus?.status === 'CESSATION' ? 'bg-orange-100 text-orange-800 border border-orange-200' :
+                    organizationStatus?.status === 'CLOSED' ? 'bg-red-100 text-red-800 border border-red-200' :
+                    organizationStatus?.status === 'NON_COMPLIANT' ? 'bg-red-100 text-red-800 border border-red-200' :
+                    organizationStatus?.status === 'UNDER_AUDIT' ? 'bg-purple-100 text-purple-800 border border-purple-200' :
+                    organizationStatus?.status === 'SUSPENDED' ? 'bg-red-100 text-red-800 border border-red-200' :
+                    'bg-gray-100 text-gray-800 border border-gray-200'
+                  }`}>
+                    {organizationStatus?.status || 'Not available'}
+                  </span>
+                </div>
+
+                {/* Approval Button or Pending Message for PENDING_REG */}
+                {organizationStatus?.status === 'PENDING_REG' && (
+                  <div>
+                    {(UserService.hasRole('APPROVER') || UserService.isSuperAdmin()) ? (
+                      <button
+                        onClick={async () => {
+                          try {
+                            const updatedStatus = await OrganizationService.updateOrganizationStatus(organization.id, {
+                              status: 'REGISTERED',
+                              reason: 'APPROVED',
+                              description: 'Registration to Windbooks approved.'
+                            })
+                            // Update the local state via the callback
+                            onStatusUpdate(updatedStatus)
+                          } catch (error) {
+                            console.error('Failed to approve organization:', error)
+                            // TODO: Show error message to user
+                          }
+                        }}
+                        className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
+                      >
+                        Approve Registration
+                      </button>
+                    ) : (
+                      <p className="text-sm text-gray-600 bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                        Ask ADMIN or APPROVER to approve application to Windbooks.
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Additional Status Details */}
+                {organizationStatus?.reason && (
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Reason</dt>
+                    <dd className="text-sm text-gray-900 mt-1">{organizationStatus.reason}</dd>
+                  </div>
+                )}
+                {organizationStatus?.description && (
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Description</dt>
+                    <dd className="text-sm text-gray-900 mt-1">{organizationStatus.description}</dd>
+                  </div>
+                )}
+                {organizationStatus?.last_update && (
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">Last Update</dt>
+                    <dd className="text-sm text-gray-900 mt-1">
+                      {new Date(organizationStatus.last_update).toLocaleDateString()}
+                    </dd>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        )
+      case 'operation':
+        return (
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-lg font-medium">Operation Details</h3>
+              <button 
+                className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md"
+                aria-label="Edit Operation Details"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+            </div>
+            <table className="w-full border border-gray-100">
+              <tbody>
+                {organizationOperation?.fy_end && (
+                  <tr className="border-b border-gray-50">
+                    <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Fiscal Year End</td>
+                    <td className="py-2 px-3 text-sm text-gray-900">
+                      {formatDateMMMYYYY(organizationOperation.fy_end)}
+                    </td>
                   </tr>
                 )}
-                <tr className="border-b border-gray-50">
-                  <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Line of Business</td>
-                  <td className="py-2 px-3 text-sm text-gray-900">{organizationRegistration.line_of_business}</td>
-                </tr>
-                <tr className="border-b border-gray-50">
-                  <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Address</td>
-                  <td className="py-2 px-3 text-sm text-gray-900">
-                    {organizationRegistration.address_line}, {organizationRegistration.city}, {organizationRegistration.region} {organizationRegistration.zip_code}
-                  </td>
-                </tr>
-                <tr className="border-b border-gray-50">
-                  <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Contact</td>
-                  <td className="py-2 px-3 text-sm text-gray-900">{organizationRegistration.contact_number}</td>
-                </tr>
-                <tr>
-                  <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Email</td>
-                  <td className="py-2 px-3 text-sm text-gray-900">{organizationRegistration.email_address}</td>
-                </tr>
-              </>
-            )}
-            {!organizationRegistration && (
-              <tr>
-                <td className="py-2 px-3 text-sm text-gray-500" colSpan={2}>Registration details not available</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                {organizationOperation?.accounting_method && (
+                  <tr className="border-b border-gray-50">
+                    <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Accounting Method</td>
+                    <td className="py-2 px-3 text-sm text-gray-900">{organizationOperation.accounting_method}</td>
+                  </tr>
+                )}
+                {organizationOperation?.payroll_cut_off && organizationOperation.payroll_cut_off.length > 0 && (
+                  <tr className="border-b border-gray-50">
+                    <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Payroll Cut-off</td>
+                    <td className="py-2 px-3 text-sm text-gray-900">{formatCutOff(organizationOperation.payroll_cut_off)}</td>
+                  </tr>
+                )}
+                {organizationOperation?.payment_cut_off && organizationOperation.payment_cut_off.length > 0 && (
+                  <tr className="border-b border-gray-50">
+                    <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Payment Cut-off</td>
+                    <td className="py-2 px-3 text-sm text-gray-900">{formatCutOff(organizationOperation.payment_cut_off)}</td>
+                  </tr>
+                )}
+                {organizationOperation?.quarter_closing && organizationOperation.quarter_closing.length > 0 && (
+                  <tr className="border-b border-gray-50">
+                    <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Quarter Closing</td>
+                    <td className="py-2 px-3 text-sm text-gray-900">{organizationOperation.quarter_closing.join(', ')}</td>
+                  </tr>
+                )}
+                {organizationOperation?.has_employees !== undefined && (
+                  <tr className="border-b border-gray-50">
+                    <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Has Employees</td>
+                    <td className="py-2 px-3 text-sm text-gray-900">{organizationOperation.has_employees ? 'Yes' : 'No'}</td>
+                  </tr>
+                )}
+                {organizationOperation?.is_ewt !== undefined && (
+                  <tr className="border-b border-gray-50">
+                    <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">EWT</td>
+                    <td className="py-2 px-3 text-sm text-gray-900">{organizationOperation.is_ewt ? 'Yes' : 'No'}</td>
+                  </tr>
+                )}
+                {organizationOperation?.is_fwt !== undefined && (
+                  <tr className="border-b border-gray-50">
+                    <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">FWT</td>
+                    <td className="py-2 px-3 text-sm text-gray-900">{organizationOperation.is_fwt ? 'Yes' : 'No'}</td>
+                  </tr>
+                )}
+                {organizationOperation?.is_bir_withholding_agent !== undefined && (
+                  <tr>
+                    <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Withholding Agent</td>
+                    <td className="py-2 px-3 text-sm text-gray-900">{organizationOperation.is_bir_withholding_agent ? 'Yes' : 'No'}</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )
+      case 'bir':
+        return (
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-lg font-medium">Registration Information</h3>
+              <button 
+                className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md"
+                aria-label="Edit Registration Information"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+            </div>
+            <table className="w-full border border-gray-100">
+              <tbody>
+                {organizationRegistration && (
+                  <>
+                    <tr className="border-b border-gray-50">
+                      <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Tax Classification</td>
+                      <td className="py-2 px-3 text-sm text-gray-900">{formatTaxType(organizationRegistration.tax_type)}</td>
+                    </tr>
+                    <tr className="border-b border-gray-50">
+                      <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Name</td>
+                      <td className="py-2 px-3 text-sm text-gray-900">
+                        {organizationRegistration.first_name} {organizationRegistration.middle_name} {organizationRegistration.last_name}
+                      </td>
+                    </tr>
+                    {organizationRegistration.trade_name && (
+                      <tr className="border-b border-gray-50">
+                        <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Trade Name</td>
+                        <td className="py-2 px-3 text-sm text-gray-900">{organizationRegistration.trade_name}</td>
+                      </tr>
+                    )}
+                    <tr className="border-b border-gray-50">
+                      <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Line of Business</td>
+                      <td className="py-2 px-3 text-sm text-gray-900">{organizationRegistration.line_of_business}</td>
+                    </tr>
+                    <tr className="border-b border-gray-50">
+                      <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Address</td>
+                      <td className="py-2 px-3 text-sm text-gray-900">
+                        {organizationRegistration.address_line}, {organizationRegistration.city}, {organizationRegistration.region} {organizationRegistration.zip_code}
+                      </td>
+                    </tr>
+                    <tr className="border-b border-gray-50">
+                      <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Contact</td>
+                      <td className="py-2 px-3 text-sm text-gray-900">{organizationRegistration.contact_number}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 px-3 text-sm font-medium text-gray-500 bg-gray-25 border-r border-gray-100">Email</td>
+                      <td className="py-2 px-3 text-sm text-gray-900">{organizationRegistration.email_address}</td>
+                    </tr>
+                  </>
+                )}
+                {!organizationRegistration && (
+                  <tr>
+                    <td className="py-2 px-3 text-sm text-gray-500" colSpan={2}>Registration details not available</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )
+      default:
+        return null
+    }
+  }
+
+  return (
+    <div>
+      <h2 className="text-xl font-semibold mb-4">Organization Details</h2>
+      
+      {/* Tabs */}
+      <div className="border-b border-gray-200 mb-6">
+        <nav className="flex space-x-8">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === tab.id
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <span className="mr-2">{tab.icon}</span>
+              {tab.label}
+            </button>
+          ))}
+        </nav>
       </div>
+
+      {/* Tab Content */}
+      {renderTabContent()}
     </div>
-  </div>
-)
+  )
+}
 
 const Contacts: React.FC<{ organization: Organization }> = ({ organization: _organization }) => (
   <div>

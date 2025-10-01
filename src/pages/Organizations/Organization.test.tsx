@@ -161,13 +161,11 @@ describe('Organization Page', () => {
       })
 
       expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument()
-      expect(screen.getByText('001234567890')).toBeInTheDocument()
+      expect(screen.getByText('TIN: 001234567890')).toBeInTheDocument()
       expect(screen.getAllByText('NON_INDIVIDUAL')).toHaveLength(2) // Badge and table cell
-      expect(screen.getAllByText('VAT')).toHaveLength(2) // Badge and Basic Information table // Badge and table cell
+      expect(screen.getAllByText('VAT')).toHaveLength(2) // Badge and Basic Information table
       expect(screen.getByText('Basic Information')).toBeInTheDocument()
       expect(screen.getByText('Business Status')).toBeInTheDocument()
-      expect(screen.getByText('Operation Details')).toBeInTheDocument()
-      expect(screen.getByText('Registration Information')).toBeInTheDocument()
     })
 
     it('should display menu items', async () => {
@@ -326,20 +324,28 @@ describe('Organization Page', () => {
         expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
       })
 
-      // Basic organization info
-      expect(screen.getByText('001234567890')).toBeInTheDocument()
+      // Basic organization info (visible in General tab by default)
+      expect(screen.getByText('TIN: 001234567890')).toBeInTheDocument()
       expect(screen.getAllByText('NON_INDIVIDUAL')).toHaveLength(2) // Badge and table cell
-      expect(screen.getAllByText('VAT')).toHaveLength(3) // Badge, Basic Information, and Registration Information
+      expect(screen.getAllByText('VAT')).toHaveLength(2) // Badge and Basic Information table
 
-      // Status information
+      // Status information (visible in General tab by default)
       expect(screen.getByText('ACTIVE')).toBeInTheDocument()
       expect(screen.getByText('Organization is active and compliant')).toBeInTheDocument()
+
+      // Switch to Operation tab to check operation details
+      const operationTab = screen.getByRole('button', { name: /operation/i })
+      await userEvent.click(operationTab)
 
       // Operation details
       expect(screen.getByText('ACCRUAL')).toBeInTheDocument()
       expect(screen.getAllByText('15th and 30th')).toHaveLength(2) // payroll and payment cut-off
       expect(screen.getByText('Dec 2025')).toBeInTheDocument() // fiscal year end
       expect(screen.getAllByText('Yes')).toHaveLength(4) // Has Employees, EWT, FWT, Withholding Agent
+
+      // Switch to BIR Registration tab to check registration details
+      const birTab = screen.getByRole('button', { name: /bir registration/i })
+      await userEvent.click(birTab)
 
       // Registration details
       expect(screen.getByText('John Michael Doe')).toBeInTheDocument()
@@ -361,10 +367,18 @@ describe('Organization Page', () => {
         expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
       })
 
-      // Check for section headers
+      // Check for section headers in General tab (default)
       expect(screen.getByText('Basic Information')).toBeInTheDocument()
       expect(screen.getByText('Business Status')).toBeInTheDocument()
+
+      // Switch to Operation tab and check for Operation Details
+      const operationTab = screen.getByRole('button', { name: /operation/i })
+      await userEvent.click(operationTab)
       expect(screen.getByText('Operation Details')).toBeInTheDocument()
+
+      // Switch to BIR Registration tab and check for Registration Information
+      const birTab = screen.getByRole('button', { name: /bir registration/i })
+      await userEvent.click(birTab)
       expect(screen.getByText('Registration Information')).toBeInTheDocument()
     })
   })
@@ -540,11 +554,17 @@ describe('Organization Page', () => {
         expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
       })
 
-      // Check that Tax Classification in Registration Information shows VAT
-      await waitFor(() => {
-        expect(screen.getAllByText('Tax Classification')).toHaveLength(2) // Basic Information and Registration Information
-      })
-      expect(screen.getAllByText('VAT')).toHaveLength(3) // Badge, Basic Information, and Registration Information
+      // Check that Tax Classification in Basic Information shows VAT (General tab)
+      expect(screen.getAllByText('Tax Classification')).toHaveLength(1) // Only in Basic Information initially
+      expect(screen.getAllByText('VAT')).toHaveLength(2) // Badge and Basic Information
+
+      // Switch to BIR Registration tab to see the Tax Classification in Registration Information
+      const birTab = screen.getByRole('button', { name: /bir registration/i })
+      await userEvent.click(birTab)
+
+      // Now should have 1 Tax Classification label in Registration Information and 2 VAT instances
+      expect(screen.getAllByText('Tax Classification')).toHaveLength(1) // Only in Registration Information when tab is active
+      expect(screen.getAllByText('VAT')).toHaveLength(2) // Badge and Registration Information
     })
 
     it('should display Percentage Tax as Tax Classification for NON_VAT tax_type', async () => {
@@ -562,6 +582,10 @@ describe('Organization Page', () => {
       await waitFor(() => {
         expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
       })
+
+      // Switch to BIR Registration tab
+      const birTab = screen.getByRole('button', { name: /bir registration/i })
+      await userEvent.click(birTab)
 
       expect(screen.getByText('Percentage Tax')).toBeInTheDocument()
     })
@@ -582,7 +606,263 @@ describe('Organization Page', () => {
         expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
       })
 
+      // Switch to BIR Registration tab
+      const birTab = screen.getByRole('button', { name: /bir registration/i })
+      await userEvent.click(birTab)
+
       expect(screen.getByText('Tax Excempted')).toBeInTheDocument()
     })
+  })
+
+  it('should display TIN below the organization header', async () => {
+    render(
+      <BrowserRouter>
+        <Organization />
+      </BrowserRouter>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+    })
+
+    // Check that TIN is displayed below the header
+    const header = screen.getByRole('heading', { level: 1 })
+    const tinElement = screen.getByText('TIN: 001234567890')
+    
+    // TIN should be in a separate element below the header
+    expect(tinElement).toBeInTheDocument()
+    expect(header.nextElementSibling).toContainElement(tinElement)
+  })
+
+  it('should display separate tabs for General, Operation, and BIR Registration', async () => {
+    render(
+      <BrowserRouter>
+        <Organization />
+      </BrowserRouter>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+    })
+
+    // Check for tab buttons
+    expect(screen.getByRole('button', { name: /general/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /operation/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /bir registration/i })).toBeInTheDocument()
+  })
+
+  it('should show General tab content by default with Basic Information and Business Status', async () => {
+    render(
+      <BrowserRouter>
+        <Organization />
+      </BrowserRouter>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+    })
+
+    // General tab should be active by default
+    const generalTab = screen.getByRole('button', { name: /general/i })
+    expect(generalTab).toHaveClass('border-blue-500', 'text-blue-600')
+
+    // Should show Basic Information and Business Status sections
+    expect(screen.getByText('Basic Information')).toBeInTheDocument()
+    expect(screen.getByText('Business Status')).toBeInTheDocument()
+
+    // Should not show Operation Details or Registration Information in General tab
+    expect(screen.queryByText('Operation Details')).not.toBeInTheDocument()
+    expect(screen.queryByText('Registration Information')).not.toBeInTheDocument()
+  })
+
+  it('should show Operation tab content with Operation Details when Operation tab is clicked', async () => {
+    render(
+      <BrowserRouter>
+        <Organization />
+      </BrowserRouter>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+    })
+
+    // Click Operation tab
+    const operationTab = screen.getByRole('button', { name: /operation/i })
+    await userEvent.click(operationTab)
+
+    // Operation tab should be active
+    expect(operationTab).toHaveClass('border-blue-500', 'text-blue-600')
+
+    // Should show Operation Details section
+    expect(screen.getByText('Operation Details')).toBeInTheDocument()
+
+    // Should not show Basic Information, Business Status, or Registration Information
+    expect(screen.queryByText('Basic Information')).not.toBeInTheDocument()
+    expect(screen.queryByText('Business Status')).not.toBeInTheDocument()
+    expect(screen.queryByText('Registration Information')).not.toBeInTheDocument()
+  })
+
+  it('should show BIR Registration tab content with Registration Information when BIR Registration tab is clicked', async () => {
+    render(
+      <BrowserRouter>
+        <Organization />
+      </BrowserRouter>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+    })
+
+    // Click BIR Registration tab
+    const birTab = screen.getByRole('button', { name: /bir registration/i })
+    await userEvent.click(birTab)
+
+    // BIR Registration tab should be active
+    expect(birTab).toHaveClass('border-blue-500', 'text-blue-600')
+
+    // Should show Registration Information section
+    expect(screen.getByText('Registration Information')).toBeInTheDocument()
+
+    // Should not show Basic Information, Business Status, or Operation Details
+    expect(screen.queryByText('Basic Information')).not.toBeInTheDocument()
+    expect(screen.queryByText('Business Status')).not.toBeInTheDocument()
+    expect(screen.queryByText('Operation Details')).not.toBeInTheDocument()
+  })
+
+  it('should display icon buttons instead of text Edit buttons in all sections', async () => {
+    render(
+      <BrowserRouter>
+        <Organization />
+      </BrowserRouter>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+    })
+
+    // Should not have any text "Edit" buttons
+    expect(screen.queryByRole('button', { name: /^edit$/i })).not.toBeInTheDocument()
+
+    // Should have icon buttons (edit icons) in each section
+    const editButtons = screen.getAllByRole('button', { name: /edit/i })
+    expect(editButtons.length).toBeGreaterThan(0)
+
+    // Each edit button should contain an SVG icon (edit icon)
+    editButtons.forEach(button => {
+      const svgIcon = button.querySelector('svg')
+      expect(svgIcon).toBeInTheDocument()
+    })
+  })
+
+  it('should display edit icon button in Basic Information section', async () => {
+    render(
+      <BrowserRouter>
+        <Organization />
+      </BrowserRouter>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+    })
+
+    // Find Basic Information section header
+    const basicInfoHeader = screen.getByText('Basic Information')
+    
+    // The edit button should be next to the header
+    const headerContainer = basicInfoHeader.closest('div')
+    const editButton = headerContainer?.querySelector('button')
+    
+    expect(editButton).toBeInTheDocument()
+    expect(editButton).toHaveAttribute('aria-label', 'Edit Basic Information')
+    
+    // Should contain an edit icon (SVG)
+    const svgIcon = editButton?.querySelector('svg')
+    expect(svgIcon).toBeInTheDocument()
+  })
+
+  it('should display edit icon button in Business Status section', async () => {
+    render(
+      <BrowserRouter>
+        <Organization />
+      </BrowserRouter>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+    })
+
+    // Find Business Status section header
+    const businessStatusHeader = screen.getByText('Business Status')
+    
+    // The edit button should be next to the header
+    const headerContainer = businessStatusHeader.closest('div')
+    const editButton = headerContainer?.querySelector('button')
+    
+    expect(editButton).toBeInTheDocument()
+    expect(editButton).toHaveAttribute('aria-label', 'Edit Business Status')
+    
+    // Should contain an edit icon (SVG)
+    const svgIcon = editButton?.querySelector('svg')
+    expect(svgIcon).toBeInTheDocument()
+  })
+
+  it('should display edit icon button in Operation Details section', async () => {
+    render(
+      <BrowserRouter>
+        <Organization />
+      </BrowserRouter>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+    })
+
+    // Click Operation tab first
+    const operationTab = screen.getByRole('button', { name: /operation/i })
+    await userEvent.click(operationTab)
+
+    // Find Operation Details section header
+    const operationHeader = screen.getByText('Operation Details')
+    
+    // The edit button should be next to the header
+    const headerContainer = operationHeader.closest('div')
+    const editButton = headerContainer?.querySelector('button')
+    
+    expect(editButton).toBeInTheDocument()
+    expect(editButton).toHaveAttribute('aria-label', 'Edit Operation Details')
+    
+    // Should contain an edit icon (SVG)
+    const svgIcon = editButton?.querySelector('svg')
+    expect(svgIcon).toBeInTheDocument()
+  })
+
+  it('should display edit icon button in Registration Information section', async () => {
+    render(
+      <BrowserRouter>
+        <Organization />
+      </BrowserRouter>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+    })
+
+    // Click BIR Registration tab first
+    const birTab = screen.getByRole('button', { name: /bir registration/i })
+    await userEvent.click(birTab)
+
+    // Find Registration Information section header
+    const registrationHeader = screen.getByText('Registration Information')
+    
+    // The edit button should be next to the header
+    const headerContainer = registrationHeader.closest('div')
+    const editButton = headerContainer?.querySelector('button')
+    
+    expect(editButton).toBeInTheDocument()
+    expect(editButton).toHaveAttribute('aria-label', 'Edit Registration Information')
+    
+    // Should contain an edit icon (SVG)
+    const svgIcon = editButton?.querySelector('svg')
+    expect(svgIcon).toBeInTheDocument()
   })
 })
