@@ -26,6 +26,7 @@ export interface MenuProps {
   onSubmenuToggle?: (itemId: string) => void;
   renderItem?: (item: MenuItem, isActive: boolean, level: number) => ReactNode;
   asyncLoader?: (parentId: string) => Promise<MenuItem[]>;
+  activeItem?: string | null;
 }
 
 export interface MenuItemProps {

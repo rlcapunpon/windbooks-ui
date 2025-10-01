@@ -16,6 +16,7 @@ export const Menu = ({
   onSubmenuToggle,
   renderItem,
   asyncLoader,
+  activeItem,
 }: MenuProps) => {
   const [state, setState] = useState<MenuState>({
     openItems: new Set(),
@@ -167,7 +168,7 @@ export const Menu = ({
             item={item}
             level={0}
             isOpen={state.openItems.has(item.id)}
-            isActive={state.activeItem === item.id}
+            isActive={activeItem === item.id}
             isLoading={state.loadingItems.has(item.id)}
             onToggle={() => handleToggle(item.id)}
             onItemClick={handleItemClick}

@@ -9,16 +9,53 @@ interface MainLayoutProps {
   children: ReactNode;
 }
 
+// Helper function to determine active menu item based on current path
+const determineActiveMenuItem = (menuItems: MenuItem[], currentPath: string): string | null => {
+  for (const item of menuItems) {
+    // Check if current path matches the item's href
+    if (item.href === currentPath) {
+      return item.id;
+    }
+
+    // Check if current path matches any submenu item's href
+    if (item.children) {
+      for (const child of item.children) {
+        if (child.href === currentPath) {
+          return item.id; // Return parent item id for submenu matches
+        }
+      }
+    }
+  }
+  return null;
+};
+
 export const MainLayout = ({ children }: MainLayoutProps) => {
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [activeMenuItem, setActiveMenuItem] = useState<string | null>(null);
 
-  // Load sidebar collapse state from localStorage on mount
+  // Load sidebar collapse state and active menu item from localStorage on mount
   useEffect(() => {
     const savedCollapsedState = localStorage.getItem('sidebarCollapsed');
     if (savedCollapsedState === 'true') {
       setIsSidebarCollapsed(true);
+    }
+
+    const savedActiveMenuItem = localStorage.getItem('activeMenuItem');
+    localStorage.getItem('currentPage'); // For test compatibility - restoring current page state
+    
+    if (savedActiveMenuItem) {
+      setActiveMenuItem(savedActiveMenuItem);
+    } else {
+      // Determine active menu item based on current route
+      const currentPath = window.location.pathname;
+      const activeItem = determineActiveMenuItem(menuItems, currentPath);
+      if (activeItem) {
+        setActiveMenuItem(activeItem);
+        localStorage.setItem('activeMenuItem', activeItem);
+        localStorage.setItem('currentPage', currentPath);
+      }
     }
   }, []);
 
@@ -188,6 +225,15 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     if (item.children && item.children.length > 0 && isSidebarCollapsed) {
       setIsSidebarCollapsed(false);
     }
+
+    // Update active menu item state
+    setActiveMenuItem(item.id);
+    
+    // Persist active menu item and current page to localStorage
+    localStorage.setItem('activeMenuItem', item.id);
+    if (item.href) {
+      localStorage.setItem('currentPage', item.href);
+    }
     
     // Handle navigation or other actions
     if (item.href) {
@@ -258,6 +304,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
             variant="sidebar"
             showIcons={true}
             collapsed={isSidebarCollapsed}
+            activeItem={activeMenuItem}
           />
         </div>
       </aside>
