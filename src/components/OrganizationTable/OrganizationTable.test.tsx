@@ -5,6 +5,16 @@ import { BrowserRouter } from 'react-router-dom'
 import { OrganizationTable } from './OrganizationTable'
 import type { Organization } from '../../services/organizationService'
 
+// Mock react-router-dom
+const mockNavigate = vi.fn()
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom')
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate
+  }
+})
+
 // Mock data
 const mockOrganizations: Organization[] = [
   {
@@ -54,6 +64,7 @@ describe('OrganizationTable', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    mockNavigate.mockClear()
   })
 
   describe('Loading State', () => {
@@ -513,6 +524,198 @@ describe('OrganizationTable', () => {
       // Should find both organizations (case insensitive)
       expect(screen.getByText('Test Organization 1')).toBeInTheDocument();
       expect(screen.getByText('Test Organization 2')).toBeInTheDocument();
+    });
+  });
+
+  describe('View Action Navigation Reliability', () => {
+    it('should maintain consistent View button functionality after search operations', async () => {
+      const user = userEvent.setup()
+      const mockOnSearchChange = vi.fn()
+      
+      render(
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+            searchQuery=""
+            onSearchChange={mockOnSearchChange}
+          />
+        </BrowserRouter>
+      );
+
+      // Perform search operation that filters to specific organization
+      const searchInput = screen.getByTestId('search-input')
+      await user.type(searchInput, 'org-1')
+      
+      // Verify View button still works after search  
+      const viewButtons = screen.getAllByText('View')
+      expect(viewButtons.length).toBeGreaterThan(0) // At least one organization should be visible
+      
+      await user.click(viewButtons[0])
+      expect(mockNavigate).toHaveBeenCalledWith('/organizations/org-1')
+    });
+
+    it('should navigate to correct organization after filtering and clearing search', async () => {
+      const user = userEvent.setup()
+      const mockOnSearchChange = vi.fn()
+      
+      render(
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+            searchQuery="Test Organization 1"
+            onSearchChange={mockOnSearchChange}
+          />
+        </BrowserRouter>
+      );
+
+      // Click View on filtered result
+      const viewButton = screen.getByText('View')
+      await user.click(viewButton)
+      
+      expect(mockNavigate).toHaveBeenCalledWith('/organizations/org-1')
+    });
+
+    it('should preserve View action functionality during loading states', async () => {
+      const user = userEvent.setup()
+      
+      const { rerender } = render(
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+          />
+        </BrowserRouter>
+      );
+
+      // Change to loading state
+      rerender(
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={true}
+            onRefresh={mockOnRefresh}
+          />
+        </BrowserRouter>
+      );
+
+      // View buttons should still be present and functional during refresh
+      const viewButtons = screen.getAllByText('View')
+      expect(viewButtons.length).toBeGreaterThan(0)
+      
+      await user.click(viewButtons[0])
+      expect(mockNavigate).toHaveBeenCalledWith('/organizations/org-1')
+    });
+
+    it('should handle rapid View button clicks without issues', async () => {
+      const user = userEvent.setup()
+      
+      render(
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+          />
+        </BrowserRouter>
+      );
+
+      const viewButtons = screen.getAllByText('View')
+      
+      // Click multiple View buttons rapidly
+      await user.click(viewButtons[0])
+      await user.click(viewButtons[1])
+      
+      expect(mockNavigate).toHaveBeenCalledTimes(2)
+      expect(mockNavigate).toHaveBeenNthCalledWith(1, '/organizations/org-1')
+      expect(mockNavigate).toHaveBeenNthCalledWith(2, '/organizations/org-2')
+    });
+
+    it('should maintain View button accessibility attributes', () => {
+      render(
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+          />
+        </BrowserRouter>
+      );
+
+      const viewButtons = screen.getAllByText('View')
+      
+      viewButtons.forEach(button => {
+        expect(button).toHaveAttribute('type', 'button')
+        expect(button).toHaveClass('text-blue-600', 'hover:text-blue-900')
+      })
+    });
+
+    it('should render View buttons for each organization consistently', () => {
+      render(
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={mockOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+          />
+        </BrowserRouter>
+      );
+
+      const viewButtons = screen.getAllByText('View')
+      const organizationRows = screen.getAllByRole('row').slice(1) // Exclude header row
+      
+      expect(viewButtons).toHaveLength(mockOrganizations.length)
+      expect(organizationRows).toHaveLength(mockOrganizations.length)
+    });
+
+    it('should navigate with correct organization ID from different table states', async () => {
+      const user = userEvent.setup()
+      const threeOrganizations = [...mockOrganizations, {
+        id: 'org-3',
+        name: 'Test Organization 3',
+        category: 'NON_INDIVIDUAL' as const,
+        subcategory: 'CORPORATION' as const,
+        tin: '333-333-333-333',
+        tax_classification: 'NON_VAT' as const,
+        address: '789 Third St',
+        registration_date: '2023-03-01T00:00:00.000Z',
+        created_at: '2023-03-01T00:00:00.000Z',
+        updated_at: '2023-03-01T00:00:00.000Z',
+        deleted_at: null,
+        status: {
+          id: 'status-3',
+          organization_id: 'org-3',
+          status: 'PENDING_REG' as const,
+          reason: 'APPROVED' as const,
+          last_update: '2023-03-01T00:00:00.000Z',
+          created_at: '2023-03-01T00:00:00.000Z',
+          updated_at: '2023-03-01T00:00:00.000Z'
+        }
+      }]
+      
+      render(
+        <BrowserRouter>
+          <OrganizationTable
+            organizations={threeOrganizations}
+            loading={false}
+            onRefresh={mockOnRefresh}
+          />
+        </BrowserRouter>
+      );
+
+      const viewButtons = screen.getAllByText('View')
+      
+      // Test first organization
+      await user.click(viewButtons[0])
+      expect(mockNavigate).toHaveBeenCalledWith('/organizations/org-1')
+      
+      // Test last organization
+      await user.click(viewButtons[2])
+      expect(mockNavigate).toHaveBeenCalledWith('/organizations/org-3')
     });
   });
 });

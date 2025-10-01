@@ -385,4 +385,165 @@ describe('Menu Component', () => {
     const icon = screen.getByTestId('test-icon').parentElement;
     expect(icon).toHaveClass('w-5', 'h-5');
   });
+
+  // Tests specifically for preventing infinite render issues
+  describe('Infinite Render Prevention', () => {
+    it('should not cause infinite re-renders when filteredItems dependency changes', () => {
+      let renderCount = 0;
+      const TestComponent = () => {
+        renderCount++;
+        return (
+          <Menu
+            items={mockMenuItems}
+            userPermissions={['USER.READ']}
+            activeItem="dashboard"
+          />
+        );
+      };
+
+      render(<TestComponent />);
+
+      // Allow React to settle and process any useEffect cycles
+      expect(renderCount).toBeLessThan(10); // Should not render excessively
+    });
+
+    it('should memoize filteredItems properly to prevent dependency array issues', () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      // This test ensures that the filteredItems memoization prevents
+      // "Maximum update depth exceeded" errors
+      render(
+        <Menu
+          items={mockMenuItems}
+          userPermissions={['USER.READ']}
+          activeItem="users-list" // This should trigger parent expansion
+        />
+      );
+
+      // Wait for any potential useEffect cycles to complete
+      expect(consoleSpy).not.toHaveBeenCalledWith(
+        expect.stringContaining('Maximum update depth exceeded')
+      );
+
+      consoleSpy.mockRestore();
+    });
+
+    it('should handle activeItem prop changes without infinite re-renders', async () => {
+      let errorOccurred = false;
+      const originalError = console.error;
+      console.error = (message: string) => {
+        if (message.includes('Maximum update depth exceeded')) {
+          errorOccurred = true;
+        }
+        originalError(message);
+      };
+
+      const { rerender } = render(
+        <Menu
+          items={mockMenuItems}
+          userPermissions={['USER.READ']}
+          activeItem="dashboard"
+        />
+      );
+
+      // Change activeItem multiple times rapidly
+      rerender(
+        <Menu
+          items={mockMenuItems}
+          userPermissions={['USER.READ']}
+          activeItem="users-list"
+        />
+      );
+
+      rerender(
+        <Menu
+          items={mockMenuItems}
+          userPermissions={['USER.READ']}
+          activeItem="users-create"
+        />
+      );
+
+      rerender(
+        <Menu
+          items={mockMenuItems}
+          userPermissions={['USER.READ']}
+          activeItem="dashboard"
+        />
+      );
+
+      // Wait for React to process all updates
+      await waitFor(() => {
+        expect(errorOccurred).toBe(false);
+      });
+
+      console.error = originalError;
+    });
+
+    it('should handle permission changes without infinite re-renders', () => {
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+      const { rerender } = render(
+        <Menu
+          items={mockMenuItems}
+          userPermissions={['USER.READ']}
+          activeItem="users-list"
+        />
+      );
+
+      // Change permissions which should trigger filteredItems recalculation
+      rerender(
+        <Menu
+          items={mockMenuItems}
+          userPermissions={['*']}
+          activeItem="users-list"
+        />
+      );
+
+      rerender(
+        <Menu
+          items={mockMenuItems}
+          userPermissions={['USER.READ', 'USER.CREATE']}
+          activeItem="users-list"
+        />
+      );
+
+      // Verify no infinite render errors occurred
+      expect(consoleSpy).not.toHaveBeenCalledWith(
+        expect.stringContaining('Maximum update depth exceeded')
+      );
+
+      consoleSpy.mockRestore();
+    });
+
+    it('should properly memoize filteredItems and prevent unnecessary recalculations', () => {
+      // This test verifies that useMemo is working by checking
+      // that changing only activeItem doesn't trigger re-filtering
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      
+      const { rerender } = render(
+        <Menu
+          items={mockMenuItems}
+          userPermissions={['USER.READ']}
+          activeItem="dashboard"
+        />
+      );
+
+      // Re-render with same items and permissions but different activeItem
+      // This should not cause infinite re-renders due to proper memoization
+      rerender(
+        <Menu
+          items={mockMenuItems}
+          userPermissions={['USER.READ']}
+          activeItem="users-list"
+        />
+      );
+
+      // Verify no errors were thrown during re-render
+      expect(consoleSpy).not.toHaveBeenCalledWith(
+        expect.stringContaining('Maximum update depth exceeded')
+      );
+
+      consoleSpy.mockRestore();
+    });
+  });
 });

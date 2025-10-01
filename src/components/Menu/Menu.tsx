@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import type { MenuProps, MenuState, MenuItem } from './types';
 import { MenuItemComponent } from './MenuItem';
 import { cn } from '../../utils/cn';
@@ -26,21 +26,23 @@ export const Menu = ({
 
   const menuRef = useRef<HTMLDivElement>(null);
 
-  // Filter items based on user permissions
-  const filteredItems = items.filter(item => {
-    // If no permissions required, show the item
-    if (!item.permissions || item.permissions.length === 0) {
-      return true;
-    }
+  // Filter items based on user permissions - memoized to prevent infinite re-renders
+  const filteredItems = useMemo(() => {
+    return items.filter(item => {
+      // If no permissions required, show the item
+      if (!item.permissions || item.permissions.length === 0) {
+        return true;
+      }
 
-    // If user has wildcard permission (*), show all items
-    if (userPermissions.includes('*')) {
-      return true;
-    }
+      // If user has wildcard permission (*), show all items
+      if (userPermissions.includes('*')) {
+        return true;
+      }
 
-    // Check if user has any of the required permissions
-    return item.permissions.some(permission => userPermissions.includes(permission));
-  });
+      // Check if user has any of the required permissions
+      return item.permissions.some(permission => userPermissions.includes(permission));
+    });
+  }, [items, userPermissions]);
 
   // Handle item toggle (expand/collapse)
   const handleToggle = useCallback((itemId: string) => {
