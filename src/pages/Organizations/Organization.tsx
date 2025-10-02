@@ -8,7 +8,7 @@ import { UpdateOrganizationOperationsModal, type UpdateOperationFormData } from 
 import { UpdateOrganizationRegistrationModal, type UpdateRegistrationFormData } from '../../components/UpdateOrganizationRegistrationModal/UpdateOrganizationRegistrationModal'
 import { canEditOrganizationStatus, canEditOrganizationRegistration } from '../../utils/organizationPermissions'
 
-type MenuItem = 'details' | 'contacts' | 'obligations' | 'history' | 'settings'
+type MenuItem = 'details' | 'contacts' | 'obligations' | 'books' | 'employees' | 'history' | 'settings'
 
 // Helper functions
 const formatDateMMMYYYY = (dateString: string) => {
@@ -139,6 +139,8 @@ const OrganizationPage: React.FC = () => {
     { id: 'details' as MenuItem, label: 'Organization Details', icon: '📋' },
     { id: 'contacts' as MenuItem, label: 'Contacts', icon: '👥' },
     { id: 'obligations' as MenuItem, label: 'Tax Obligations', icon: '📊' },
+    { id: 'books' as MenuItem, label: 'Books', icon: '📚' },
+    { id: 'employees' as MenuItem, label: 'Employees', icon: '👷' },
     { id: 'history' as MenuItem, label: 'History', icon: '📅' },
     { id: 'settings' as MenuItem, label: 'Settings', icon: '⚙️' }
   ]
@@ -198,6 +200,10 @@ const OrganizationPage: React.FC = () => {
         return <Contacts organization={organization} />
       case 'obligations':
         return <TaxObligations organization={organization} />
+      case 'books':
+        return <Books organization={organization} />
+      case 'employees':
+        return <Employees organization={organization} />
       case 'history':
         return <History organization={organization} />
       case 'settings':
@@ -256,7 +262,9 @@ const OrganizationPage: React.FC = () => {
           {/* Menu */}
           <div className="border-b border-gray-200">
             <nav className="flex space-x-8 px-6">
-              {menuItems.map((item) => (
+              {menuItems
+                .filter(item => item.id !== 'employees' || organizationOperation?.has_employees === true)
+                .map((item) => (
                 <button
                   key={item.id}
                   onClick={() => setActiveMenu(item.id)}
@@ -814,6 +822,20 @@ const TaxObligations: React.FC<{ organization: Organization }> = ({ organization
   <div>
     <h2 className="text-xl font-semibold mb-4">Tax Obligations</h2>
     <p className="text-gray-600">Tax obligations functionality coming soon.</p>
+  </div>
+)
+
+const Books: React.FC<{ organization: Organization }> = ({ organization: _organization }) => (
+  <div>
+    <h2 className="text-xl font-semibold mb-4">Books</h2>
+    <p className="text-gray-600">Books management functionality coming soon.</p>
+  </div>
+)
+
+const Employees: React.FC<{ organization: Organization }> = ({ organization: _organization }) => (
+  <div>
+    <h2 className="text-xl font-semibold mb-4">Employees</h2>
+    <p className="text-gray-600">Employee management functionality coming soon.</p>
   </div>
 )
 

@@ -190,6 +190,11 @@ describe('Organization Page', () => {
     })
 
     it('should display menu items', async () => {
+      ;(OrganizationService.getOrganizationById as any).mockResolvedValue(mockOrganization)
+      ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(mockOrganizationStatus)
+      ;(OrganizationService.getOrganizationOperation as any).mockResolvedValue(mockOrganizationOperation)
+      ;(OrganizationService.getOrganizationRegistration as any).mockResolvedValue(mockOrganizationRegistration)
+
       render(
         <BrowserRouter>
           <Organization />
@@ -203,11 +208,18 @@ describe('Organization Page', () => {
       expect(screen.getByRole('button', { name: /organization details/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /contacts/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /tax obligations/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /books/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /employees/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /history/i })).toBeInTheDocument()
       expect(screen.getByRole('button', { name: /settings/i })).toBeInTheDocument()
     })
 
     it('should switch between menu sections', async () => {
+      ;(OrganizationService.getOrganizationById as any).mockResolvedValue(mockOrganization)
+      ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(mockOrganizationStatus)
+      ;(OrganizationService.getOrganizationOperation as any).mockResolvedValue(mockOrganizationOperation)
+      ;(OrganizationService.getOrganizationRegistration as any).mockResolvedValue(mockOrganizationRegistration)
+
       render(
         <BrowserRouter>
           <Organization />
@@ -225,6 +237,14 @@ describe('Organization Page', () => {
       // Click on Tax Obligations menu
       await userEvent.click(screen.getByText('Tax Obligations'))
       expect(screen.getByText('Tax obligations functionality coming soon.')).toBeInTheDocument()
+
+      // Click on Books menu
+      await userEvent.click(screen.getByText('Books'))
+      expect(screen.getByText('Books management functionality coming soon.')).toBeInTheDocument()
+
+      // Click on Employees menu
+      await userEvent.click(screen.getByText('Employees'))
+      expect(screen.getByText('Employee management functionality coming soon.')).toBeInTheDocument()
 
       // Click on History menu
       await userEvent.click(screen.getByText('History'))
@@ -254,6 +274,45 @@ describe('Organization Page', () => {
       await userEvent.click(backButton)
 
       expect(mockNavigate).toHaveBeenCalledWith('/organizations/dashboard')
+    })
+
+    it('should show Employees tab when organization has employees', async () => {
+      ;(OrganizationService.getOrganizationById as any).mockResolvedValue(mockOrganization)
+      ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(mockOrganizationStatus)
+      ;(OrganizationService.getOrganizationOperation as any).mockResolvedValue(mockOrganizationOperation)
+      ;(OrganizationService.getOrganizationRegistration as any).mockResolvedValue(mockOrganizationRegistration)
+
+      render(
+        <BrowserRouter>
+          <Organization />
+        </BrowserRouter>
+      )
+
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+      })
+
+      expect(screen.getByRole('button', { name: /employees/i })).toBeInTheDocument()
+    })
+
+    it('should hide Employees tab when organization does not have employees', async () => {
+      const operationWithoutEmployees = { ...mockOrganizationOperation, has_employees: false }
+      ;(OrganizationService.getOrganizationById as any).mockResolvedValue(mockOrganization)
+      ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(mockOrganizationStatus)
+      ;(OrganizationService.getOrganizationOperation as any).mockResolvedValue(operationWithoutEmployees)
+      ;(OrganizationService.getOrganizationRegistration as any).mockResolvedValue(mockOrganizationRegistration)
+
+      render(
+        <BrowserRouter>
+          <Organization />
+        </BrowserRouter>
+      )
+
+      await waitFor(() => {
+        expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+      })
+
+      expect(screen.queryByRole('button', { name: /employees/i })).not.toBeInTheDocument()
     })
   })
 
