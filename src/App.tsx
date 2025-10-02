@@ -6,10 +6,10 @@ import VerifyEmail from './pages/Auth/VerifyEmail';
 import AdminDashboard from './pages/Admin/Dashboard';
 import UserManagement from './pages/Admin/UserManagement';
 import RoleManagement from './pages/Admin/RoleManagement';
+import SystemSettings from './pages/Admin/SystemSettings';
 import UserDashboard from './pages/User/Dashboard';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
-import SystemSettings from './pages/Settings/SystemSettings';
 import Organizations from './pages/Organizations';
 import OrganizationsDashboard from './pages/Organizations/OrganizationsDashboard';
 import OrganizationsVAT from './pages/Organizations/OrganizationsVAT';
@@ -42,7 +42,7 @@ function App() {
             <Route path="/user" element={<ProtectedRoute><MainLayout><UserDashboard /></MainLayout></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><MainLayout><Profile /></MainLayout></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><MainLayout><Settings /></MainLayout></ProtectedRoute>} />
-            <Route path="/settings/system" element={<ProtectedRoute><MainLayout><SystemSettings /></MainLayout></ProtectedRoute>} />
+            <Route path="/admin/settings" element={<ProtectedRoute><MainLayout><SystemSettings /></MainLayout></ProtectedRoute>} />
             <Route path="/tasks/my-tasks" element={<ProtectedRoute><MainLayout><MyTasks /></MainLayout></ProtectedRoute>} />
             <Route path="/tasks/assigned" element={<ProtectedRoute><MainLayout><AssignedTasks /></MainLayout></ProtectedRoute>} />
             <Route path="/tasks/management" element={<ProtectedRoute><MainLayout><TaskManagement /></MainLayout></ProtectedRoute>} />

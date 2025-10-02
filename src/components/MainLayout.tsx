@@ -370,7 +370,6 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
               </button>
-              <h1 className="text-xl font-semibold text-gray-900" id="page-title">Dashboard</h1>
               <div className={`px-3 py-1 rounded-full text-xs font-semibold text-white bg-gradient-to-r ${UserService.isSuperAdmin() ? 'from-yellow-500 to-orange-500' :
                 primaryRole === 'admin' ? 'from-purple-500 to-pink-500' :
                 primaryRole === 'manager' ? 'from-blue-500 to-cyan-500' :

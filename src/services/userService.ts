@@ -174,4 +174,45 @@ export class UserService {
       throw error;
     }
   }
+
+  /**
+   * Gets all users with pagination (for admin use)
+   */
+  static async getAllUsers(page: number = 1, limit: number = 10, email?: string, isActive?: boolean) {
+    try {
+      const params: any = { page, limit };
+      if (email) params.email = email;
+      if (isActive !== undefined) params.isActive = isActive;
+
+      const response = await apiClient.get('/users/v2', { params });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Deactivates a user account
+   */
+  static async deactivateUser(userId: string): Promise<void> {
+    try {
+      await apiClient.put(`/users/${userId}/deactivate`);
+    } catch (error) {
+      console.error('Failed to deactivate user:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Deletes a user account
+   */
+  static async deleteUser(userId: string): Promise<void> {
+    try {
+      await apiClient.delete(`/users/${userId}`);
+    } catch (error) {
+      console.error('Failed to delete user:', error);
+      throw error;
+    }
+  }
 }
