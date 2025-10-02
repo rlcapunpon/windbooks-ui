@@ -45,6 +45,7 @@ const UserManagement = () => {
   const [emailFilter, setEmailFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [showDeactivateDialog, setShowDeactivateDialog] = useState(false);
+  const [showActivateDialog, setShowActivateDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
@@ -93,6 +94,11 @@ const UserManagement = () => {
     setShowDeactivateDialog(true);
   };
 
+  const handleActivate = (user: User) => {
+    setSelectedUser(user);
+    setShowActivateDialog(true);
+  };
+
   const handleDelete = (user: User) => {
     setSelectedUser(user);
     setShowDeleteDialog(true);
@@ -113,6 +119,21 @@ const UserManagement = () => {
     }
   };
 
+  const confirmActivate = async () => {
+    if (!selectedUser) return;
+
+    try {
+      await UserService.activateUser(selectedUser.id);
+      // Refresh the users list
+      fetchUsers(currentPage, emailFilter, statusFilter);
+      setShowActivateDialog(false);
+      setSelectedUser(null);
+    } catch (err) {
+      console.error('Failed to activate user:', err);
+      setError('Failed to activate user. Please try again.');
+    }
+  };
+
   const confirmDelete = async () => {
     if (!selectedUser) return;
 
@@ -130,6 +151,7 @@ const UserManagement = () => {
 
   const cancelDialog = () => {
     setShowDeactivateDialog(false);
+    setShowActivateDialog(false);
     setShowDeleteDialog(false);
     setSelectedUser(null);
   };
@@ -249,12 +271,21 @@ const UserManagement = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <button
-                      onClick={() => handleDeactivate(user)}
-                      className="text-blue-600 hover:text-blue-900 mr-4"
-                    >
-                      Deactivate
-                    </button>
+                    {user.isActive ? (
+                      <button
+                        onClick={() => handleDeactivate(user)}
+                        className="text-blue-600 hover:text-blue-900 mr-4"
+                      >
+                        Deactivate
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => handleActivate(user)}
+                        className="text-green-600 hover:text-green-900 mr-4"
+                      >
+                        Activate
+                      </button>
+                    )}
                     <button
                       onClick={() => handleDelete(user)}
                       className="text-red-600 hover:text-red-900"
@@ -352,6 +383,42 @@ const UserManagement = () => {
                   className="px-4 py-2 bg-yellow-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-300"
                 >
                   Deactivate
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Activate Confirmation Dialog */}
+      {showActivateDialog && selectedUser && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3 text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mt-4">Activate User</h3>
+              <div className="mt-2 px-7 py-3">
+                <p className="text-sm text-gray-500">
+                  Are you sure you want to activate <span className="font-medium">{selectedUser.email}</span>?
+                  This will restore their access to the system.
+                </p>
+              </div>
+              <div className="flex items-center px-4 py-3">
+                <button
+                  onClick={cancelDialog}
+                  className="px-4 py-2 bg-gray-300 text-gray-900 text-base font-medium rounded-md w-full mr-2 shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmActivate}
+                  className="px-4 py-2 bg-green-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-300"
+                >
+                  Activate
                 </button>
               </div>
             </div>

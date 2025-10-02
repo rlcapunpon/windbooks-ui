@@ -215,4 +215,16 @@ export class UserService {
       throw error;
     }
   }
+
+  /**
+   * Activates a user account
+   */
+  static async activateUser(userId: string): Promise<void> {
+    try {
+      await apiClient.put(`/users/${userId}/activate`);
+    } catch (error) {
+      console.error('Failed to activate user:', error);
+      throw error;
+    }
+  }
 }

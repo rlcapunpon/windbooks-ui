@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import UserManagement from './UserManagement'
 import { UserService } from '../../services/userService'
@@ -8,6 +8,9 @@ import { UserService } from '../../services/userService'
 vi.mock('../../services/userService', () => ({
   UserService: {
     getAllUsers: vi.fn(),
+    deactivateUser: vi.fn(),
+    deleteUser: vi.fn(),
+    activateUser: vi.fn(),
     isSuperAdmin: vi.fn(),
     hasUserData: vi.fn(),
     fetchAndStoreUserData: vi.fn()
@@ -127,11 +130,13 @@ describe('UserManagement', () => {
     render(<UserManagement />)
 
     await waitFor(() => {
-      const editButtons = screen.getAllByText('Deactivate')
+      const deactivateButtons = screen.getAllByText('Deactivate')
+      const activateButtons = screen.getAllByText('Activate')
       const deleteButtons = screen.getAllByText('Delete')
 
-      expect(editButtons).toHaveLength(2)
-      expect(deleteButtons).toHaveLength(2)
+      expect(deactivateButtons).toHaveLength(1) // Only active user shows deactivate
+      expect(activateButtons).toHaveLength(1) // Only inactive user shows activate
+      expect(deleteButtons).toHaveLength(2) // Both users show delete
     })
   })
 
@@ -249,7 +254,7 @@ describe('UserManagement', () => {
     expect(screen.getByText('Deactivate User')).toBeInTheDocument()
     expect(screen.getByText((content) => content.includes('Are you sure you want to deactivate'))).toBeInTheDocument()
     expect(screen.getByText('Cancel')).toBeInTheDocument()
-    expect(screen.getAllByText('Deactivate')).toHaveLength(3) // Table buttons + dialog button
+    expect(screen.getAllByText('Deactivate')).toHaveLength(2) // Table button + dialog button
   })
 
   it('should show delete confirmation dialog when delete button is clicked', async () => {
@@ -385,6 +390,91 @@ describe('UserManagement', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Failed to delete user. Please try again.')).toBeInTheDocument()
+    })
+  })
+
+  it('should show activate button for inactive users and deactivate button for active users', async () => {
+    render(<UserManagement />)
+
+    await waitFor(() => {
+      expect(screen.getByText('admin@example.com')).toBeInTheDocument()
+      expect(screen.getByText('user@example.com')).toBeInTheDocument()
+    })
+
+    // Check that active user shows deactivate button
+    const activeUserRow = screen.getByText('admin@example.com').closest('tr')
+    expect(within(activeUserRow!).getByText('Deactivate')).toBeInTheDocument()
+    expect(within(activeUserRow!).queryByText('Activate')).not.toBeInTheDocument()
+
+    // Check that inactive user shows activate button
+    const inactiveUserRow = screen.getByText('user@example.com').closest('tr')
+    expect(within(inactiveUserRow!).getByText('Activate')).toBeInTheDocument()
+    expect(within(inactiveUserRow!).queryByText('Deactivate')).not.toBeInTheDocument()
+  })
+
+  it('should show activate confirmation dialog when activate button is clicked', async () => {
+    const user = userEvent.setup()
+    render(<UserManagement />)
+
+    await waitFor(() => {
+      expect(screen.getByText('user@example.com')).toBeInTheDocument()
+    })
+
+    const activateButton = screen.getByText('Activate')
+    await user.click(activateButton)
+
+    expect(screen.getByText('Activate User')).toBeInTheDocument()
+    expect(screen.getByText((content) => content.includes('Are you sure you want to activate'))).toBeInTheDocument()
+    expect(screen.getByText('Cancel')).toBeInTheDocument()
+    expect(screen.getAllByText('Activate')).toHaveLength(2) // Table button + dialog button
+  })
+
+  it('should call activate API and refresh users when confirmed', async () => {
+    const mockActivateUser = vi.fn().mockResolvedValue(undefined)
+    UserService.activateUser = mockActivateUser
+
+    const user = userEvent.setup()
+    render(<UserManagement />)
+
+    await waitFor(() => {
+      expect(screen.getByText('user@example.com')).toBeInTheDocument()
+    })
+
+    const activateButton = screen.getByText('Activate')
+    await user.click(activateButton)
+
+    // The last "Activate" button should be the dialog confirm button
+    const allActivateButtons = screen.getAllByText('Activate')
+    const confirmButton = allActivateButtons[allActivateButtons.length - 1]
+    await user.click(confirmButton)
+
+    await waitFor(() => {
+      expect(mockActivateUser).toHaveBeenCalledWith('user-2')
+      expect(mockGetAllUsers).toHaveBeenCalledTimes(2) // Initial load + refresh after activate
+    })
+  })
+
+  it('should handle activate API error gracefully', async () => {
+    const mockActivateUser = vi.fn().mockRejectedValue(new Error('API Error'))
+    UserService.activateUser = mockActivateUser
+
+    const user = userEvent.setup()
+    render(<UserManagement />)
+
+    await waitFor(() => {
+      expect(screen.getByText('user@example.com')).toBeInTheDocument()
+    })
+
+    const activateButton = screen.getByText('Activate')
+    await user.click(activateButton)
+
+    // The last "Activate" button should be the dialog confirm button
+    const allActivateButtons = screen.getAllByText('Activate')
+    const confirmButton = allActivateButtons[allActivateButtons.length - 1]
+    await user.click(confirmButton)
+
+    await waitFor(() => {
+      expect(screen.getByText('Failed to activate user. Please try again.')).toBeInTheDocument()
     })
   })
 })

@@ -175,6 +175,27 @@ describe('User Data Management System', () => {
       expect(fetchSpy).toHaveBeenCalled();
       expect(result).toEqual(updatedUser);
     });
+
+    it('should activate a user account', async () => {
+      const userId = 'test-user-id';
+      
+      // Mock the API call
+      (apiClient.put as any).mockResolvedValue({ status: 204 });
+
+      await UserService.activateUser(userId);
+
+      expect(apiClient.put).toHaveBeenCalledWith(`/users/${userId}/activate`);
+    });
+
+    it('should throw error when activate user API call fails', async () => {
+      const userId = 'test-user-id';
+      const errorMessage = 'API Error';
+      
+      // Mock the API call to reject
+      (apiClient.put as any).mockRejectedValue(new Error(errorMessage));
+
+      await expect(UserService.activateUser(userId)).rejects.toThrow(errorMessage);
+    });
   });
 
   describe('LocalStorage Error Handling', () => {
