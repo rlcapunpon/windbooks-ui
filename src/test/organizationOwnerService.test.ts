@@ -1,10 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-// Mock the API client
+// Mock the API clients
 vi.mock('../api/client')
+vi.mock('../api/orgClient')
 
 import { OrganizationOwnerService } from '../services/organizationOwnerService'
 import apiClient from '../api/client'
+import orgApiClient from '../api/orgClient'
 
 // Mock organization owner data
 const mockOrganizationOwner = {
@@ -90,7 +92,7 @@ describe('OrganizationOwnerService', () => {
   describe('checkOwnership', () => {
     it('should check if user is an owner of an organization', async () => {
       // Arrange
-      ;(apiClient.get as any).mockResolvedValueOnce({
+      ;(orgApiClient.get as any).mockResolvedValueOnce({
         data: mockOwnershipCheck
       })
 
@@ -98,7 +100,7 @@ describe('OrganizationOwnerService', () => {
       const result = await OrganizationOwnerService.checkOwnership('org-123')
 
       // Assert
-      expect(apiClient.get).toHaveBeenCalledWith('/organizations/org-123/ownership')
+      expect(orgApiClient.get).toHaveBeenCalledWith('/organizations/org-123/ownership')
       expect(result).toEqual(true)
     })
 
@@ -109,7 +111,7 @@ describe('OrganizationOwnerService', () => {
         org_id: 'org-123',
         user_id: 'user-456'
       }
-      ;(apiClient.get as any).mockResolvedValueOnce({
+      ;(orgApiClient.get as any).mockResolvedValueOnce({
         data: notOwnerResponse
       })
 

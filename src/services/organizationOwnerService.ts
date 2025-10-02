@@ -1,4 +1,5 @@
 import apiClient from '../api/client'
+import orgApiClient from '../api/orgClient'
 
 // Organization Owner DTOs based on org-mgmt-api.yaml
 export interface OrganizationOwner {
@@ -63,7 +64,7 @@ export class OrganizationOwnerService {
    */
   static async checkOwnership(organizationId: string): Promise<boolean> {
     try {
-      const response = await apiClient.get<CheckOwnershipResponseDto>(`${this.BASE_ENDPOINT}/${organizationId}/ownership`)
+      const response = await orgApiClient.get<CheckOwnershipResponseDto>(`${this.BASE_ENDPOINT}/${organizationId}/ownership`)
       return response.data.is_owner
     } catch (error: any) {
       console.error('Failed to check ownership:', error)
