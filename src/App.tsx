@@ -6,6 +6,7 @@ import VerifyEmail from './pages/Auth/VerifyEmail';
 import AdminDashboard from './pages/Admin/Dashboard';
 import UserManagement from './pages/Admin/UserManagement';
 import RoleManagement from './pages/Admin/RoleManagement';
+import EditRoles from './pages/Admin/EditRoles';
 import SystemSettings from './pages/Admin/SystemSettings';
 import UserDashboard from './pages/User/Dashboard';
 import Profile from './pages/Profile';
@@ -39,6 +40,7 @@ function App() {
             <Route path="/admin" element={<ProtectedRoute><MainLayout><AdminDashboard /></MainLayout></ProtectedRoute>} />
             <Route path="/admin/users" element={<ProtectedRoute><MainLayout><UserManagement /></MainLayout></ProtectedRoute>} />
             <Route path="/admin/roles" element={<ProtectedRoute><MainLayout><RoleManagement /></MainLayout></ProtectedRoute>} />
+            <Route path="/admin/edit-roles/:userId" element={<ProtectedRoute><MainLayout><EditRoles /></MainLayout></ProtectedRoute>} />
             <Route path="/user" element={<ProtectedRoute><MainLayout><UserDashboard /></MainLayout></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><MainLayout><Profile /></MainLayout></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><MainLayout><Settings /></MainLayout></ProtectedRoute>} />

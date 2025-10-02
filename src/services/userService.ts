@@ -193,6 +193,19 @@ export class UserService {
   }
 
   /**
+   * Gets a user by ID (for admin use)
+   */
+  static async getUserById(userId: string): Promise<{ id: string; email: string; isActive: boolean; isSuperAdmin: boolean; createdAt: string; updatedAt: string; roles: any[] }> {
+    try {
+      const response = await apiClient.get(`/users/${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch user:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Deactivates a user account
    */
   static async deactivateUser(userId: string): Promise<void> {
@@ -224,6 +237,75 @@ export class UserService {
       await apiClient.put(`/users/${userId}/activate`);
     } catch (error) {
       console.error('Failed to activate user:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Gets user resources by user ID (for admin use)
+   */
+  static async getUserResourcesById(userId: string): Promise<{ resource: { id: string; name: string; description: string; type: string }; role: string }[]> {
+    try {
+      const response = await apiClient.get(`/resources/${userId}`);
+      // Extract resources array from response and transform to expected format
+      const resources = response.data?.resources || [];
+      return resources.map((item: any) => ({
+        resource: {
+          id: item.resourceId,
+          name: item.resourceName,
+          description: '', // API doesn't provide description
+          type: 'N/A' // API doesn't provide type
+        },
+        role: item.roleName
+      }));
+    } catch (error) {
+      console.error('Failed to fetch user resources:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Searches for resources (for admin use)
+   */
+  static async searchResources(query: string, page: number = 1, limit: number = 10): Promise<{ id: string; name: string; description: string; type?: string; createdAt?: string; updatedAt?: string }[]> {
+    try {
+      const params: any = { page, limit };
+      if (query) params.q = query;
+
+      const response = await apiClient.get('/resources/v2', { params });
+      // Handle the actual API response structure with data and pagination
+      return response.data?.data || [];
+    } catch (error) {
+      console.error('Failed to search resources:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Gets available roles (for admin use)
+   */
+  static async getAvailableRoles(): Promise<{ id: string; name: string; description: string }[]> {
+    try {
+      const response = await apiClient.get('/roles/available');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch available roles:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Assigns a role to a user for a specific resource
+   */
+  static async assignRole(userId: string, resourceId: string, roleId: string): Promise<void> {
+    try {
+      await apiClient.post('/users/assign-role', {
+        userId,
+        resourceId,
+        roleId
+      });
+    } catch (error) {
+      console.error('Failed to assign role:', error);
       throw error;
     }
   }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { UserService } from '../../services/userService';
 
 interface User {
@@ -37,6 +38,7 @@ interface PaginatedUsersResponse {
 }
 
 const RoleManagement = () => {
+  const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -95,8 +97,7 @@ const RoleManagement = () => {
   };
 
   const handleEditRoles = (userId: string) => {
-    // TODO: Implement edit roles functionality
-    console.log('Edit roles for user:', userId);
+    navigate(`/admin/edit-roles/${userId}`);
   };
 
   const getPrimaryRole = (user: User): string => {

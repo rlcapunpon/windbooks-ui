@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
 import RoleManagement from './RoleManagement'
 import { UserService } from '../../services/userService'
 
@@ -72,8 +73,16 @@ describe('RoleManagement', () => {
     mockGetAllUsers.mockResolvedValue(mockPaginationResponse)
   })
 
+  const renderRoleManagement = () => {
+    return render(
+      <MemoryRouter>
+        <RoleManagement />
+      </MemoryRouter>
+    )
+  }
+
   it('should render the RoleManagement page with title and description', async () => {
-    render(<RoleManagement />)
+    renderRoleManagement()
 
     await waitFor(() => {
       expect(screen.getByText('Role Management')).toBeInTheDocument()
@@ -82,13 +91,13 @@ describe('RoleManagement', () => {
   })
 
   it('should display loading state initially', () => {
-    render(<RoleManagement />)
+    renderRoleManagement()
 
     expect(screen.getByRole('status')).toBeInTheDocument()
   })
 
   it('should fetch and display users in a table', async () => {
-    render(<RoleManagement />)
+    renderRoleManagement()
 
     await waitFor(() => {
       expect(mockGetAllUsers).toHaveBeenCalledWith(1, 10, undefined, undefined)
@@ -99,7 +108,7 @@ describe('RoleManagement', () => {
   })
 
   it('should display user status badges correctly', async () => {
-    render(<RoleManagement />)
+    renderRoleManagement()
 
     await waitFor(() => {
       const activeBadges = screen.getAllByText('Active')
@@ -110,7 +119,7 @@ describe('RoleManagement', () => {
   })
 
   it('should display table headers correctly', async () => {
-    render(<RoleManagement />)
+    renderRoleManagement()
 
     await waitFor(() => {
       expect(screen.getByText('Email')).toBeInTheDocument()
@@ -121,7 +130,7 @@ describe('RoleManagement', () => {
   })
 
   it('should display primary role correctly', async () => {
-    render(<RoleManagement />)
+    renderRoleManagement()
 
     await waitFor(() => {
       expect(screen.getByText('ADMIN')).toBeInTheDocument()
@@ -130,7 +139,7 @@ describe('RoleManagement', () => {
   })
 
   it('should display Edit Roles button for each user', async () => {
-    render(<RoleManagement />)
+    renderRoleManagement()
 
     await waitFor(() => {
       const editButtons = screen.getAllByText('Edit Roles')
@@ -139,7 +148,7 @@ describe('RoleManagement', () => {
   })
 
   it('should display total users count', async () => {
-    render(<RoleManagement />)
+    renderRoleManagement()
 
     await waitFor(() => {
       expect(screen.getByText('Total users: 2')).toBeInTheDocument()
@@ -149,7 +158,7 @@ describe('RoleManagement', () => {
   it('should handle API errors gracefully', async () => {
     mockGetAllUsers.mockRejectedValue(new Error('API Error'))
 
-    render(<RoleManagement />)
+    renderRoleManagement()
 
     await waitFor(() => {
       expect(screen.getByText('Failed to load users. Please try again.')).toBeInTheDocument()
@@ -157,7 +166,7 @@ describe('RoleManagement', () => {
   })
 
   it('should not display pagination when there is only one page', async () => {
-    render(<RoleManagement />)
+    renderRoleManagement()
 
     await waitFor(() => {
       expect(screen.queryByText('Page 1 of 1')).not.toBeInTheDocument()
@@ -177,7 +186,7 @@ describe('RoleManagement', () => {
 
     mockGetAllUsers.mockResolvedValue(multiPageResponse)
 
-    render(<RoleManagement />)
+    renderRoleManagement()
 
     await waitFor(() => {
       const paginationElement = document.querySelector('p.text-sm.text-gray-700')
@@ -186,7 +195,7 @@ describe('RoleManagement', () => {
   })
 
   it('should render search input field', async () => {
-    render(<RoleManagement />)
+    renderRoleManagement()
 
     await waitFor(() => {
       const searchInput = screen.getByPlaceholderText('Search by email...')
@@ -195,7 +204,7 @@ describe('RoleManagement', () => {
   })
 
   it('should render status filter dropdown', async () => {
-    render(<RoleManagement />)
+    renderRoleManagement()
 
     await waitFor(() => {
       const statusSelect = screen.getByDisplayValue('')
@@ -205,7 +214,7 @@ describe('RoleManagement', () => {
 
   it('should not trigger search on typing but should trigger on Enter key', async () => {
     const user = userEvent.setup()
-    render(<RoleManagement />)
+    renderRoleManagement()
 
     await waitFor(() => {
       expect(mockGetAllUsers).toHaveBeenCalledWith(1, 10, undefined, undefined)
@@ -232,7 +241,7 @@ describe('RoleManagement', () => {
 
   it('should trigger search when search button is clicked', async () => {
     const user = userEvent.setup()
-    render(<RoleManagement />)
+    renderRoleManagement()
 
     await waitFor(() => {
       expect(mockGetAllUsers).toHaveBeenCalledWith(1, 10, undefined, undefined)
@@ -260,7 +269,7 @@ describe('RoleManagement', () => {
 
   it('should filter users by status', async () => {
     const user = userEvent.setup()
-    render(<RoleManagement />)
+    renderRoleManagement()
 
     await waitFor(() => {
       expect(mockGetAllUsers).toHaveBeenCalledWith(1, 10, undefined, undefined)
@@ -277,7 +286,7 @@ describe('RoleManagement', () => {
 
   it('should maintain search text when status filter changes', async () => {
     const user = userEvent.setup()
-    render(<RoleManagement />)
+    renderRoleManagement()
 
     await waitFor(() => {
       expect(mockGetAllUsers).toHaveBeenCalledWith(1, 10, undefined, undefined)
@@ -300,7 +309,7 @@ describe('RoleManagement', () => {
 
   it('should clear filters when clear button is clicked', async () => {
     const user = userEvent.setup()
-    render(<RoleManagement />)
+    renderRoleManagement()
 
     await waitFor(() => {
       expect(mockGetAllUsers).toHaveBeenCalledWith(1, 10, undefined, undefined)
