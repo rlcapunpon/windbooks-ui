@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { OrganizationService } from '../../services/organizationService'
 import { UserService } from '../../services/userService'
@@ -78,9 +78,16 @@ const OrganizationPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null)
   const [activeMenu, setActiveMenu] = useState<MenuItem>('details')
 
+  // Cache to prevent redundant API calls
+  const loadedOrganizations = useRef<Set<string>>(new Set())
+
   useEffect(() => {
-    if (id) {
+    if (id && !loadedOrganizations.current.has(id)) {
+      loadedOrganizations.current.add(id)
       loadOrganization(id)
+    } else if (id) {
+      // Organization already loaded, just set loading to false
+      setLoading(false)
     }
   }, [id])
 
