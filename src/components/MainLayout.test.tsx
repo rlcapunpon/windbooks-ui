@@ -1164,4 +1164,77 @@ describe('MainLayout Component', () => {
     // Note: In our mock, we can't test CSS classes, but this test documents the expected behavior
     // The real fix needs to ensure only org-all gets the active styling
   });
+
+  // Step 2: Update the Side Menu behavior - minimize button disabled when submenu item is selected
+  it('should disable minimize button when a submenu item is currently selected', async () => {
+    // Mock window.location.pathname to simulate being on a submenu route
+    Object.defineProperty(window, 'location', {
+      value: { pathname: '/organizations/dashboard' },
+      writable: true,
+    });
+
+    const localStorageMock = {
+      getItem: vi.fn(() => null),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn(),
+    };
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock,
+      writable: true,
+    });
+
+    render(
+      <BrowserRouter>
+        <MainLayout>
+          <div>Test Content</div>
+        </MainLayout>
+      </BrowserRouter>
+    );
+
+    // Wait for route detection to set active submenu item
+    await waitFor(() => {
+      expect(localStorageMock.setItem).toHaveBeenCalledWith('activeMenuItem', 'org-all');
+    });
+
+    // Minimize button should be disabled when submenu item is active
+    const minimizeButton = screen.getByLabelText('Collapse sidebar');
+    expect(minimizeButton).toBeDisabled();
+  });
+
+  it('should enable minimize button when a main menu item is selected', async () => {
+    // Mock window.location.pathname to simulate being on a main menu route
+    Object.defineProperty(window, 'location', {
+      value: { pathname: '/profile' },
+      writable: true,
+    });
+
+    const localStorageMock = {
+      getItem: vi.fn(() => null),
+      setItem: vi.fn(),
+      removeItem: vi.fn(),
+      clear: vi.fn(),
+    };
+    Object.defineProperty(window, 'localStorage', {
+      value: localStorageMock,
+      writable: true,
+    });
+
+    render(
+      <BrowserRouter>
+        <MainLayout>
+          <div>Test Content</div>
+        </MainLayout>
+      </BrowserRouter>
+    );
+
+    // Wait for route detection to set active main menu item
+    await waitFor(() => {
+      expect(localStorageMock.setItem).toHaveBeenCalledWith('activeMenuItem', 'profile');
+    });
+
+    // Minimize button should be enabled when main menu item is active
+    const minimizeButton = screen.getByLabelText('Collapse sidebar');
+    expect(minimizeButton).not.toBeDisabled();
+  });
 });

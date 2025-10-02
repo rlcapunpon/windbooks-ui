@@ -29,6 +29,22 @@ const determineActiveMenuItem = (menuItems: MenuItem[], currentPath: string): st
   return null;
 };
 
+// Helper function to check if the active menu item is a submenu item
+const isSubmenuItemActive = (menuItems: MenuItem[], activeMenuItem: string | null): boolean => {
+  if (!activeMenuItem) return false;
+
+  for (const item of menuItems) {
+    if (item.children) {
+      for (const child of item.children) {
+        if (child.id === activeMenuItem) {
+          return true; // Found the active item in submenu
+        }
+      }
+    }
+  }
+  return false;
+};
+
 export const MainLayout = ({ children }: MainLayoutProps) => {
   const { user, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -297,7 +313,10 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
             </div>
             <button
               onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+              disabled={isSubmenuItemActive(menuItems, activeMenuItem)}
+              className={`p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 ${
+                isSubmenuItemActive(menuItems, activeMenuItem) ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
               aria-label="Collapse sidebar"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
