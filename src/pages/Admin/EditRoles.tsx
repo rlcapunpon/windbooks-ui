@@ -12,8 +12,10 @@ interface Resource {
 }
 
 interface UserResource {
-  resource: Resource;
-  role: string;
+  resourceId: string;
+  resourceName: string;
+  roleName: string;
+  roleId: string;
 }
 
 interface Role {
@@ -41,6 +43,8 @@ const EditRoles = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [user, setUser] = useState<{ id: string; email: string } | null>(null);
+  const [showRemoveModal, setShowRemoveModal] = useState(false);
+    const [roleToRemove, setRoleToRemove] = useState<{ resourceId: string; resourceName: string; role: string; roleId: string } | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -126,22 +130,61 @@ const EditRoles = () => {
     ));
   };
 
+  const handleRemoveRole = (resourceId: string, resourceName: string, roleName: string, roleId: string) => {
+    if (!availableRoles.length) {
+      console.warn('Available roles not loaded yet');
+      return;
+    }
+    setRoleToRemove({
+      resourceId,
+      resourceName,
+      role: roleName,
+      roleId
+    });
+    setShowRemoveModal(true);
+  };
+
+  const handleConfirmRemove = async () => {
+    if (!roleToRemove || !userId) return;
+
+    try {
+      // Use the roleId directly from the userResource
+      await UserService.revokeRole(userId, roleToRemove.resourceId, roleToRemove.roleId);
+      
+      // Refresh user resources
+      const updatedResources = await UserService.getUserResourcesById(userId);
+      setUserResources(updatedResources);
+      
+      setShowRemoveModal(false);
+      setRoleToRemove(null);
+    } catch (error) {
+      console.error('Failed to revoke role:', error);
+      setError('Failed to revoke role');
+    }
+  };
+
+  const handleCancelRemove = () => {
+    setShowRemoveModal(false);
+    setRoleToRemove(null);
+  };
+
   const handleSubmit = async () => {
-    if (resourcesToAssign.length === 0) return;
+    if (!userId || resourcesToAssign.length === 0) return;
 
     setSubmitting(true);
     try {
-      const promises = resourcesToAssign.map(resource =>
-        UserService.assignRole(userId!, resource.resourceId, resource.roleId)
-      );
-      await Promise.all(promises);
-
+      for (const resource of resourcesToAssign) {
+        if (resource.roleId) {
+          await UserService.assignRole(userId, resource.resourceId, resource.roleId);
+        }
+      }
+      
       // Refresh user resources
-      const updatedResources = await UserService.getUserResourcesById(userId!);
+      const updatedResources = await UserService.getUserResourcesById(userId);
       setUserResources(updatedResources);
+      
+      // Clear the assignment list
       setResourcesToAssign([]);
-      setSearchQuery('');
-      setSearchResults([]);
     } catch (error) {
       console.error('Failed to assign roles:', error);
       setError('Failed to assign roles');
@@ -149,8 +192,6 @@ const EditRoles = () => {
       setSubmitting(false);
     }
   };
-
-  // TODO: Implement API calls and functionality
 
   if (loading) {
     return (
@@ -203,10 +244,10 @@ const EditRoles = () => {
         <p className="text-gray-600">Manage user roles and resource assignments for {user ? <span className="text-xl font-semibold text-blue-900"> {user.email}</span> : ''}</p>
       </div>
 
-      {/* Current User Resources Section */}
+      {/* Current User Roles Section */}
       <div className="bg-white shadow-sm rounded-lg overflow-hidden mb-6">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">Current User Resources</h2>
+          <h2 className="text-lg font-medium text-gray-900">Current User Roles</h2>
         </div>
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -218,23 +259,35 @@ const EditRoles = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Current Role
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {Array.isArray(userResources) && userResources.length > 0 ? (
                 userResources.map((userResource) => (
-                  <tr key={userResource.resource.id} className="hover:bg-gray-50">
+                  <tr key={`${userResource.resourceId}-${userResource.roleId}`} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                      {userResource.resource.name}
+                      {userResource.resourceName}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {userResource.role}
+                      {userResource.roleName}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <button
+                        onClick={() => handleRemoveRole(userResource.resourceId, userResource.resourceName, userResource.roleName, userResource.roleId)}
+                        disabled={!availableRoles.length}
+                        className={`text-red-600 hover:text-red-900 ${!availableRoles.length ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        Remove
+                      </button>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={2} className="px-6 py-4 text-center text-gray-500">
+                  <td colSpan={3} className="px-6 py-4 text-center text-gray-500">
                     No assigned resources found.
                   </td>
                 </tr>
@@ -391,6 +444,41 @@ const EditRoles = () => {
           </div>
         )}
       </div>
+
+      {/* Confirmation Modal */}
+      {showRemoveModal && roleToRemove && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" role="dialog">
+            <div className="mt-3 text-center">
+              <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mt-4">Confirm Role Removal</h3>
+              <div className="mt-2 px-7 py-3">
+                <p className="text-sm text-gray-500">
+                  Are you sure you want to remove the <span className="font-semibold">{roleToRemove.role}</span> role from <span className="font-semibold">{roleToRemove.resourceName}</span>? This action cannot be undone.
+                </p>
+              </div>
+              <div className="flex items-center px-4 py-3">
+                <button
+                  onClick={handleCancelRemove}
+                  className="px-4 py-2 bg-gray-300 text-gray-900 text-base font-medium rounded-md w-full mr-2 shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmRemove}
+                  className="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-300"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

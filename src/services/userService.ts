@@ -244,20 +244,11 @@ export class UserService {
   /**
    * Gets user resources by user ID (for admin use)
    */
-  static async getUserResourcesById(userId: string): Promise<{ resource: { id: string; name: string; description: string; type: string }; role: string }[]> {
+  static async getUserResourcesById(userId: string): Promise<{ resourceId: string; resourceName: string; roleName: string; roleId: string }[]> {
     try {
       const response = await apiClient.get(`/resources/${userId}`);
-      // Extract resources array from response and transform to expected format
-      const resources = response.data?.resources || [];
-      return resources.map((item: any) => ({
-        resource: {
-          id: item.resourceId,
-          name: item.resourceName,
-          description: '', // API doesn't provide description
-          type: 'N/A' // API doesn't provide type
-        },
-        role: item.roleName
-      }));
+      // Return the actual API response structure
+      return response.data?.resources || [];
     } catch (error) {
       console.error('Failed to fetch user resources:', error);
       throw error;
@@ -306,6 +297,22 @@ export class UserService {
       });
     } catch (error) {
       console.error('Failed to assign role:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Revokes a role from a user for a specific resource
+   */
+  static async revokeRole(userId: string, resourceId: string, roleId: string): Promise<void> {
+    try {
+      await apiClient.post('/users/revoke-role', {
+        userId,
+        resourceId,
+        roleId
+      });
+    } catch (error) {
+      console.error('Failed to revoke role:', error);
       throw error;
     }
   }

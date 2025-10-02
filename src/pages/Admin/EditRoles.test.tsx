@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor, act } from '@testing-library/react'
+import { render, screen, waitFor, act, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import EditRoles from './EditRoles'
@@ -13,6 +13,7 @@ vi.mock('../../services/userService', () => ({
     getAvailableRoles: vi.fn(),
     assignRole: vi.fn(),
     getUserById: vi.fn(),
+    revokeRole: vi.fn(),
   },
 }))
 
@@ -21,17 +22,15 @@ const mockSearchResources = vi.mocked(UserService.searchResources)
 const mockGetAvailableRoles = vi.mocked(UserService.getAvailableRoles)
 const mockAssignRole = vi.mocked(UserService.assignRole)
 const mockGetUserById = vi.mocked(UserService.getUserById)
+const mockRevokeRole = vi.mocked(UserService.revokeRole)
 
 describe('EditRoles', () => {
   const mockUserResources = [
     {
-      resource: {
-        id: 'resource-1',
-        name: 'Organization Management',
-        description: 'Manage organizations',
-        type: 'ORGANIZATION'
-      },
-      role: 'ADMIN'
+      resourceId: 'resource-1',
+      resourceName: 'Organization Management',
+      roleName: 'ADMIN',
+      roleId: 'role-1'
     }
   ]
 
@@ -99,15 +98,16 @@ describe('EditRoles', () => {
     })
   })
 
-  it('should display current user resources section', async () => {
+  it('should display current user roles section with action column', async () => {
     await act(async () => {
       renderEditRoles()
     })
 
     await waitFor(() => {
-      expect(screen.getByText('Current User Resources')).toBeInTheDocument()
+      expect(screen.getByText('Current User Roles')).toBeInTheDocument()
       expect(screen.getByText('Resource Name')).toBeInTheDocument()
       expect(screen.getByText('Current Role')).toBeInTheDocument()
+      expect(screen.getByText('Actions')).toBeInTheDocument()
     })
   })
 
@@ -237,8 +237,10 @@ describe('EditRoles', () => {
     const mockUpdatedResources = [
       ...mockUserResources,
       {
-        resource: mockSearchResults[0],
-        role: 'CLIENT'
+        resourceId: mockSearchResults[0].id,
+        resourceName: mockSearchResults[0].name,
+        roleName: 'CLIENT',
+        roleId: 'role-2'
       }
     ]
     
@@ -293,6 +295,202 @@ describe('EditRoles', () => {
     // Verify assignRole was called with roleId (not role name)
     await waitFor(() => {
       expect(mockAssignRole).toHaveBeenCalledWith('user-123', 'resource-new', 'role-2')
+    })
+  })
+
+  it('should display current user roles section with action column', async () => {
+    await act(async () => {
+      renderEditRoles()
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('Current User Roles')).toBeInTheDocument()
+      expect(screen.getByText('Resource Name')).toBeInTheDocument()
+      expect(screen.getByText('Current Role')).toBeInTheDocument()
+      expect(screen.getByText('Actions')).toBeInTheDocument()
+    })
+  })
+
+  it('should display remove button for each user role', async () => {
+    await act(async () => {
+      renderEditRoles()
+    })
+
+    await waitFor(() => {
+      const removeButtons = screen.getAllByRole('button', { name: /remove/i })
+      expect(removeButtons).toHaveLength(1)
+      expect(removeButtons[0]).toBeInTheDocument()
+    })
+  })
+
+  it('should show confirmation modal when remove button is clicked', async () => {
+    const user = userEvent.setup()
+
+    await act(async () => {
+      renderEditRoles()
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('Current User Roles')).toBeInTheDocument()
+    })
+
+    // Wait for the remove button to be enabled (availableRoles loaded)
+    await waitFor(() => {
+      const removeButtons = screen.getAllByText('Remove')
+      expect(removeButtons[0]).not.toBeDisabled()
+    })
+
+    // Find the remove button in the table (not the modal)
+    const removeButtons = screen.getAllByText('Remove')
+    const tableRemoveButton = removeButtons[0] // First one is in the table
+    await act(async () => {
+      await user.click(tableRemoveButton)
+    })
+
+    // Wait for modal to appear
+    await waitFor(() => {
+      expect(screen.getByRole('dialog')).toBeInTheDocument()
+    })
+    
+    // Check modal content
+    const modal = screen.getByRole('dialog')
+    expect(within(modal).getByText('Confirm Role Removal')).toBeInTheDocument()
+    // Check for the modal text content which is split across multiple spans
+    expect(within(modal).getByText('Are you sure you want to remove the', { exact: false })).toBeInTheDocument()
+    expect(within(modal).getByText('ADMIN')).toBeInTheDocument()
+    expect(within(modal).getByText('Organization Management')).toBeInTheDocument()
+    expect(within(modal).getByText('Cancel')).toBeInTheDocument()
+  })
+
+  it('should call revokeRole API when remove is confirmed', async () => {
+    const user = userEvent.setup()
+
+    mockRevokeRole.mockResolvedValue()
+
+    await act(async () => {
+      renderEditRoles()
+    })
+
+    // Wait for the component to load data
+    await waitFor(() => {
+      expect(screen.getByText('test@example.com')).toBeInTheDocument()
+    })
+
+    // Wait for the remove button to be enabled (availableRoles loaded)
+    await waitFor(() => {
+      const removeButtons = screen.getAllByText('Remove')
+      expect(removeButtons[0]).not.toBeDisabled()
+    })
+
+    // Click remove button in table
+    const removeButtons = screen.getAllByText('Remove')
+    const tableRemoveButton = removeButtons[0] // First one is in the table
+    await act(async () => {
+      await user.click(tableRemoveButton)
+    })
+
+    // Wait for modal to appear
+    await waitFor(() => {
+      expect(screen.getByText('Confirm Role Removal')).toBeInTheDocument()
+    })
+
+    // Confirm removal in modal - now there are 2 Remove buttons
+    await waitFor(() => {
+      const allRemoveButtons = screen.getAllByText('Remove')
+      expect(allRemoveButtons).toHaveLength(2) // Table + Modal
+    })
+    const allRemoveButtons = screen.getAllByText('Remove')
+    const confirmButton = allRemoveButtons[1] // Second one is in the modal
+    await act(async () => {
+      await user.click(confirmButton)
+    })
+
+    await waitFor(() => {
+      expect(mockRevokeRole).toHaveBeenCalledWith('user-123', 'resource-1', 'role-1') // Should use roleId, not role name
+    })
+  })
+
+  it('should refresh user roles after successful removal', async () => {
+    const user = userEvent.setup()
+
+    mockRevokeRole.mockResolvedValue()
+    // Mock updated resources after removal (empty array)
+    mockGetUserResources.mockResolvedValueOnce(mockUserResources) // Initial load
+    mockGetUserResources.mockResolvedValue([]) // After removal
+
+    await act(async () => {
+      renderEditRoles()
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('Current User Roles')).toBeInTheDocument()
+    })
+
+    // Wait for the remove button to be enabled (availableRoles loaded)
+    await waitFor(() => {
+      const removeButtons = screen.getAllByText('Remove')
+      expect(removeButtons[0]).not.toBeDisabled()
+    })
+
+    // Click remove button in table
+    const removeButtons = screen.getAllByText('Remove')
+    const tableRemoveButton = removeButtons[0] // First one is in the table
+    await act(async () => {
+      await user.click(tableRemoveButton)
+    })
+
+    // Confirm removal in modal - now there are 2 Remove buttons
+    await waitFor(() => {
+      const allRemoveButtons = screen.getAllByText('Remove')
+      expect(allRemoveButtons).toHaveLength(2) // Table + Modal
+    })
+    const allRemoveButtons = screen.getAllByText('Remove')
+    const confirmButton = allRemoveButtons[1] // Second one is in the modal
+    await act(async () => {
+      await user.click(confirmButton)
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('No assigned resources found.')).toBeInTheDocument()
+    })
+  })
+
+  it('should close modal when cancel is clicked', async () => {
+    const user = userEvent.setup()
+
+    await act(async () => {
+      renderEditRoles()
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('Current User Roles')).toBeInTheDocument()
+    })
+
+    // Wait for the remove button to be enabled (availableRoles loaded)
+    await waitFor(() => {
+      const removeButtons = screen.getAllByText('Remove')
+      expect(removeButtons[0]).not.toBeDisabled()
+    })
+
+    // Click remove button in table
+    const removeButtons = screen.getAllByText('Remove')
+    const tableRemoveButton = removeButtons[0] // First one is in the table
+    await act(async () => {
+      await user.click(tableRemoveButton)
+    })
+
+    await waitFor(() => {
+      expect(screen.getByText('Confirm Role Removal')).toBeInTheDocument()
+    })
+
+    // Click cancel in modal
+    const cancelButton = screen.getByText('Cancel')
+    await act(async () => {
+      await user.click(cancelButton)
+    })
+
+    await waitFor(() => {
+      expect(screen.queryByText('Confirm Role Removal')).not.toBeInTheDocument()
     })
   })
 })
