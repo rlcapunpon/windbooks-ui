@@ -4,9 +4,12 @@ import Login from './pages/Auth/Login';
 import Register from './pages/Auth/Register';
 import VerifyEmail from './pages/Auth/VerifyEmail';
 import AdminDashboard from './pages/Admin/Dashboard';
+import UserManagement from './pages/Admin/UserManagement';
+import RoleManagement from './pages/Admin/RoleManagement';
 import UserDashboard from './pages/User/Dashboard';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
+import SystemSettings from './pages/Settings/SystemSettings';
 import Organizations from './pages/Organizations';
 import OrganizationsDashboard from './pages/Organizations/OrganizationsDashboard';
 import OrganizationsVAT from './pages/Organizations/OrganizationsVAT';
@@ -14,6 +17,9 @@ import OrganizationsPercentageTax from './pages/Organizations/OrganizationsPerce
 import OrganizationsTaxExcempt from './pages/Organizations/OrganizationsTaxExcempt';
 import OrganizationAssignee from './pages/Organizations/OrganizationAssignee';
 import Organization from './pages/Organizations/Organization';
+import MyTasks from './pages/Tasks/MyTasks';
+import AssignedTasks from './pages/Tasks/AssignedTasks';
+import TaskManagement from './pages/Tasks/TaskManagement';
 import Unauthorized from './pages/Error/Unauthorized';
 import NotFound from './pages/Error/NotFound';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -31,9 +37,15 @@ function App() {
             <Route path="/auth/register" element={<Register />} />
             <Route path="/verify-email/:code" element={<VerifyEmail />} />
             <Route path="/admin" element={<ProtectedRoute><MainLayout><AdminDashboard /></MainLayout></ProtectedRoute>} />
+            <Route path="/admin/users" element={<ProtectedRoute><MainLayout><UserManagement /></MainLayout></ProtectedRoute>} />
+            <Route path="/admin/roles" element={<ProtectedRoute><MainLayout><RoleManagement /></MainLayout></ProtectedRoute>} />
             <Route path="/user" element={<ProtectedRoute><MainLayout><UserDashboard /></MainLayout></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><MainLayout><Profile /></MainLayout></ProtectedRoute>} />
             <Route path="/settings" element={<ProtectedRoute><MainLayout><Settings /></MainLayout></ProtectedRoute>} />
+            <Route path="/settings/system" element={<ProtectedRoute><MainLayout><SystemSettings /></MainLayout></ProtectedRoute>} />
+            <Route path="/tasks/my-tasks" element={<ProtectedRoute><MainLayout><MyTasks /></MainLayout></ProtectedRoute>} />
+            <Route path="/tasks/assigned" element={<ProtectedRoute><MainLayout><AssignedTasks /></MainLayout></ProtectedRoute>} />
+            <Route path="/tasks/management" element={<ProtectedRoute><MainLayout><TaskManagement /></MainLayout></ProtectedRoute>} />
             <Route path="/organizations" element={<ProtectedRoute><MainLayout><Organizations /></MainLayout></ProtectedRoute>} />
             <Route path="/organizations/dashboard" element={<ProtectedRoute><MainLayout><OrganizationsDashboard /></MainLayout></ProtectedRoute>} />
             <Route path="/organizations/vat" element={<ProtectedRoute><MainLayout><OrganizationsVAT /></MainLayout></ProtectedRoute>} />

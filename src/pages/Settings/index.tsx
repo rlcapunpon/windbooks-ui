@@ -1,8 +1,12 @@
-const Settings = () => (
-  <div className="p-6">
-    <h1 className="text-3xl font-bold">Settings</h1>
-    <p>Application settings.</p>
-  </div>
-);
+import FeatureUnderDevelopment from '../../components/FeatureUnderDevelopment/FeatureUnderDevelopment'
 
-export default Settings;
+const Settings = () => {
+  return (
+    <FeatureUnderDevelopment
+      title="Settings"
+      description="Configure your personal settings and preferences. This feature is currently under development and will be available soon."
+    />
+  )
+}
+
+export default Settings
