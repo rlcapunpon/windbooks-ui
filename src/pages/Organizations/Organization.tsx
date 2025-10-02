@@ -5,7 +5,8 @@ import { UserService } from '../../services/userService'
 import type { Organization, OrganizationStatus, OrganizationRegistration } from '../../services/organizationService'
 import { UpdateOrganizationStatusModal, type UpdateStatusFormData } from '../../components/UpdateOrganizationStatusModal'
 import { UpdateOrganizationOperationsModal, type UpdateOperationFormData } from '../../components/UpdateOrganizationOperationsModal/UpdateOrganizationOperationsModal'
-import { canEditOrganizationStatus } from '../../utils/organizationPermissions'
+import { UpdateOrganizationRegistrationModal, type UpdateRegistrationFormData } from '../../components/UpdateOrganizationRegistrationModal/UpdateOrganizationRegistrationModal'
+import { canEditOrganizationStatus, canEditOrganizationRegistration } from '../../utils/organizationPermissions'
 
 type MenuItem = 'details' | 'contacts' | 'obligations' | 'history' | 'settings'
 
@@ -190,6 +191,7 @@ const OrganizationPage: React.FC = () => {
             organizationRegistration={organizationRegistration}
             onStatusUpdate={setOrganizationStatus}
             onOperationUpdate={setOrganizationOperation}
+            onRegistrationUpdate={setOrganizationRegistration}
           />
         )
       case 'contacts':
@@ -209,6 +211,7 @@ const OrganizationPage: React.FC = () => {
             organizationRegistration={organizationRegistration}
             onStatusUpdate={setOrganizationStatus}
             onOperationUpdate={setOrganizationOperation}
+            onRegistrationUpdate={setOrganizationRegistration}
           />
         )
     }
@@ -219,15 +222,26 @@ const OrganizationPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <button
-            onClick={() => navigate('/organizations/dashboard')}
-            className="flex items-center text-blue-600 hover:text-blue-800 mb-4"
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Organizations
-          </button>
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={() => navigate('/organizations/dashboard')}
+              className="flex items-center text-blue-600 hover:text-blue-800"
+            >
+              <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Organizations
+            </button>
+            <button
+              onClick={() => window.location.reload()}
+              className="flex items-center text-gray-600 hover:text-gray-800 p-2 hover:bg-gray-100 rounded-md"
+              aria-label="Refresh page"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+          </div>
           <h1 className="text-3xl font-bold text-gray-900">
             {organization ? formatOrganizationHeader(organization) : 'Organization'}
           </h1>
@@ -277,7 +291,8 @@ const OrganizationDetails: React.FC<{
   organizationRegistration: OrganizationRegistration | null
   onStatusUpdate: (status: OrganizationStatus) => void
   onOperationUpdate: (operation: any) => void
-}> = ({ organization, organizationStatus, organizationOperation, organizationRegistration, onStatusUpdate, onOperationUpdate }) => {
+  onRegistrationUpdate: (registration: OrganizationRegistration) => void
+}> = ({ organization, organizationStatus, organizationOperation, organizationRegistration, onStatusUpdate, onOperationUpdate, onRegistrationUpdate }) => {
   const [activeTab, setActiveTab] = useState<'general' | 'operation' | 'bir'>('general')
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false)
   const [canEditStatus, setCanEditStatus] = useState(false)
@@ -285,7 +300,9 @@ const OrganizationDetails: React.FC<{
   const [isOperationsModalOpen, setIsOperationsModalOpen] = useState(false)
   const [canEditOperations, setCanEditOperations] = useState(false)
   const [operationsUpdateLoading, setOperationsUpdateLoading] = useState(false)
+  const [isRegistrationModalOpen, setIsRegistrationModalOpen] = useState(false)
   const [canEditRegistration, setCanEditRegistration] = useState(false)
+  const [registrationUpdateLoading, setRegistrationUpdateLoading] = useState(false)
 
   // Check edit permissions on component mount and when organization changes
   useEffect(() => {
@@ -296,10 +313,11 @@ const OrganizationDetails: React.FC<{
           await UserService.fetchAndStoreUserData()
         }
 
-        const hasPermission = await canEditOrganizationStatus(organization.id)
-        setCanEditStatus(hasPermission)
-        setCanEditOperations(hasPermission)
-        setCanEditRegistration(hasPermission)
+        const statusPermission = await canEditOrganizationStatus(organization.id)
+        const registrationPermission = await canEditOrganizationRegistration(organization.id)
+        setCanEditStatus(statusPermission)
+        setCanEditOperations(statusPermission) // Operations uses same permission as status
+        setCanEditRegistration(registrationPermission)
       } catch (error) {
         console.error('Failed to check edit permissions:', error)
         setCanEditStatus(false)
@@ -378,6 +396,51 @@ const OrganizationDetails: React.FC<{
       // TODO: Show error message to user
     } finally {
       setOperationsUpdateLoading(false)
+    }
+  }
+
+  const handleEditRegistrationClick = () => {
+    if (canEditRegistration) {
+      setIsRegistrationModalOpen(true)
+    }
+  }
+
+  const handleRegistrationModalClose = () => {
+    setIsRegistrationModalOpen(false)
+  }
+
+  const handleRegistrationSave = async (formData: UpdateRegistrationFormData) => {
+    try {
+      setRegistrationUpdateLoading(true)
+      // Convert form data to the correct API type
+      const requestData = {
+        first_name: formData.first_name,
+        middle_name: formData.middle_name || undefined,
+        last_name: formData.last_name,
+        trade_name: formData.trade_name || undefined,
+        line_of_business: formData.line_of_business,
+        address_line: formData.address_line,
+        region: formData.region,
+        city: formData.city,
+        zip_code: formData.zip_code,
+        tin: formData.tin,
+        rdo_code: formData.rdo_code,
+        contact_number: formData.contact_number,
+        email_address: formData.email_address,
+        tax_type: formData.tax_type as 'VAT' | 'NON_VAT' | 'EXCEMPT',
+        start_date: formData.start_date,
+        reg_date: formData.reg_date
+      }
+      const updatedRegistration = await OrganizationService.updateOrganizationRegistration(organization.id, requestData)
+      onRegistrationUpdate(updatedRegistration)
+      setIsRegistrationModalOpen(false)
+      // Reload the page after successful update
+      window.location.reload()
+    } catch (error) {
+      console.error('Failed to update organization registration:', error)
+      // TODO: Show error message to user
+    } finally {
+      setRegistrationUpdateLoading(false)
     }
   }
 
@@ -612,6 +675,7 @@ const OrganizationDetails: React.FC<{
               <h3 className="text-lg font-medium">Registration Information</h3>
               {canEditRegistration && (
                 <button 
+                  onClick={handleEditRegistrationClick}
                   className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md"
                   aria-label="Edit Registration Information"
                 >
@@ -725,6 +789,15 @@ const OrganizationDetails: React.FC<{
         onSave={handleOperationsSave}
         currentOperation={organizationOperation}
         loading={operationsUpdateLoading}
+      />
+
+      {/* Registration Update Modal */}
+      <UpdateOrganizationRegistrationModal
+        isOpen={isRegistrationModalOpen}
+        onClose={handleRegistrationModalClose}
+        onSave={handleRegistrationSave}
+        currentRegistration={organizationRegistration}
+        loading={registrationUpdateLoading}
       />
     </div>
   )

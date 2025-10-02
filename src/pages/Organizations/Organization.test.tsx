@@ -6,7 +6,7 @@ import Organization from './Organization'
 import { OrganizationService } from '../../services/organizationService'
 import { UserService } from '../../services/userService'
 import type { Organization as OrganizationType, OrganizationStatus, OrganizationRegistration } from '../../services/organizationService'
-import { canEditOrganizationStatus } from '../../utils/organizationPermissions'
+import { canEditOrganizationStatus, canEditOrganizationRegistration } from '../../utils/organizationPermissions'
 
 // Mock the organization service
 vi.mock('../../services/organizationService', () => ({
@@ -31,10 +31,12 @@ vi.mock('../../services/userService', () => ({
 
 // Mock the organization permissions
 vi.mock('../../utils/organizationPermissions', () => ({
-  canEditOrganizationStatus: vi.fn()
+  canEditOrganizationStatus: vi.fn(),
+  canEditOrganizationRegistration: vi.fn()
 }))
 
 const mockCanEditOrganizationStatus = vi.mocked(canEditOrganizationStatus)
+const mockCanEditOrganizationRegistration = vi.mocked(canEditOrganizationRegistration)
 
 // Mock useNavigate
 const mockNavigate = vi.fn()
@@ -140,6 +142,7 @@ describe('Organization Page', () => {
     vi.clearAllMocks()
     mockNavigate.mockClear()
     mockCanEditOrganizationStatus.mockReset()
+    mockCanEditOrganizationRegistration.mockReset()
     
     // Set up default UserService mocks
     ;(UserService.hasUserData as any).mockReturnValue(true)
@@ -774,6 +777,7 @@ describe('Organization Page', () => {
 
   it('should display edit icon button in Basic Information section', async () => {
     mockCanEditOrganizationStatus.mockResolvedValue(true)
+    mockCanEditOrganizationRegistration.mockResolvedValue(true)
 
     render(
       <BrowserRouter>
@@ -802,6 +806,7 @@ describe('Organization Page', () => {
 
   it('should display edit icon button in Business Status section', async () => {
     mockCanEditOrganizationStatus.mockResolvedValue(true)
+    mockCanEditOrganizationRegistration.mockResolvedValue(true)
 
     render(
       <BrowserRouter>
@@ -833,6 +838,7 @@ describe('Organization Page', () => {
 
   it('should display edit icon button in Operation Details section', async () => {
     mockCanEditOrganizationStatus.mockResolvedValue(true)
+    mockCanEditOrganizationRegistration.mockResolvedValue(true)
 
     render(
       <BrowserRouter>
@@ -865,6 +871,7 @@ describe('Organization Page', () => {
 
   it('should display edit icon button in Registration Information section', async () => {
     mockCanEditOrganizationStatus.mockResolvedValue(true)
+    mockCanEditOrganizationRegistration.mockResolvedValue(true)
 
     render(
       <BrowserRouter>
@@ -897,6 +904,7 @@ describe('Organization Page', () => {
 
   it('should not display edit icon button in Operation Details section when user lacks permission', async () => {
     mockCanEditOrganizationStatus.mockResolvedValue(false)
+    mockCanEditOrganizationRegistration.mockResolvedValue(false)
 
     render(
       <BrowserRouter>
@@ -924,6 +932,7 @@ describe('Organization Page', () => {
 
   it('should not display edit icon button in Business Status section when user lacks permission', async () => {
     mockCanEditOrganizationStatus.mockResolvedValue(false)
+    mockCanEditOrganizationRegistration.mockResolvedValue(false)
 
     render(
       <BrowserRouter>
@@ -947,6 +956,7 @@ describe('Organization Page', () => {
 
   it('should not display edit icon button in Registration Information section when user lacks permission', async () => {
     mockCanEditOrganizationStatus.mockResolvedValue(false)
+    mockCanEditOrganizationRegistration.mockResolvedValue(false)
 
     render(
       <BrowserRouter>

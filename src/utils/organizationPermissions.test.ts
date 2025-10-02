@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { canEditOrganizationStatus } from './organizationPermissions'
+import { canEditOrganizationStatus, canEditOrganizationRegistration } from './organizationPermissions'
 import { OrganizationOwnerService } from '../services/organizationOwnerService'
 import { UserService } from '../services/userService'
 
@@ -95,6 +95,64 @@ describe('organizationPermissions', () => {
       mockIsSuperAdmin.mockReturnValue(false)
 
       const result = await canEditOrganizationStatus(null as any)
+
+      expect(result).toBe(false)
+      expect(mockIsSuperAdmin).toHaveBeenCalled()
+      expect(mockCheckOwnership).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('canEditOrganizationRegistration', () => {
+    const organizationId = 'test-org-123'
+
+    it('should return true when user is SUPERADMIN', async () => {
+      mockIsSuperAdmin.mockReturnValue(true)
+      mockCheckOwnership.mockResolvedValue(false)
+
+      const result = await canEditOrganizationRegistration(organizationId)
+
+      expect(result).toBe(true)
+      expect(mockIsSuperAdmin).toHaveBeenCalled()
+      // Should not need to check ownership if user is SUPERADMIN
+    })
+
+    it('should return true when user is organization owner', async () => {
+      mockIsSuperAdmin.mockReturnValue(false)
+      mockCheckOwnership.mockResolvedValue(true)
+
+      const result = await canEditOrganizationRegistration(organizationId)
+
+      expect(result).toBe(true)
+      expect(mockIsSuperAdmin).toHaveBeenCalled()
+      expect(mockCheckOwnership).toHaveBeenCalledWith(organizationId)
+    })
+
+    it('should return false when user is neither SUPERADMIN nor organization owner', async () => {
+      mockIsSuperAdmin.mockReturnValue(false)
+      mockCheckOwnership.mockResolvedValue(false)
+
+      const result = await canEditOrganizationRegistration(organizationId)
+
+      expect(result).toBe(false)
+      expect(mockIsSuperAdmin).toHaveBeenCalled()
+      expect(mockCheckOwnership).toHaveBeenCalledWith(organizationId)
+    })
+
+    it('should handle API errors gracefully and return false', async () => {
+      mockIsSuperAdmin.mockReturnValue(false)
+      mockCheckOwnership.mockRejectedValue(new Error('API Error'))
+
+      const result = await canEditOrganizationRegistration(organizationId)
+
+      expect(result).toBe(false)
+      expect(mockIsSuperAdmin).toHaveBeenCalled()
+      expect(mockCheckOwnership).toHaveBeenCalledWith(organizationId)
+    })
+
+    it('should handle empty organization ID', async () => {
+      mockIsSuperAdmin.mockReturnValue(false)
+
+      const result = await canEditOrganizationRegistration('')
 
       expect(result).toBe(false)
       expect(mockIsSuperAdmin).toHaveBeenCalled()

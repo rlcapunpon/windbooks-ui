@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { BrowserRouter } from 'react-router-dom'
 import OrganizationPage from './Organization'
 import { OrganizationService } from '../../services/organizationService'
-import { canEditOrganizationStatus } from '../../utils/organizationPermissions'
+import { canEditOrganizationStatus, canEditOrganizationRegistration } from '../../utils/organizationPermissions'
 
 // Mock the services
 vi.mock('../../services/organizationService', () => ({
@@ -25,7 +25,8 @@ vi.mock('../../services/userService', () => ({
 }))
 
 vi.mock('../../utils/organizationPermissions', () => ({
-  canEditOrganizationStatus: vi.fn()
+  canEditOrganizationStatus: vi.fn(),
+  canEditOrganizationRegistration: vi.fn()
 }))
 
 vi.mock('react-router-dom', async () => {
@@ -103,6 +104,7 @@ describe('Organization Details Operations Integration', () => {
   }
 
   const mockCanEditOrganizationStatus = vi.mocked(canEditOrganizationStatus)
+  const mockCanEditOrganizationRegistration = vi.mocked(canEditOrganizationRegistration)
 
   beforeEach(async () => {
     vi.clearAllMocks()
@@ -142,6 +144,7 @@ describe('Organization Details Operations Integration', () => {
     vi.mocked(UserService.isSuperAdmin).mockReturnValue(true)
     
     mockCanEditOrganizationStatus.mockResolvedValue(true)
+    mockCanEditOrganizationRegistration.mockResolvedValue(true)
   })
 
   describe('Operations Tab Display', () => {
