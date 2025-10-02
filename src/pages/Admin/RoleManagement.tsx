@@ -42,12 +42,14 @@ const RoleManagement = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [searchEmail, setSearchEmail] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
 
-  const fetchUsers = async (page: number = 1) => {
+  const fetchUsers = async (page: number = 1, email: string = '', status: string = '') => {
     try {
       setLoading(true);
       setError(null);
-      const response: PaginatedUsersResponse = await UserService.getAllUsers(page, 10);
+      const response: PaginatedUsersResponse = await UserService.getAllUsers(page, 10, email || undefined, status === 'Active' ? true : status === 'Inactive' ? false : undefined);
       setUsers(response.data);
       setTotalPages(response.pagination.totalPages);
       setCurrentPage(response.pagination.page);
@@ -64,7 +66,32 @@ const RoleManagement = () => {
   }, []);
 
   const handlePageChange = (page: number) => {
-    fetchUsers(page);
+    fetchUsers(page, searchEmail, statusFilter);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchEmail(value);
+  };
+
+  const handleSearch = () => {
+    fetchUsers(1, searchEmail, statusFilter);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  const handleStatusFilterChange = (value: string) => {
+    setStatusFilter(value);
+    fetchUsers(1, searchEmail, value);
+  };
+
+  const handleClearFilters = () => {
+    setSearchEmail('');
+    setStatusFilter('');
+    fetchUsers(1, '', '');
   };
 
   const handleEditRoles = (userId: string) => {
@@ -122,6 +149,61 @@ const RoleManagement = () => {
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-medium text-gray-900">Users</h2>
           <p className="text-sm text-gray-600">Total users: {users.length}</p>
+        </div>
+
+        {/* Search and Filter Controls */}
+        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <label htmlFor="email-search" className="block text-sm font-medium text-gray-700 mb-1">
+                Search by Email
+              </label>
+              <div className="relative flex">
+                <input
+                  id="email-search"
+                  type="text"
+                  placeholder="Search by email..."
+                  value={searchEmail}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-l-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                />
+                <button
+                  onClick={handleSearch}
+                  className="inline-flex items-center px-3 py-2 border border-l-0 border-gray-300 rounded-r-md bg-gray-50 text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  type="button"
+                >
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div className="sm:w-48">
+              <label htmlFor="status-filter" className="block text-sm font-medium text-gray-700 mb-1">
+                Filter by Status
+              </label>
+              <select
+                id="status-filter"
+                value={statusFilter}
+                onChange={(e) => handleStatusFilterChange(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              >
+                <option value="">All Status</option>
+                <option value="Active">Active</option>
+                <option value="Inactive">Inactive</option>
+              </select>
+            </div>
+            <div className="sm:flex sm:items-end">
+              <button
+                type="button"
+                onClick={handleClearFilters}
+                className="w-full sm:w-auto px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+              >
+                Clear Filters
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="overflow-x-auto">

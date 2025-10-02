@@ -206,7 +206,7 @@ describe('UserManagement', () => {
     })
   })
 
-  it('should filter users by email search', async () => {
+  it('should not trigger search on typing but should trigger on Enter key', async () => {
     const user = userEvent.setup()
     render(<UserManagement />)
 
@@ -214,14 +214,51 @@ describe('UserManagement', () => {
       expect(screen.getByText('admin@example.com')).toBeInTheDocument()
     })
 
+    // Clear the mock calls from initial render
+    mockGetAllUsers.mockClear()
+
     const searchInput = screen.getByPlaceholderText('Search by email...')
     await user.clear(searchInput)
-    await user.paste('user@example.com')
+    await user.type(searchInput, 'user@example.com')
 
-    // Wait for the API call with the final search term
+    // Verify that typing doesn't trigger search
+    expect(mockGetAllUsers).not.toHaveBeenCalled()
+
+    // Press Enter key to trigger search
+    await user.keyboard('{Enter}')
+
+    // Wait for the API call with the search term
     await waitFor(() => {
-      expect(mockGetAllUsers).toHaveBeenLastCalledWith(1, 10, 'user@example.com', undefined)
-    }, { timeout: 3000 })
+      expect(mockGetAllUsers).toHaveBeenCalledWith(1, 10, 'user@example.com', undefined)
+    })
+  })
+
+  it('should trigger search when search button is clicked', async () => {
+    const user = userEvent.setup()
+    render(<UserManagement />)
+
+    await waitFor(() => {
+      expect(screen.getByText('admin@example.com')).toBeInTheDocument()
+    })
+
+    // Clear the mock calls from initial render
+    mockGetAllUsers.mockClear()
+
+    const searchInput = screen.getByPlaceholderText('Search by email...')
+    await user.clear(searchInput)
+    await user.type(searchInput, 'admin@example.com')
+
+    // Verify that typing doesn't trigger search
+    expect(mockGetAllUsers).not.toHaveBeenCalled()
+
+    // Click the search button
+    const searchButton = screen.getByRole('button', { name: '' })
+    await user.click(searchButton)
+
+    // Wait for the API call with the search term
+    await waitFor(() => {
+      expect(mockGetAllUsers).toHaveBeenCalledWith(1, 10, 'admin@example.com', undefined)
+    })
   })
 
   it('should filter users by status', async () => {

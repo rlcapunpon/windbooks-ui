@@ -75,7 +75,16 @@ const UserManagement = () => {
 
   const handleEmailFilterChange = (email: string) => {
     setEmailFilter(email);
-    fetchUsers(1, email, statusFilter);
+  };
+
+  const handleSearch = () => {
+    fetchUsers(1, emailFilter, statusFilter);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
   };
 
   const handleStatusFilterChange = (status: string) => {
@@ -202,14 +211,26 @@ const UserManagement = () => {
             <div className="flex flex-col sm:flex-row gap-4 flex-1">
               <div className="flex-1 max-w-md">
                 <label htmlFor="email-search" className="sr-only">Search by email</label>
-                <input
-                  id="email-search"
-                  type="text"
-                  placeholder="Search by email..."
-                  value={emailFilter}
-                  onChange={(e) => handleEmailFilterChange(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                />
+                <div className="relative flex">
+                  <input
+                    id="email-search"
+                    type="text"
+                    placeholder="Search by email..."
+                    value={emailFilter}
+                    onChange={(e) => handleEmailFilterChange(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-l-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  />
+                  <button
+                    onClick={handleSearch}
+                    className="inline-flex items-center px-3 py-2 border border-l-0 border-gray-300 rounded-r-md bg-gray-50 text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    type="button"
+                  >
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </button>
+                </div>
               </div>
               <div className="sm:w-48">
                 <select

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import RoleManagement from './RoleManagement'
 import { UserService } from '../../services/userService'
 
@@ -90,7 +91,7 @@ describe('RoleManagement', () => {
     render(<RoleManagement />)
 
     await waitFor(() => {
-      expect(mockGetAllUsers).toHaveBeenCalledWith(1, 10)
+      expect(mockGetAllUsers).toHaveBeenCalledWith(1, 10, undefined, undefined)
     })
 
     expect(screen.getByText('admin@example.com')).toBeInTheDocument()
@@ -101,8 +102,10 @@ describe('RoleManagement', () => {
     render(<RoleManagement />)
 
     await waitFor(() => {
-      expect(screen.getByText('Active')).toBeInTheDocument()
-      expect(screen.getByText('Inactive')).toBeInTheDocument()
+      const activeBadges = screen.getAllByText('Active')
+      const inactiveBadges = screen.getAllByText('Inactive')
+      expect(activeBadges.length).toBeGreaterThan(0)
+      expect(inactiveBadges.length).toBeGreaterThan(0)
     })
   })
 
@@ -179,6 +182,141 @@ describe('RoleManagement', () => {
     await waitFor(() => {
       const paginationElement = document.querySelector('p.text-sm.text-gray-700')
       expect(paginationElement?.textContent?.trim()).toBe('Page 1 of 3')
+    })
+  })
+
+  it('should render search input field', async () => {
+    render(<RoleManagement />)
+
+    await waitFor(() => {
+      const searchInput = screen.getByPlaceholderText('Search by email...')
+      expect(searchInput).toBeInTheDocument()
+    })
+  })
+
+  it('should render status filter dropdown', async () => {
+    render(<RoleManagement />)
+
+    await waitFor(() => {
+      const statusSelect = screen.getByDisplayValue('')
+      expect(statusSelect).toBeInTheDocument()
+    })
+  })
+
+  it('should not trigger search on typing but should trigger on Enter key', async () => {
+    const user = userEvent.setup()
+    render(<RoleManagement />)
+
+    await waitFor(() => {
+      expect(mockGetAllUsers).toHaveBeenCalledWith(1, 10, undefined, undefined)
+    })
+
+    // Clear previous calls
+    mockGetAllUsers.mockClear()
+
+    const searchInput = screen.getByPlaceholderText('Search by email...')
+
+    await user.clear(searchInput)
+    await user.type(searchInput, 'admin')
+
+    // Verify that typing doesn't trigger search
+    expect(mockGetAllUsers).not.toHaveBeenCalled()
+
+    // Press Enter key to trigger search
+    await user.keyboard('{Enter}')
+
+    await waitFor(() => {
+      expect(mockGetAllUsers).toHaveBeenCalledWith(1, 10, 'admin', undefined)
+    })
+  })
+
+  it('should trigger search when search button is clicked', async () => {
+    const user = userEvent.setup()
+    render(<RoleManagement />)
+
+    await waitFor(() => {
+      expect(mockGetAllUsers).toHaveBeenCalledWith(1, 10, undefined, undefined)
+    })
+
+    // Clear previous calls
+    mockGetAllUsers.mockClear()
+
+    const searchInput = screen.getByPlaceholderText('Search by email...')
+
+    await user.clear(searchInput)
+    await user.type(searchInput, 'user@example.com')
+
+    // Verify that typing doesn't trigger search
+    expect(mockGetAllUsers).not.toHaveBeenCalled()
+
+    // Click the search button
+    const searchButton = screen.getByRole('button', { name: '' })
+    await user.click(searchButton)
+
+    await waitFor(() => {
+      expect(mockGetAllUsers).toHaveBeenCalledWith(1, 10, 'user@example.com', undefined)
+    })
+  })
+
+  it('should filter users by status', async () => {
+    const user = userEvent.setup()
+    render(<RoleManagement />)
+
+    await waitFor(() => {
+      expect(mockGetAllUsers).toHaveBeenCalledWith(1, 10, undefined, undefined)
+    })
+
+    const statusSelect = screen.getByRole('combobox')
+
+    await user.selectOptions(statusSelect, 'Active')
+
+    await waitFor(() => {
+      expect(mockGetAllUsers).toHaveBeenCalledWith(1, 10, undefined, true)
+    })
+  })
+
+  it('should maintain search text when status filter changes', async () => {
+    const user = userEvent.setup()
+    render(<RoleManagement />)
+
+    await waitFor(() => {
+      expect(mockGetAllUsers).toHaveBeenCalledWith(1, 10, undefined, undefined)
+    })
+
+    const searchInput = screen.getByPlaceholderText('Search by email...')
+    const statusSelect = screen.getByRole('combobox')
+
+    // Type in search input without triggering search
+    await user.clear(searchInput)
+    await user.type(searchInput, 'user')
+    
+    // Select status filter
+    await user.selectOptions(statusSelect, 'Inactive')
+
+    // Verify that the search input still contains the typed value
+    expect(searchInput).toHaveValue('user')
+    expect(statusSelect).toHaveValue('Inactive')
+  })
+
+  it('should clear filters when clear button is clicked', async () => {
+    const user = userEvent.setup()
+    render(<RoleManagement />)
+
+    await waitFor(() => {
+      expect(mockGetAllUsers).toHaveBeenCalledWith(1, 10, undefined, undefined)
+    })
+
+    const clearButton = screen.getByText('Clear Filters')
+
+    // Clear previous calls to focus on the clear button action
+    mockGetAllUsers.mockClear()
+
+    // Click clear filters
+    await user.click(clearButton)
+
+    // Verify clear filters API call is made with empty parameters
+    await waitFor(() => {
+      expect(mockGetAllUsers).toHaveBeenCalledWith(1, 10, undefined, undefined)
     })
   })
 })
