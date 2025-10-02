@@ -1357,4 +1357,165 @@ describe('MainLayout Component', () => {
     expect(sidebar).toHaveClass('translate-x-0');
     expect(sidebar).toHaveClass('md:block');
   });
+
+  // Step 15: Issue still persists - menu items not visible on mobile
+  it('should display menu items when mobile menu is opened on mobile-sized screen', () => {
+    // Mock window.innerWidth to simulate mobile screen
+    Object.defineProperty(window, 'innerWidth', {
+      writable: true,
+      configurable: true,
+      value: 375, // iPhone width
+    });
+
+    // Mock matchMedia to simulate mobile viewport
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: vi.fn().mockImplementation(query => ({
+        matches: query === '(max-width: 767px)', // Simulate mobile breakpoint
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    });
+
+    render(
+      <BrowserRouter>
+        <MainLayout>
+          <div>Test Content</div>
+        </MainLayout>
+      </BrowserRouter>
+    );
+
+    // Initially, sidebar should be hidden on mobile (translate-x-full)
+    const sidebar = screen.getByTestId('sidebar');
+    expect(sidebar).toHaveClass('-translate-x-full');
+
+    // Open mobile menu
+    const mobileMenuButton = screen.getByRole('button', { name: /toggle mobile menu/i });
+    fireEvent.click(mobileMenuButton);
+
+    // Sidebar should now be visible (translate-x-0)
+    expect(sidebar).toHaveClass('translate-x-0');
+    expect(sidebar).not.toHaveClass('-translate-x-full');
+
+    // Menu items should be visible and accessible
+    expect(screen.getByTestId('menu-item-dashboard')).toBeInTheDocument();
+    expect(screen.getByTestId('menu-item-organizations')).toBeInTheDocument();
+    expect(screen.getByTestId('menu-item-tasks')).toBeInTheDocument();
+    expect(screen.getByTestId('menu-item-admin')).toBeInTheDocument();
+    expect(screen.getByTestId('menu-item-profile')).toBeInTheDocument();
+    expect(screen.getByTestId('menu-item-settings')).toBeInTheDocument();
+
+    // Menu component should be rendered and visible
+    const menuComponent = screen.getByTestId('menu-component');
+    expect(menuComponent).toBeInTheDocument();
+    expect(menuComponent).toBeVisible();
+  });
+
+  it('should ensure menu items are not hidden by CSS on mobile viewport', () => {
+    // Mock mobile viewport
+    Object.defineProperty(window, 'innerWidth', {
+      writable: true,
+      configurable: true,
+      value: 375,
+    });
+
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: vi.fn().mockImplementation(query => ({
+        matches: query === '(max-width: 767px)',
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    });
+
+    render(
+      <BrowserRouter>
+        <MainLayout>
+          <div>Test Content</div>
+        </MainLayout>
+      </BrowserRouter>
+    );
+
+    // Open mobile menu
+    const mobileMenuButton = screen.getByRole('button', { name: /toggle mobile menu/i });
+    fireEvent.click(mobileMenuButton);
+
+    // Check that menu items don't have hidden or invisible classes
+    const dashboardItem = screen.getByTestId('menu-item-dashboard');
+    expect(dashboardItem).not.toHaveClass('hidden');
+    expect(dashboardItem).not.toHaveClass('invisible');
+    expect(dashboardItem).not.toHaveClass('opacity-0');
+
+    const organizationsItem = screen.getByTestId('menu-item-organizations');
+    expect(organizationsItem).not.toHaveClass('hidden');
+    expect(organizationsItem).not.toHaveClass('invisible');
+    expect(organizationsItem).not.toHaveClass('opacity-0');
+
+    // Check that the menu container doesn't have mobile-specific hiding classes
+    const menuComponent = screen.getByTestId('menu-component');
+    expect(menuComponent).not.toHaveClass('md:hidden');
+    expect(menuComponent).not.toHaveClass('hidden');
+    expect(menuComponent).not.toHaveClass('invisible');
+  });
+
+  it('should render menu items with proper text content on mobile', () => {
+    // Mock mobile viewport
+    Object.defineProperty(window, 'innerWidth', {
+      writable: true,
+      configurable: true,
+      value: 375,
+    });
+
+    Object.defineProperty(window, 'matchMedia', {
+      writable: true,
+      value: vi.fn().mockImplementation(query => ({
+        matches: query === '(max-width: 767px)',
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      })),
+    });
+
+    render(
+      <BrowserRouter>
+        <MainLayout>
+          <div>Test Content</div>
+        </MainLayout>
+      </BrowserRouter>
+    );
+
+    // Open mobile menu
+    const mobileMenuButton = screen.getByRole('button', { name: /toggle mobile menu/i });
+    fireEvent.click(mobileMenuButton);
+
+    // Verify menu items have their text content visible
+    expect(screen.getByText('Dashboard')).toBeInTheDocument();
+    expect(screen.getByText('Organizations')).toBeInTheDocument();
+    expect(screen.getByText('Tasks')).toBeInTheDocument();
+    expect(screen.getByText('Administration')).toBeInTheDocument();
+    expect(screen.getByText('Profile')).toBeInTheDocument();
+    expect(screen.getByText('Settings')).toBeInTheDocument();
+
+    // Verify icons are also present
+    expect(screen.getByTestId('icon-dashboard')).toBeInTheDocument();
+    expect(screen.getByTestId('icon-organizations')).toBeInTheDocument();
+    expect(screen.getByTestId('icon-tasks')).toBeInTheDocument();
+    expect(screen.getByTestId('icon-admin')).toBeInTheDocument();
+    expect(screen.getByTestId('icon-profile')).toBeInTheDocument();
+    expect(screen.getByTestId('icon-settings')).toBeInTheDocument();
+  });
 });
