@@ -1256,4 +1256,105 @@ describe('MainLayout Component', () => {
     expect(emailElement).toBeInTheDocument();
     expect(emailElement).toHaveTextContent('test@example.com');
   });
+
+  // Step 14: Fix the side-menu view when the screen is mobile resolution
+  it('should have clear background for mobile menu overlay', () => {
+    render(
+      <BrowserRouter>
+        <MainLayout>
+          <div>Test Content</div>
+        </MainLayout>
+      </BrowserRouter>
+    );
+
+    // Open mobile menu
+    const mobileMenuButton = screen.getByRole('button', { name: /toggle mobile menu/i });
+    fireEvent.click(mobileMenuButton);
+
+    // Mobile menu overlay should be present but with clear background (no black background)
+    const overlay = document.querySelector('.fixed.inset-0.z-40.md\\:hidden');
+    expect(overlay).toBeInTheDocument();
+    
+    // Should not have black background classes
+    expect(overlay).not.toHaveClass('bg-black');
+    expect(overlay).not.toHaveClass('bg-opacity-50');
+  });
+
+  it('should display menu items when mobile menu is opened', () => {
+    render(
+      <BrowserRouter>
+        <MainLayout>
+          <div>Test Content</div>
+        </MainLayout>
+      </BrowserRouter>
+    );
+
+    // Initially, sidebar should be hidden on mobile (translate-x-full)
+    const sidebar = screen.getByTestId('sidebar');
+    expect(sidebar).toHaveClass('-translate-x-full');
+
+    // Open mobile menu
+    const mobileMenuButton = screen.getByRole('button', { name: /toggle mobile menu/i });
+    fireEvent.click(mobileMenuButton);
+
+    // Sidebar should now be visible (translate-x-0)
+    expect(sidebar).toHaveClass('translate-x-0');
+    expect(sidebar).not.toHaveClass('-translate-x-full');
+
+    // Menu items should be visible
+    expect(screen.getByTestId('menu-item-dashboard')).toBeInTheDocument();
+    expect(screen.getByTestId('menu-item-organizations')).toBeInTheDocument();
+    expect(screen.getByTestId('menu-item-tasks')).toBeInTheDocument();
+  });
+
+  it('should hide mobile menu overlay when closed', () => {
+    render(
+      <BrowserRouter>
+        <MainLayout>
+          <div>Test Content</div>
+        </MainLayout>
+      </BrowserRouter>
+    );
+
+    // Open mobile menu
+    const mobileMenuButton = screen.getByRole('button', { name: /toggle mobile menu/i });
+    fireEvent.click(mobileMenuButton);
+
+    // Mobile menu overlay should be present
+    let overlay = document.querySelector('.fixed.inset-0.z-40.md\\:hidden');
+    expect(overlay).toBeInTheDocument();
+
+    // Close mobile menu by clicking overlay
+    fireEvent.click(overlay!);
+
+    // Mobile menu overlay should no longer be present
+    overlay = document.querySelector('.fixed.inset-0.z-40.md\\:hidden');
+    expect(overlay).toBeNull();
+  });
+
+  it('should position sidebar correctly for mobile when menu is open', () => {
+    render(
+      <BrowserRouter>
+        <MainLayout>
+          <div>Test Content</div>
+        </MainLayout>
+      </BrowserRouter>
+    );
+
+    const sidebar = screen.getByTestId('sidebar');
+
+    // Initially should be hidden on mobile
+    expect(sidebar).toHaveClass('fixed');
+    expect(sidebar).toHaveClass('md:relative');
+    expect(sidebar).toHaveClass('-translate-x-full');
+    expect(sidebar).toHaveClass('md:translate-x-0');
+
+    // Open mobile menu
+    const mobileMenuButton = screen.getByRole('button', { name: /toggle mobile menu/i });
+    fireEvent.click(mobileMenuButton);
+
+    // Should be positioned for mobile view
+    expect(sidebar).toHaveClass('translate-x-0');
+    expect(sidebar).toHaveClass('md:block');
+  });
 });

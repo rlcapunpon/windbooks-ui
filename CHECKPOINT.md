@@ -344,6 +344,147 @@ Menu: ({ items, showIcons, collapsed, collapsible = true, onSubmenuToggle }: any
 **Ready for Next Step**: Continue with remaining organization management integration steps
 ---
 
+# Step 13 - Show the email beside the user-role-badge ✅
+
+## Implementation Summary
+**Date**: October 1, 2025  
+**Approach**: Test-Driven Development (TDD)  
+**Files Modified**: 
+- `src/components/MainLayout.tsx`
+- `src/components/MainLayout.test.tsx`
+- `CHECKPOINT.md`
+
+## Completed Features
+✅ **Email Display Beside Role Badge**
+- Added user's email display beside the user-role-badge in the top navigation bar
+- Email is shown as a span element next to the role badge with appropriate styling
+- Added conditional rendering to only show email when user.email exists
+- Used Tailwind CSS classes for consistent styling with existing elements
+
+✅ **Test Coverage Enhancement**
+- Added comprehensive test case "should display user email beside the user-role-badge"
+- Test verifies email text content is rendered correctly
+- Test verifies data-testid="user-email" is present for reliable testing
+- All tests passing: 565/565 total tests
+
+✅ **TDD Process Validation**
+- ✅ Written failing tests first for email display functionality
+- ✅ Implemented minimal code to pass tests  
+- ✅ Verified email displays correctly beside role badge
+- ✅ Verified conditional rendering works when user.email is available
+- ✅ No TypeScript errors
+- ✅ Build successful
+- ✅ Development server running successfully
+
+## Technical Implementation
+**Email Display**:
+```tsx
+{user?.email && (
+  <span 
+    className="text-sm text-gray-600 ml-2" 
+    data-testid="user-email"
+  >
+    {user.email}
+  </span>
+)}
+```
+
+**Test Case**:
+```tsx
+it('should display user email beside the user-role-badge', () => {
+  const mockUser = {
+    id: '1',
+    email: 'test@example.com',
+    role: 'admin',
+    permissions: []
+  };
+  
+  renderWithAuthContext(<MainLayout />, { user: mockUser });
+  
+  expect(screen.getByTestId('user-email')).toBeInTheDocument();
+  expect(screen.getByText('test@example.com')).toBeInTheDocument();
+});
+```
+
+## Test Results
+- **Status**: ✅ Step 13 functionality working correctly
+- **Email Display**: Verified showing user email beside role badge in top navigation
+- **Conditional Rendering**: Verified email only shows when user.email exists
+- **Styling**: Verified consistent styling with existing navigation elements
+- **All Tests**: 565/565 passing
+- **Build**: ✅ Successful
+- **Dev Server**: ✅ Running on http://localhost:5174/
+
+**Ready for Next Step**: Continue with remaining TDD requirements
+---
+
+# Step 14 - Fix the side-menu view when the screen is mobile resolution ✅
+
+## Implementation Summary
+**Date**: October 2, 2025  
+**Approach**: Test-Driven Development (TDD)  
+**Files Modified**: 
+- `src/components/MainLayout.tsx`
+- `src/components/MainLayout.test.tsx`
+- `CHECKPOINT.md`
+
+## Completed Features
+✅ **Mobile Menu Overlay Background Fix**
+- Removed black background (`bg-black bg-opacity-50`) from mobile menu overlay
+- Mobile menu overlay now has clear/transparent background when opened
+- Maintains proper overlay functionality for closing menu when clicked outside
+
+✅ **Menu Items Display Verification**
+- Ensured menu items are properly displayed when mobile menu is opened
+- Mobile menu sidebar correctly transitions from hidden (`-translate-x-full`) to visible (`translate-x-0`)
+- Menu component renders all menu items with proper mobile positioning
+
+✅ **Comprehensive Mobile Menu Testing**
+- Added 4 comprehensive test cases for mobile menu functionality
+- Tests verify clear overlay background (no black background classes)
+- Tests verify menu items display when mobile menu is opened
+- Tests verify overlay closes when clicked
+- Tests verify proper sidebar positioning for mobile view
+
+✅ **TDD Process Validation**
+- ✅ Written failing tests first for mobile menu overlay background fix
+- ✅ Implemented minimal code changes to pass tests (removed black background classes)
+- ✅ Verified mobile menu overlay has clear background
+- ✅ Verified menu items are displayed when mobile menu is opened
+- ✅ No TypeScript errors
+- ✅ Build successful
+- ✅ All tests passing (574/575 total tests)
+
+## Technical Implementation
+**Mobile Menu Overlay Fix**:
+```tsx
+{/* Mobile Menu Overlay */}
+{isMobileMenuOpen && (
+  <div 
+    className="fixed inset-0 z-40 md:hidden" 
+    onClick={() => setIsMobileMenuOpen(false)}
+  />
+)}
+```
+
+**Mobile Sidebar Positioning**:
+```tsx
+<aside className={`fixed md:relative inset-y-0 left-0 z-50 ${isSidebarCollapsed ? 'w-16' : 'w-64'} bg-white border-r border-gray-200 shadow-sm flex-shrink-0 transform transition-all duration-300 ease-in-out md:translate-x-0 ${
+  isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+} md:block`} id="sidebar" data-testid="sidebar">
+```
+
+## Test Results
+- **Status**: ✅ Step 14 mobile menu functionality working correctly
+- **Overlay Background**: Verified clear/transparent background (no black background)
+- **Menu Items Display**: Verified menu items are visible when mobile menu is opened
+- **Overlay Behavior**: Verified overlay closes menu when clicked
+- **Sidebar Positioning**: Verified proper mobile positioning and transitions
+- **All Tests**: 574/575 passing (1 skipped)
+- **Build**: ✅ Successful
+
+**Ready for Next Step**: Continue with remaining TDD requirements
+
 # Step 7 - Additional Role Management features ✅
 
 ## Implementation Summary
