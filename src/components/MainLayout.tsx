@@ -377,6 +377,11 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
                 'from-gray-500 to-slate-500'}`} id="user-role-badge">
                 {UserService.isSuperAdmin() ? 'Super Admin' : primaryRole.toUpperCase()}
               </div>
+              {user?.email && (
+                <span className="text-sm text-gray-600" data-testid="user-email">
+                  {user.email}
+                </span>
+              )}
             </div>
             <button
               onClick={logout}

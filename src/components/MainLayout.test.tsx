@@ -1237,4 +1237,23 @@ describe('MainLayout Component', () => {
     const minimizeButton = screen.getByLabelText('Collapse sidebar');
     expect(minimizeButton).not.toBeDisabled();
   });
+
+  // Step 13: Show the email beside the user-role-badge
+  it('should display user email beside the user-role-badge', () => {
+    render(
+      <BrowserRouter>
+        <MainLayout>
+          <div>Test Content</div>
+        </MainLayout>
+      </BrowserRouter>
+    );
+
+    // Should display the user's email beside the role badge
+    expect(screen.getByText('test@example.com')).toBeInTheDocument();
+    
+    // Should have the user-email id for the email element
+    const emailElement = screen.getByTestId('user-email');
+    expect(emailElement).toBeInTheDocument();
+    expect(emailElement).toHaveTextContent('test@example.com');
+  });
 });
