@@ -1157,10 +1157,6 @@ describe('MainLayout Component', () => {
     const allOrganizationsSubmenu = screen.getByTestId('submenu-item-org-all');
     expect(allOrganizationsSubmenu).toBeInTheDocument();
 
-    // The Organization Assignee submenu item should NOT be highlighted
-    const assigneeSubmenu = screen.getByTestId('submenu-item-org-assignee');
-    expect(assigneeSubmenu).toBeInTheDocument();
-    
     // Note: In our mock, we can't test CSS classes, but this test documents the expected behavior
     // The real fix needs to ensure only org-all gets the active styling
   });
@@ -1517,5 +1513,34 @@ describe('MainLayout Component', () => {
     expect(screen.getByTestId('icon-admin')).toBeInTheDocument();
     expect(screen.getByTestId('icon-profile')).toBeInTheDocument();
     expect(screen.getByTestId('icon-settings')).toBeInTheDocument();
+  });
+
+  // Step 19: Remove the Organization Assignee and Assigned Tasks submenu items
+  it('should not display Organization Assignee submenu item', () => {
+    render(
+      <BrowserRouter>
+        <MainLayout>
+          <div>Test Content</div>
+        </MainLayout>
+      </BrowserRouter>
+    );
+
+    // Organization Assignee submenu item should not be present
+    expect(screen.queryByTestId('submenu-item-org-assignee')).not.toBeInTheDocument();
+    expect(screen.queryByText('Organization Assignee')).not.toBeInTheDocument();
+  });
+
+  it('should not display Assigned Tasks submenu item', () => {
+    render(
+      <BrowserRouter>
+        <MainLayout>
+          <div>Test Content</div>
+        </MainLayout>
+      </BrowserRouter>
+    );
+
+    // Assigned Tasks submenu item should not be present
+    expect(screen.queryByTestId('submenu-item-assigned-tasks')).not.toBeInTheDocument();
+    expect(screen.queryByText('Assigned Tasks')).not.toBeInTheDocument();
   });
 });

@@ -133,6 +133,13 @@ export interface OrganizationOwnership {
   userId: string
 }
 
+export interface OrganizationFilters {
+  tax_classification?: 'VAT' | 'NON_VAT' | 'EXCEMPT'
+  category?: 'INDIVIDUAL' | 'NON_INDIVIDUAL'
+  status?: string
+  search?: string
+}
+
 export class OrganizationService {
   private static readonly BASE_ENDPOINT = '/organizations'
 

@@ -12,6 +12,7 @@ vi.mock('../../services/organizationService', () => ({
     getOrganizationStatus: vi.fn(),
     getOrganizationOperation: vi.fn(),
     getOrganizationRegistration: vi.fn(),
+    getOrganizationOwnership: vi.fn(),
     updateOrganizationOperation: vi.fn()
   }
 }))
@@ -114,6 +115,11 @@ describe('Organization Details Operations Integration', () => {
     vi.mocked(OrganizationService.getOrganizationStatus).mockResolvedValue(mockOrganizationStatus)
     vi.mocked(OrganizationService.getOrganizationOperation).mockResolvedValue(mockOrganizationOperation)
     vi.mocked(OrganizationService.getOrganizationRegistration).mockResolvedValue(mockOrganizationRegistration)
+    vi.mocked(OrganizationService.getOrganizationOwnership).mockResolvedValue({
+      isOwner: true,
+      orgId: 'test-org-123',
+      userId: 'user-123'
+    })
     vi.mocked(OrganizationService.updateOrganizationOperation).mockResolvedValue({})
     
     // Mock UserService methods

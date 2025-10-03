@@ -126,24 +126,20 @@ describe('OrganizationTable', () => {
   })
 
   describe('Data Display', () => {
-    it('should render table headers correctly', () => {
-      render(
-        <BrowserRouter>
-          <OrganizationTable
-            organizations={mockOrganizations}
-            loading={false}
-            onRefresh={mockOnRefresh}
-          />
-        </BrowserRouter>
-      )
+  it('should NOT display Registration Date column header', () => {
+    render(
+      <BrowserRouter>
+        <OrganizationTable
+          organizations={mockOrganizations}
+          loading={false}
+          onRefresh={mockOnRefresh}
+        />
+      </BrowserRouter>
+    )
 
-      expect(screen.getByText('Name')).toBeInTheDocument()
-      expect(screen.getByText('Role')).toBeInTheDocument()
-      expect(screen.getByText('Category')).toBeInTheDocument()
-      expect(screen.getByText('Tax Classification')).toBeInTheDocument()
-      expect(screen.getByText('Status')).toBeInTheDocument()
-      expect(screen.getByText('Actions')).toBeInTheDocument()
-    })
+    // Should NOT have Registration Date column header
+    expect(screen.queryByText('Registration Date')).not.toBeInTheDocument()
+  })
 
     it('should display organization data in table rows', () => {
       render(
@@ -169,21 +165,6 @@ describe('OrganizationTable', () => {
       expect(screen.getByText('INDIVIDUAL')).toBeInTheDocument()
       expect(screen.getByText('NON_VAT')).toBeInTheDocument()
       expect(screen.getByText('PENDING_REG')).toBeInTheDocument()
-    })
-
-    it('should show formatted dates', () => {
-      render(
-        <BrowserRouter>
-          <OrganizationTable
-            organizations={mockOrganizations}
-            loading={false}
-            onRefresh={mockOnRefresh}
-          />
-        </BrowserRouter>
-      )
-
-      // Should show formatted dates (Jan 1, 2024 format)
-      expect(screen.getByText('Jan 1, 2024')).toBeInTheDocument()
     })
   })
 

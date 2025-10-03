@@ -158,12 +158,6 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
           href: '/organizations/tax-excempt',
           permissions: ['USER.READ'],
         },
-        {
-          id: 'org-assignee',
-          label: 'Organization Assignee',
-          href: '/organizations/assignee',
-          permissions: ['SETTINGS.MANAGE'],
-        },
       ],
     },
     {
@@ -181,12 +175,6 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
           id: 'my-tasks',
           label: 'My Tasks',
           href: '/tasks/my-tasks',
-          permissions: ['USER.READ'],
-        },
-        {
-          id: 'assigned-tasks',
-          label: 'Assigned Tasks',
-          href: '/tasks/assigned',
           permissions: ['USER.READ'],
         },
         {

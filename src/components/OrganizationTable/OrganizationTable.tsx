@@ -50,14 +50,6 @@ export const OrganizationTable: React.FC<OrganizationTableProps> = ({
 
     fetchUserRoles()
   }, [organizations])
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-  }
-
   const getStatusBadgeClass = (status?: string) => {
     switch (status) {
       case 'ACTIVE':
@@ -167,9 +159,6 @@ export const OrganizationTable: React.FC<OrganizationTableProps> = ({
                 Tax Classification
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Registration Date
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Status
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -199,9 +188,6 @@ export const OrganizationTable: React.FC<OrganizationTableProps> = ({
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {organization.tax_classification}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {organization.registration_date ? formatDate(organization.registration_date) : 'N/A'}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   {organization.status ? (
