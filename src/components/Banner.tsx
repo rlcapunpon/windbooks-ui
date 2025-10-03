@@ -1,5 +1,5 @@
 import React from 'react';
-import logo from '/public/wb_icon.png';
+import logo from '/public/wb_icon_03.svg';
 
 interface BannerProps {
   title?: string;
@@ -48,7 +48,7 @@ const Banner: React.FC<BannerProps> = ({
             <img
               src={logoSrc}
               alt="Windbooks Logo"
-              className={`w-8 h-8 ${variant === 'hero' ? 'filter brightness-0 invert' : ''}`}
+              className={`${variant === 'hero' ? 'w-[265px] max-w-[265px] h-auto' : 'w-8 h-8'} object-contain`}
             />
           </div>
         )}

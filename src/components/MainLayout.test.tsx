@@ -71,7 +71,7 @@ describe('MainLayout Component', () => {
       </BrowserRouter>
     );
 
-    expect(screen.getByText('Windbooks')).toBeInTheDocument();
+    expect(screen.getByAltText('Windbooks Logo')).toBeInTheDocument();
     expect(screen.getByText('Welcome, test')).toBeInTheDocument();
     expect(screen.getByText('Test Content')).toBeInTheDocument();
     expect(screen.getByText('Logout')).toBeInTheDocument();
@@ -125,7 +125,7 @@ describe('MainLayout Component', () => {
     const minimizeButton = screen.getByLabelText('Collapse sidebar');
 
     // Initially sidebar should be expanded
-    expect(screen.getByText('Windbooks')).toBeInTheDocument();
+    expect(screen.getByAltText('Windbooks Logo')).toBeInTheDocument();
     expect(screen.getByText('Welcome, test')).toBeInTheDocument();
 
     // Click minimize button
@@ -324,7 +324,7 @@ describe('MainLayout Component', () => {
     // Wait for expand
     await waitFor(() => {
       // Should be expanded again
-      expect(screen.getByText('Windbooks')).toBeInTheDocument();
+      expect(screen.getByAltText('Windbooks Logo')).toBeInTheDocument();
       expect(screen.getByText('Welcome, test')).toBeInTheDocument();
     });
   });

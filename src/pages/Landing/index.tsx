@@ -5,9 +5,10 @@ const Landing = () => {
   return (
     <div className="min-h-screen bg-background-primary">
       <Banner
-        title="Windbooks"
-        subtitle="Internal Bookkeeping & Tax Compliance Platform"
+        title=""
+        subtitle=""
         variant="hero"
+        logoSrc="/wb_icon_02.png"
       >
         <div className="flex space-x-4">
           <Link

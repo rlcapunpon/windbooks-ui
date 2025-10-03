@@ -295,9 +295,15 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
       } md:block`} id="sidebar" data-testid="sidebar">
         <div className={`p-4 border-b border-gray-200 ${isSidebarCollapsed ? 'hidden' : ''}`} id="sidebar-header" data-testid="sidebar-header">
           <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900" id="sidebar-title">Windbooks</h2>
-              <p className="text-sm text-gray-600" id="sidebar-welcome">Welcome, {user?.email?.split('@')[0]}</p>
+            <div className="flex items-center space-x-3">
+              <img
+                src="/wb_icon_01.svg"
+                alt="Windbooks Logo"
+                className="w-8 h-8"
+              />
+              <div>
+                <p className="text-sm text-gray-600" id="sidebar-welcome">Welcome, {user?.email?.split('@')[0]}</p>
+              </div>
             </div>
             <button
               onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
@@ -313,17 +319,19 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
             </button>
           </div>
         </div>
-        {/* Show maximize button when collapsed */}
+        {/* Show logo when collapsed */}
         {isSidebarCollapsed && (
           <div className="p-4 border-b border-gray-200 flex justify-center" id="sidebar-header-collapsed">
             <button
               onClick={() => setIsSidebarCollapsed(false)}
-              className="p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+              className="p-1 rounded-lg hover:bg-gray-100 transition-colors duration-200"
               aria-label="Expand sidebar"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-              </svg>
+              <img
+                src="/wb_icon_01.svg"
+                alt="Windbooks Logo"
+                className="w-6 h-6"
+              />
             </button>
           </div>
         )}
