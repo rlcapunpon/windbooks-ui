@@ -2,12 +2,21 @@ import { useState, useEffect } from 'react';
 import { UserService } from '../../services/userService';
 import type { User } from '../../api/auth';
 import UpdateUserModal from '../../components/UpdateUserModal/UpdateUserModal';
+import { getAccessToken, getUserIdFromToken } from '../../utils/tokenStorage';
 
 const Profile = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastLogin, setLastLogin] = useState<string | null>(null);
+  const [passwordUpdateInfo, setPasswordUpdateInfo] = useState<{
+    create_date: string;
+    last_update: string | null;
+    updated_by: string | null;
+    how_many: number;
+  } | null>(null);
+  const [securityLoading, setSecurityLoading] = useState(true);
 
   useEffect(() => {
     const loadUserProfile = async () => {
@@ -31,7 +40,50 @@ const Profile = () => {
       }
     };
 
+    const loadSecurityInfo = async () => {
+      try {
+        setSecurityLoading(true);
+
+        // Load last login information
+        const lastLoginResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/last-login`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${getAccessToken()}`,
+          },
+        });
+
+        if (lastLoginResponse.ok) {
+          const lastLoginData = await lastLoginResponse.json();
+          setLastLogin(lastLoginData.last_login);
+        }
+
+        // Load password update information
+        const userId = getUserIdFromToken();
+        if (userId) {
+          const passwordUpdateResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/last-update/creds/${userId}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${getAccessToken()}`,
+            },
+          });
+
+          if (passwordUpdateResponse.ok) {
+            const passwordUpdateData = await passwordUpdateResponse.json();
+            setPasswordUpdateInfo(passwordUpdateData);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load security information:', err);
+        // Don't set error state for security info, just leave as loading
+      } finally {
+        setSecurityLoading(false);
+      }
+    };
+
     loadUserProfile();
+    loadSecurityInfo();
   }, []);
 
   const handleSaveDetails = async (updatedDetails: Partial<User['details']>) => {
@@ -241,6 +293,33 @@ const Profile = () => {
                 </p>
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Security and Auth */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 lg:col-span-2">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">Security and Auth</h2>
+            <button
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              Change Password
+            </button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Last Login</label>
+              <p className="mt-1 text-sm text-gray-900">
+                {securityLoading ? 'Loading...' : (lastLogin ? new Date(lastLogin).toLocaleString() : 'Never')}
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Last Password Change</label>
+              <p className="mt-1 text-sm text-gray-900">
+                {securityLoading ? 'Loading...' : (passwordUpdateInfo?.last_update ? new Date(passwordUpdateInfo.last_update).toLocaleString() : 'Never')}
+              </p>
+            </div>
           </div>
         </div>
       </div>

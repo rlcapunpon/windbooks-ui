@@ -7,6 +7,12 @@ import type { User } from '../../api/auth';
 // Mock UserService
 vi.mock('../../services/userService');
 
+// Mock tokenStorage
+vi.mock('../../utils/tokenStorage');
+
+// Mock fetch globally
+global.fetch = vi.fn();
+
 // Mock user data
 const mockUser: User = {
   id: 'test-user-id',
@@ -39,6 +45,7 @@ const mockUser: User = {
 describe('Profile Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(global.fetch).mockClear();
   });
 
   it('should render loading state initially', () => {
@@ -107,6 +114,166 @@ describe('Profile Component', () => {
 
     await waitFor(() => {
       expect(screen.getByText('Failed to load profile information')).toBeInTheDocument();
+    });
+  });
+
+  describe('Security and Auth Section', () => {
+    it('should display Security and Auth section', async () => {
+      vi.spyOn(UserService, 'getCachedUserData').mockReturnValue(mockUser);
+      vi.spyOn(UserService, 'isSuperAdmin').mockReturnValue(false);
+      vi.spyOn(UserService, 'getUserRoles').mockReturnValue(['STAFF']);
+
+      // Mock tokenStorage functions
+      const { getAccessToken, getUserIdFromToken } = await import('../../utils/tokenStorage');
+      vi.mocked(getAccessToken).mockReturnValue('mock-token');
+      vi.mocked(getUserIdFromToken).mockReturnValue('test-user-id');
+
+      // Mock the APIs based on URL
+      vi.mocked(global.fetch).mockImplementation((url) => {
+        const urlString = url.toString();
+        if (urlString.includes('/user/last-login')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ last_login: null })
+          } as Response);
+        } else if (urlString.includes('/user/last-update/creds/')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({
+              create_date: '2025-01-01T00:00:00.000Z',
+              last_update: null,
+              updated_by: null,
+              how_many: 0
+            })
+          } as Response);
+        }
+        return Promise.reject(new Error('Unexpected URL'));
+      });
+
+      render(<Profile />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Security and Auth')).toBeInTheDocument();
+      });
+    });
+
+    it('should display last login information', async () => {
+      vi.spyOn(UserService, 'getCachedUserData').mockReturnValue(mockUser);
+      vi.spyOn(UserService, 'isSuperAdmin').mockReturnValue(false);
+      vi.spyOn(UserService, 'getUserRoles').mockReturnValue(['STAFF']);
+
+      // Mock tokenStorage functions
+      const { getAccessToken, getUserIdFromToken } = await import('../../utils/tokenStorage');
+      vi.mocked(getAccessToken).mockReturnValue('mock-token');
+      vi.mocked(getUserIdFromToken).mockReturnValue('test-user-id');
+
+      // Mock the APIs based on URL
+      vi.mocked(global.fetch).mockImplementation((url) => {
+        const urlString = url.toString();
+        if (urlString.includes('/user/last-login')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ last_login: '2025-01-15T10:30:00.000Z' })
+          } as Response);
+        } else if (urlString.includes('/user/last-update/creds/')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({
+              create_date: '2025-01-01T00:00:00.000Z',
+              last_update: '2025-01-10T14:20:00.000Z',
+              updated_by: 'user-id',
+              how_many: 1
+            })
+          } as Response);
+        }
+        return Promise.reject(new Error('Unexpected URL'));
+      });
+
+      render(<Profile />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Last Login')).toBeInTheDocument();
+        expect(screen.getByText('1/15/2025, 6:30:00 PM')).toBeInTheDocument();
+      });
+    });
+
+    it('should display password change information', async () => {
+      vi.spyOn(UserService, 'getCachedUserData').mockReturnValue(mockUser);
+      vi.spyOn(UserService, 'isSuperAdmin').mockReturnValue(false);
+      vi.spyOn(UserService, 'getUserRoles').mockReturnValue(['STAFF']);
+
+      // Mock tokenStorage functions
+      const { getAccessToken, getUserIdFromToken } = await import('../../utils/tokenStorage');
+      vi.mocked(getAccessToken).mockReturnValue('mock-token');
+      vi.mocked(getUserIdFromToken).mockReturnValue('test-user-id');
+
+      // Mock the APIs based on URL
+      vi.mocked(global.fetch).mockImplementation((url) => {
+        const urlString = url.toString();
+        if (urlString.includes('/user/last-login')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ last_login: null })
+          } as Response);
+        } else if (urlString.includes('/user/last-update/creds/')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({
+              create_date: '2025-01-01T00:00:00.000Z',
+              last_update: '2025-01-10T14:20:00.000Z',
+              updated_by: 'user-id',
+              how_many: 1
+            })
+          } as Response);
+        }
+        return Promise.reject(new Error('Unexpected URL'));
+      });
+
+      render(<Profile />);
+
+      await waitFor(() => {
+        expect(screen.getByText('Last Password Change')).toBeInTheDocument();
+        expect(screen.getByText('1/10/2025, 10:20:00 PM')).toBeInTheDocument();
+      });
+    });
+
+    it('should display Change Password button', async () => {
+      vi.spyOn(UserService, 'getCachedUserData').mockReturnValue(mockUser);
+      vi.spyOn(UserService, 'isSuperAdmin').mockReturnValue(false);
+      vi.spyOn(UserService, 'getUserRoles').mockReturnValue(['STAFF']);
+
+      // Mock tokenStorage functions
+      const { getAccessToken, getUserIdFromToken } = await import('../../utils/tokenStorage');
+      vi.mocked(getAccessToken).mockReturnValue('mock-token');
+      vi.mocked(getUserIdFromToken).mockReturnValue('test-user-id');
+
+      // Mock the APIs based on URL
+      vi.mocked(global.fetch).mockImplementation((url) => {
+        const urlString = url.toString();
+        if (urlString.includes('/user/last-login')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ last_login: null })
+          } as Response);
+        } else if (urlString.includes('/user/last-update/creds/')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({
+              create_date: '2025-01-01T00:00:00.000Z',
+              last_update: null,
+              updated_by: null,
+              how_many: 0
+            })
+          } as Response);
+        }
+        return Promise.reject(new Error('Unexpected URL'));
+      });
+
+      render(<Profile />);
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Change Password' })).toBeInTheDocument();
+      });
     });
   });
 });
