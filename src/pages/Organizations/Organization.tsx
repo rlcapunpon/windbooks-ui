@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { OrganizationService } from '../../services/organizationService'
 import { UserService } from '../../services/userService'
-import type { Organization, OrganizationStatus, OrganizationRegistration } from '../../services/organizationService'
+import type { Organization, OrganizationStatus, OrganizationRegistration, OrganizationOwnership } from '../../services/organizationService'
 import { UpdateOrganizationStatusModal, type UpdateStatusFormData } from '../../components/UpdateOrganizationStatusModal'
 import { UpdateOrganizationOperationsModal, type UpdateOperationFormData } from '../../components/UpdateOrganizationOperationsModal/UpdateOrganizationOperationsModal'
 import { UpdateOrganizationRegistrationModal, type UpdateRegistrationFormData } from '../../components/UpdateOrganizationRegistrationModal/UpdateOrganizationRegistrationModal'
@@ -74,6 +74,7 @@ const OrganizationPage: React.FC = () => {
   const [organizationStatus, setOrganizationStatus] = useState<OrganizationStatus | null>(null)
   const [organizationOperation, setOrganizationOperation] = useState<any | null>(null)
   const [organizationRegistration, setOrganizationRegistration] = useState<OrganizationRegistration | null>(null)
+  const [organizationOwnership, setOrganizationOwnership] = useState<OrganizationOwnership | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [activeMenu, setActiveMenu] = useState<MenuItem>('details')
@@ -96,12 +97,13 @@ const OrganizationPage: React.FC = () => {
       setLoading(true)
       setError(null)
 
-      // Call all 4 endpoints in parallel
-      const [orgResult, statusResult, operationResult, registrationResult] = await Promise.allSettled([
+      // Call all 5 endpoints in parallel
+      const [orgResult, statusResult, operationResult, registrationResult, ownershipResult] = await Promise.allSettled([
         OrganizationService.getOrganizationById(orgId),
         OrganizationService.getOrganizationStatus(orgId),
         OrganizationService.getOrganizationOperation(orgId),
-        OrganizationService.getOrganizationRegistration(orgId)
+        OrganizationService.getOrganizationRegistration(orgId),
+        OrganizationService.getOrganizationOwnership(orgId)
       ])
 
       // Handle organization data
@@ -132,6 +134,13 @@ const OrganizationPage: React.FC = () => {
         setOrganizationRegistration(registrationResult.value)
       } else {
         console.warn('Failed to load organization registration:', registrationResult.reason)
+      }
+
+      // Handle ownership data (optional - don't fail if this fails)
+      if (ownershipResult.status === 'fulfilled') {
+        setOrganizationOwnership(ownershipResult.value)
+      } else {
+        console.warn('Failed to load organization ownership:', ownershipResult.reason)
       }
 
     } catch (err) {
@@ -271,6 +280,7 @@ const OrganizationPage: React.FC = () => {
             <nav className="flex space-x-8 px-6">
               {menuItems
                 .filter(item => item.id !== 'employees' || organizationOperation?.has_employees === true)
+                .filter(item => item.id !== 'settings' || UserService.isSuperAdmin() || organizationOwnership?.isOwner === true)
                 .map((item) => (
                 <button
                   key={item.id}

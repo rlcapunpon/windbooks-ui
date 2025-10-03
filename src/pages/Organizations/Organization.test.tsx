@@ -5,7 +5,7 @@ import { BrowserRouter } from 'react-router-dom'
 import Organization from './Organization'
 import { OrganizationService } from '../../services/organizationService'
 import { UserService } from '../../services/userService'
-import type { Organization as OrganizationType, OrganizationStatus, OrganizationRegistration } from '../../services/organizationService'
+import type { Organization as OrganizationType, OrganizationStatus, OrganizationRegistration, OrganizationOwnership } from '../../services/organizationService'
 import { canEditOrganizationStatus, canEditOrganizationRegistration } from '../../utils/organizationPermissions'
 
 // Mock the organization service
@@ -15,7 +15,8 @@ vi.mock('../../services/organizationService', () => ({
     getOrganizationStatus: vi.fn(),
     getOrganizationOperation: vi.fn(),
     getOrganizationRegistration: vi.fn(),
-    updateOrganizationStatus: vi.fn()
+    updateOrganizationStatus: vi.fn(),
+    getOrganizationOwnership: vi.fn()
   }
 }))
 
@@ -137,6 +138,18 @@ const mockOrganizationRegistrationExcempt: OrganizationRegistration = {
   tax_type: 'EXCEMPT'
 }
 
+const mockOrganizationOwnership: OrganizationOwnership = {
+  isOwner: true,
+  orgId: 'org-1',
+  userId: 'user-1'
+}
+
+const mockOrganizationOwnershipNonOwner: OrganizationOwnership = {
+  isOwner: false,
+  orgId: 'org-1',
+  userId: 'user-2'
+}
+
 describe('Organization Page', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -194,6 +207,8 @@ describe('Organization Page', () => {
       ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(mockOrganizationStatus)
       ;(OrganizationService.getOrganizationOperation as any).mockResolvedValue(mockOrganizationOperation)
       ;(OrganizationService.getOrganizationRegistration as any).mockResolvedValue(mockOrganizationRegistration)
+      ;(OrganizationService.getOrganizationOwnership as any).mockResolvedValue(mockOrganizationOwnership)
+      ;(UserService.isSuperAdmin as any).mockReturnValue(true)
 
       render(
         <BrowserRouter>
@@ -219,6 +234,8 @@ describe('Organization Page', () => {
       ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(mockOrganizationStatus)
       ;(OrganizationService.getOrganizationOperation as any).mockResolvedValue(mockOrganizationOperation)
       ;(OrganizationService.getOrganizationRegistration as any).mockResolvedValue(mockOrganizationRegistration)
+      ;(OrganizationService.getOrganizationOwnership as any).mockResolvedValue(mockOrganizationOwnership)
+      ;(UserService.isSuperAdmin as any).mockReturnValue(true)
 
       render(
         <BrowserRouter>
@@ -1039,6 +1056,66 @@ describe('Organization Page', () => {
     const editButton = headerContainer?.querySelector('button')
     
     expect(editButton).not.toBeInTheDocument()
+  })
+})
+
+describe('Step 17 - Settings Tab Visibility', () => {
+  beforeEach(() => {
+    ;(OrganizationService.getOrganizationById as any).mockResolvedValue(mockOrganization)
+    ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(mockOrganizationStatus)
+    ;(OrganizationService.getOrganizationOperation as any).mockResolvedValue(mockOrganizationOperation)
+    ;(OrganizationService.getOrganizationRegistration as any).mockResolvedValue(mockOrganizationRegistration)
+  })
+
+  it('should display Settings tab for SUPERADMIN users', async () => {
+    ;(OrganizationService.getOrganizationOwnership as any).mockResolvedValue(mockOrganizationOwnership)
+    ;(UserService.isSuperAdmin as any).mockReturnValue(true)
+
+    render(
+      <BrowserRouter>
+        <Organization />
+      </BrowserRouter>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+    })
+
+    expect(screen.getByRole('button', { name: /settings/i })).toBeInTheDocument()
+  })
+
+  it('should display Settings tab for organization owners', async () => {
+    ;(OrganizationService.getOrganizationOwnership as any).mockResolvedValue(mockOrganizationOwnership)
+    ;(UserService.isSuperAdmin as any).mockReturnValue(false)
+
+    render(
+      <BrowserRouter>
+        <Organization />
+      </BrowserRouter>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+    })
+
+    expect(screen.getByRole('button', { name: /settings/i })).toBeInTheDocument()
+  })
+
+  it('should hide Settings tab for non-owners and non-SUPERADMIN users', async () => {
+    ;(OrganizationService.getOrganizationOwnership as any).mockResolvedValue(mockOrganizationOwnershipNonOwner)
+    ;(UserService.isSuperAdmin as any).mockReturnValue(false)
+
+    render(
+      <BrowserRouter>
+        <Organization />
+      </BrowserRouter>
+    )
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
+    })
+
+    expect(screen.queryByRole('button', { name: /settings/i })).not.toBeInTheDocument()
   })
 })
 describe('Step 15.3 - Organization Details Page Layout Updates', () => {

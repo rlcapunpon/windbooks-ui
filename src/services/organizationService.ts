@@ -127,10 +127,10 @@ export interface UpdateOrganizationRegistrationRequestDto {
   reg_date?: string
 }
 
-export interface OrganizationFilters {
-  category?: 'INDIVIDUAL' | 'NON_INDIVIDUAL'
-  tax_classification?: 'VAT' | 'NON_VAT' | 'EXCEMPT'
-  subcategory?: 'SELF_EMPLOYED' | 'SOLE_PROPRIETOR' | 'FREELANCER' | 'CORPORATION' | 'PARTNERSHIP' | 'OTHERS'
+export interface OrganizationOwnership {
+  isOwner: boolean
+  orgId: string
+  userId: string
 }
 
 export class OrganizationService {
@@ -303,6 +303,19 @@ export class OrganizationService {
       return response.data
     } catch (error: any) {
       console.error('Failed to update organization registration:', error)
+      throw error
+    }
+  }
+
+  /**
+   * Gets organization ownership information for current user
+   */
+  static async getOrganizationOwnership(id: string): Promise<OrganizationOwnership> {
+    try {
+      const response = await orgApiClient.get<OrganizationOwnership>(`${this.BASE_ENDPOINT}/${id}/ownership`)
+      return response.data
+    } catch (error: any) {
+      console.error('Failed to fetch organization ownership:', error)
       throw error
     }
   }
