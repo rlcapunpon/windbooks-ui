@@ -44,6 +44,8 @@ tags:
     description: Role-based access control (global roles and permissions)
   - name: Resources
     description: Resource-based role and permission management
+  - name: Admin
+    description: Administrative endpoints (SUPERADMIN only)
   - name: Config
     description: System configuration endpoints
   - name: OIDC
@@ -71,6 +73,42 @@ paths:
                 type: string
                 example: OK
 
+  # Admin Endpoints
+  /admin/status:
+    get:
+      tags: [Admin]
+      summary: Get admin status counts (SUPERADMIN only)
+      description: |
+        Returns counts of users, resources, and roles with their respective statuses. 
+        Only accessible by SUPERADMIN users. Resource counts exclude the WINDBOOKS_APP seed resource.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Admin status counts retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminStatusResponse'
+        '401':
+          description: Unauthorized - No token provided or invalid token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - User is not SUPERADMIN
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
   # Authentication Endpoints
   /auth/register:
     post:
@@ -90,7 +128,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
         '400':
-          description: Bad request - validation error or user already exists
+          description: Bad request - validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Conflict - email is already used
           content:
             application/json:
               schema:
@@ -306,6 +350,110 @@ paths:
                     example: "Verification email sent successfully"
         '400':
           description: Bad request - user not found, already verified, or invalid email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /user/auth/reset-password/request/{email}:
+    post:
+      tags: [Auth]
+      summary: Request password reset email
+      description: |
+        Send a password reset email to the specified email address.
+        
+        **Rate Limiting:**
+        - Users can only request password reset emails once every 30 minutes
+        - If a request was made within the last 30 minutes, the request will be rejected
+        
+        **Email Content:**
+        - Contains a secure JWT token in the reset link
+        - Token expires after 1 hour
+        - Link directs to the configured PASSWORD_RESET_URL
+      parameters:
+        - in: path
+          name: email
+          required: true
+          schema:
+            type: string
+            format: email
+          description: The email address to send the password reset email to
+      responses:
+        '200':
+          description: Password reset email sent successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Password reset email sent successfully"
+        '400':
+          description: Bad request - invalid email format or rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found with the provided email
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /user/auth/reset-password:
+    post:
+      tags: [Auth]
+      summary: Reset password with token
+      description: |
+        Reset a user's password using a valid JWT token from the password reset email.
+        
+        **Token Validation:**
+        - Token must be valid and not expired (1 hour expiry)
+        - Token must contain the correct user ID
+        - Token must be signed with the correct secret
+        
+        **Password Requirements:**
+        - Minimum 6 characters
+        - Must match confirmation password
+        
+        **Security:**
+        - Token is invalidated after successful password reset
+        - Old password is completely replaced with new hash
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetPasswordRequest'
+      responses:
+        '200':
+          description: Password reset successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Password reset successfully"
+        '400':
+          description: Bad request - invalid token, expired token, or password validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - invalid or missing token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: User not found
           content:
             application/json:
               schema:
@@ -587,6 +735,121 @@ paths:
         '403':
           description: Forbidden - insufficient permissions
 
+  /user/update/password:
+    post:
+      tags: [Users]
+      summary: Update user password
+      description: |
+        Update a user's password. 
+        
+        **Authorization Rules:**
+        - SUPERADMIN users can update any user's password without providing current password
+        - Regular users can only update their own password and must provide current password
+        
+        **Password Requirements:**
+        - Minimum 6 characters
+        
+        **Email Notification:**
+        - An email notification is automatically sent to the user whose password was updated
+        - The notification includes details about who updated the password and when
+        - Must match confirmation password
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePasswordRequest'
+      responses:
+        '200':
+          description: Password updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Password updated successfully"
+        '400':
+          description: Bad request - validation error or invalid current password
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - insufficient permissions
+        '404':
+          description: User not found
+
+  /user/last-update/creds/{userId}:
+    get:
+      tags: [Users]
+      summary: Get user password update history
+      description: |
+        Retrieve the password update history for a user.
+        
+        **Authorization Rules:**
+        - SUPERADMIN users can view any user's password update history
+        - Regular users can only view their own password update history
+        
+        **Response:**
+        - Returns last update timestamp, who updated it, and total count
+        - Returns null values if no password updates have been made
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The unique identifier of the user
+      responses:
+        '200':
+          description: Password update history retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordUpdateHistoryResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - insufficient permissions
+        '404':
+          description: User not found
+
+  /user/last-login:
+    get:
+      tags: [Users]
+      summary: Get user's last login timestamp
+      description: |
+        Retrieve the last login timestamp for the authenticated user.
+        
+        **Authorization Rules:**
+        - Users can only view their own last login timestamp
+        
+        **Response:**
+        - Returns last login timestamp in MM/DD/YYYY HH:MM:SS format
+        - Returns null if the user has never logged in
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Last login timestamp retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LastLoginResponse'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - insufficient permissions
+
   # Global RBAC Endpoints
   /roles:
     get:
@@ -655,6 +918,7 @@ paths:
     post:
       tags: [Resources]
       summary: Create a new resource
+      description: Create a new resource and automatically initialize it with an ACTIVE status. A ResourceStatus record is created alongside the resource to track its lifecycle state.
       security:
         - bearerAuth: []
       requestBody:
@@ -665,7 +929,7 @@ paths:
               $ref: '#/components/schemas/CreateResourceRequest'
       responses:
         '201':
-          description: Resource created successfully
+          description: Resource created successfully with ACTIVE status
           content:
             application/json:
               schema:
@@ -710,6 +974,11 @@ paths:
           schema:
             type: string
           description: Filter resources by exact resource ID
+        - name: q
+          in: query
+          schema:
+            type: string
+          description: General search query that filters resources by name or ID (case-insensitive partial match)
       responses:
         '200':
           description: Paginated list of accessible resources retrieved successfully
@@ -736,7 +1005,7 @@ paths:
               $ref: '#/components/schemas/CreateResourceRole'
       responses:
         '201':
-          description: Resource role created successfully
+          description: Role created successfully
           content:
             application/json:
               schema:
@@ -747,8 +1016,6 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden - insufficient permissions
-        '409':
-          description: Conflict - role with this name already exists
 
   /resources/assign-role:
     post:
@@ -761,10 +1028,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AssignUserToResourceRole'
+              $ref: '#/components/schemas/AssignUserResourceRole'
       responses:
         '201':
-          description: User assigned to resource role successfully
+          description: Role assigned successfully
           content:
             application/json:
               schema:
@@ -775,15 +1042,11 @@ paths:
           description: Unauthorized
         '403':
           description: Forbidden - insufficient permissions
-        '404':
-          description: Resource role or user not found
-        '409':
-          description: Conflict - user already has a role for this resource
 
   /resources/revoke-role:
     post:
       tags: [Resources]
-      summary: Remove a user from a resource role
+      summary: Revoke a user's resource role
       security:
         - bearerAuth: []
       requestBody:
@@ -793,18 +1056,14 @@ paths:
             schema:
               $ref: '#/components/schemas/RevokeUserResourceRole'
       responses:
-        '200':
-          description: User removed from resource role successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Success'
+        '204':
+          description: Role revoked successfully
+        '400':
+          description: Bad request - validation error
         '401':
           description: Unauthorized
         '403':
           description: Forbidden - insufficient permissions
-        '404':
-          description: User resource role assignment not found
 
   /resources/{resourceId}/test-read:
     get:
@@ -814,8 +1073,8 @@ paths:
       security:
         - bearerAuth: []
       parameters:
-        - name: resourceId
-          in: path
+        - in: path
+          name: resourceId
           required: true
           schema:
             type: string
@@ -847,8 +1106,8 @@ paths:
       security:
         - bearerAuth: []
       parameters:
-        - name: resourceId
-          in: path
+        - in: path
+          name: resourceId
           required: true
           schema:
             type: string
@@ -875,13 +1134,13 @@ paths:
   /resources/{resourceId}/user-role:
     get:
       tags: [Resources]
-      summary: Get the authenticated user's role for a specific resource
-      description: Retrieve the role of the authenticated user for a specific resource. Returns the resource-specific role if assigned, otherwise returns the user's global role. Super admins always return their super admin status.
+      summary: Get the role of the authenticated user for a specific resource
+      description: Retrieve the role assigned to the currently authenticated user for a specific resource
       security:
         - bearerAuth: []
       parameters:
-        - name: resourceId
-          in: path
+        - in: path
+          name: resourceId
           required: true
           schema:
             type: string
@@ -894,28 +1153,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/UserResourceRoleResponse'
         '401':
-          description: Unauthorized - authentication required
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          description: Unauthorized
         '404':
-          description: User has no role for this resource
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          description: No role found for this user on the specified resource
+        '500':
+          description: Internal server error
 
   /resources/{userId}:
     get:
       tags: [Resources]
       summary: Get all resources and roles assigned to a specific user
-      description: Retrieve all resources and their corresponding roles assigned to a user. Super admins can access any user's data, while regular users can only access their own data. Returns resource-specific roles only (excludes global roles).
+      description: Retrieve all resources and their corresponding roles assigned to a user. Super admins can access any user's data, while regular users can only access their own data.
       security:
         - bearerAuth: []
       parameters:
-        - name: userId
-          in: path
+        - in: path
+          name: userId
           required: true
           schema:
             type: string
@@ -933,25 +1186,122 @@ paths:
                     type: array
                     items:
                       $ref: '#/components/schemas/UserResourceRoleAssignment'
-                    description: Array of resource-role assignments for the user
         '401':
-          description: Unauthorized - authentication required
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+          description: Unauthorized
         '403':
           description: Forbidden - regular users can only access their own data
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
         '404':
           description: User not found
+        '500':
+          description: Internal server error
+
+  /resources/user-roles:
+    post:
+      tags: [Resources]
+      summary: Get resource roles for authenticated user given a list of resourceIds
+      description: |
+        Retrieve the roles assigned to the currently authenticated user for a list of specified resources.
+        
+        **Authentication Required**: This endpoint requires a valid JWT Bearer token.
+        
+        **Authorization**:
+        - Regular users: Returns only roles for resources they have access to
+        - Super admins: Returns all requested resource roles
+        
+        **Request Body**: Must contain an array of resource IDs to query
+        
+        **Response**: Returns an array of resource-role assignments for the authenticated user
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetResourceRolesRequest'
+            example:
+              resources: ["cmga8vhx10000n3q4mqfdvqea", "cmga8vhx40001n3q449tq1qz8"]
+      responses:
+        '200':
+          description: Resource roles retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetResourceRolesResponse'
+              example:
+                resourceRoles:
+                  - resourceId: "cmga8vhx10000n3q4mqfdvqea"
+                    roleName: "STAFF"
+                    roleId: "cmga8vhx50002n3q4abc123def"
+                  - resourceId: "cmga8vhx40001n3q449tq1qz8"
+                    roleName: "ADMIN"
+                    roleId: "cmga8vhx60003n3q4def456ghi"
+        '400':
+          description: Bad request - invalid request body or validation errors
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+              examples:
+                missing_resources:
+                  summary: Missing resources field
+                  value:
+                    message: "resources is required"
+                empty_array:
+                  summary: Empty resources array
+                  value:
+                    message: "At least one resource ID is required"
+                invalid_type:
+                  summary: Invalid resources type
+                  value:
+                    message: "resources must be an array"
+        '401':
+          description: Unauthorized - missing or invalid JWT token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "Authentication required"
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+              example:
+                message: "Failed to get resource roles"
+
+
+
+  /resources/{id}:
+    delete:
+      tags: [Resources]
+      summary: Soft delete a resource
+      description: Mark a resource as deleted (soft delete) by updating its ResourceStatus to DELETED. The resource will no longer appear in GET requests but remains in the database for audit purposes.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The unique identifier of the resource to delete
+      responses:
+        '204':
+          description: Resource successfully marked as deleted (status set to DELETED)
+        '400':
+          description: Bad request - resource is already deleted
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - insufficient permissions
+        '404':
+          description: Resource not found
+        '500':
+          description: Internal server error
+
 
   # Configuration Endpoints
   /config/permissions:
@@ -1353,6 +1703,61 @@ components:
           type: boolean
           description: Whether the user should be a super admin
 
+    UpdatePasswordRequest:
+      type: object
+      required:
+        - userId
+        - userEmail
+        - new_password
+        - new_password_confirmation
+      properties:
+        userId:
+          type: string
+          format: uuid
+          description: The unique identifier of the user whose password is being updated
+        userEmail:
+          type: string
+          format: email
+          description: The email address of the user whose password is being updated
+        current_password:
+          type: string
+          description: Current password (required for regular users, optional for SUPERADMIN when updating their own password)
+        new_password:
+          type: string
+          minLength: 6
+          description: New password (minimum 6 characters)
+        new_password_confirmation:
+          type: string
+          minLength: 6
+          description: New password confirmation (must match new_password)
+
+    PasswordUpdateHistoryResponse:
+      type: object
+      properties:
+        last_update:
+          type: string
+          nullable: true
+          description: Date and time of the last password update in MM/DD/YYYY HH:MM:SS format
+          example: "10/03/2025 14:22:30"
+        updated_by:
+          type: string
+          nullable: true
+          description: User ID of who performed the last password update
+          example: "user-uuid"
+        how_many:
+          type: integer
+          description: Total number of password updates for this user
+          example: 1
+
+    LastLoginResponse:
+      type: object
+      properties:
+        last_login:
+          type: string
+          nullable: true
+          description: Date and time of the last login in MM/DD/YYYY HH:MM:SS format
+          example: "10/03/2025 14:22:30"
+
     UserDetails:
       type: object
       properties:
@@ -1534,6 +1939,28 @@ components:
           format: date-time
           description: Last update timestamp
 
+    ResourceStatus:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Resource status record identifier
+        resourceId:
+          type: string
+          description: The resource this status applies to
+        status:
+          type: string
+          enum: [ACTIVE, INACTIVE, DELETED]
+          description: The current status of the resource
+        createdAt:
+          type: string
+          format: date-time
+          description: Status record creation timestamp
+        updatedAt:
+          type: string
+          format: date-time
+          description: Last status update timestamp
+
     CreateResourceRequest:
       type: object
       required:
@@ -1545,6 +1972,10 @@ components:
         description:
           type: string
           description: Optional resource description
+        id:
+          type: string
+          description: Optional custom resource ID. If not provided, an auto-generated ID will be used.
+      description: Request payload for creating a new resource. Upon successful creation, a ResourceStatus record will be automatically created with ACTIVE status.
 
     ResourceRole:
       type: object
@@ -1761,6 +2192,44 @@ components:
           type: string
           description: Reason for permission grant (only present for super admins)
 
+    GetResourceRolesRequest:
+      type: object
+      required:
+        - resources
+      properties:
+        resources:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          description: Array of resource IDs to get roles for
+          example: ["resource1", "resource2"]
+
+    GetResourceRolesResponse:
+      type: object
+      properties:
+        resourceRoles:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResourceRoleAssignment'
+          description: Array of resource-role assignments for the authenticated user
+
+    ResourceRoleAssignment:
+      type: object
+      properties:
+        resourceId:
+          type: string
+          description: The unique identifier of the resource
+          example: "resource1"
+        roleName:
+          type: string
+          description: The name of the role assigned to the user for this resource
+          example: "STAFF"
+        roleId:
+          type: string
+          description: The unique identifier of the role
+          example: "role123"
+
     # Pagination schemas
     PaginationQuery:
       type: object
@@ -1889,6 +2358,23 @@ components:
           format: email
           description: The email address to resend verification for
 
+    ResetPasswordRequest:
+      type: object
+      required:
+        - newPassword
+        - confirmPassword
+      properties:
+        newPassword:
+          type: string
+          format: password
+          minLength: 6
+          description: New password (minimum 6 characters)
+        confirmPassword:
+          type: string
+          format: password
+          minLength: 6
+          description: Password confirmation (must match newPassword)
+
     AuthTokens:
       type: object
       properties:
@@ -2010,6 +2496,66 @@ components:
           type: boolean
           example: true
           description: Operation success indicator
+
+    AdminStatusResponse:
+      type: object
+      properties:
+        totalUsers:
+          type: integer
+          description: Total number of users in the system
+          example: 25
+        totalResources:
+          type: integer
+          description: Total number of resources (excluding WINDBOOKS_APP)
+          example: 10
+        activeUsers:
+          type: integer
+          description: Number of active users
+          example: 20
+        activeResources:
+          type: integer
+          description: Number of active resources
+          example: 8
+        inactiveUsers:
+          type: integer
+          description: Number of inactive users
+          example: 5
+        inactiveResources:
+          type: integer
+          description: Number of inactive resources
+          example: 1
+        deletedUsers:
+          type: integer
+          description: Number of deleted users (currently always 0 as users are not soft-deleted)
+          example: 0
+        deletedResources:
+          type: integer
+          description: Number of deleted resources
+          example: 1
+        totalRoles:
+          type: integer
+          description: Total number of roles in the system
+          example: 15
+      required:
+        - totalUsers
+        - totalResources
+        - activeUsers
+        - activeResources
+        - inactiveUsers
+        - inactiveResources
+        - deletedUsers
+        - deletedResources
+        - totalRoles
+      example:
+        totalUsers: 25
+        totalResources: 10
+        activeUsers: 20
+        activeResources: 8
+        inactiveUsers: 5
+        inactiveResources: 1
+        deletedUsers: 0
+        deletedResources: 1
+        totalRoles: 15
 
 security:
   - bearerAuth: []

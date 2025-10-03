@@ -171,7 +171,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
               </div>
               <div className="text-xs mt-2 font-medium text-gray-600">
                 {step === 1 && 'Type'}
-                {step === 2 && 'Basic Info'}
+                {step === 2 && 'ID'}
                 {step === 3 && 'Registrant'}
                 {step === 4 && 'Address'}
                 {step === 5 && 'Business'}

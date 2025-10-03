@@ -210,7 +210,7 @@ const Login = () => {
           />
           {errors.password && <p className="text-red-600 text-sm mt-1">{errors.password.message}</p>}
         </div>
-        <div className="mb-6">
+        <div className="mb-6 flex justify-between items-center">
           <label className="flex items-center">
             <input
               {...register('rememberMe')}
@@ -219,6 +219,12 @@ const Login = () => {
             />
             <span className="ml-2 text-sm text-gray-700">Remember me</span>
           </label>
+          <Link
+            to="/auth/reset-password"
+            className="text-blue-600 hover:text-blue-800 text-sm transition-colors"
+          >
+            Reset Password
+          </Link>
         </div>
         <button
           type="submit"
