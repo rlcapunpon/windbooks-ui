@@ -331,4 +331,16 @@ export class UserService {
       throw error;
     }
   }
+
+  /**
+   * Deletes a resource
+   */
+  static async deleteResource(resourceId: string): Promise<void> {
+    try {
+      await apiClient.delete(`/resources/${resourceId}`);
+    } catch (error) {
+      console.error('Failed to delete resource:', error);
+      throw error;
+    }
+  }
 }

@@ -19,12 +19,23 @@ vi.mock('react-router-dom', async () => {
 vi.mock('../../services/userService', () => ({
   UserService: {
     isSuperAdmin: vi.fn(),
-    getUserRolesForResources: vi.fn()
+    getUserRolesForResources: vi.fn(),
+    deleteResource: vi.fn()
+  }
+}))
+
+// Mock OrganizationService
+vi.mock('../../services/organizationService', () => ({
+  OrganizationService: {
+    deleteOrganization: vi.fn()
   }
 }))
 
 const { UserService } = await import('../../services/userService')
 const mockUserService = vi.mocked(UserService)
+
+const { OrganizationService } = await import('../../services/organizationService')
+const mockOrganizationService = vi.mocked(OrganizationService)
 
 // Mock data
 const mockOrganizations: Organization[] = [
@@ -828,5 +839,124 @@ describe('Step 18 - Organization Dashboard Table Updates', () => {
 
     // Should show N/A for organizations without roles
     expect(screen.getAllByText('N/A')).toHaveLength(2)
+  })
+
+  it('should show Delete button for SUPERADMIN users', () => {
+    mockUserService.isSuperAdmin.mockReturnValue(true)
+
+    render(
+      <BrowserRouter>
+        <OrganizationTable
+          organizations={mockOrganizations}
+          loading={false}
+          onRefresh={mockOnRefresh}
+        />
+      </BrowserRouter>
+    )
+
+    // Should show Delete button for each organization
+    const deleteButtons = screen.getAllByText('Delete')
+    expect(deleteButtons).toHaveLength(2)
+  })
+
+  it('should NOT show Delete button for non-SUPERADMIN users', () => {
+    mockUserService.isSuperAdmin.mockReturnValue(false)
+
+    render(
+      <BrowserRouter>
+        <OrganizationTable
+          organizations={mockOrganizations}
+          loading={false}
+          onRefresh={mockOnRefresh}
+        />
+      </BrowserRouter>
+    )
+
+    // Should not show Delete button
+    expect(screen.queryByText('Delete')).not.toBeInTheDocument()
+  })
+
+  it('should open confirmation dialog when Delete button is clicked', async () => {
+    mockUserService.isSuperAdmin.mockReturnValue(true)
+    const user = userEvent.setup()
+
+    render(
+      <BrowserRouter>
+        <OrganizationTable
+          organizations={mockOrganizations}
+          loading={false}
+          onRefresh={mockOnRefresh}
+        />
+      </BrowserRouter>
+    )
+
+    // Click Delete button
+    const deleteButton = screen.getAllByText('Delete')[0]
+    await user.click(deleteButton)
+
+    // Should show confirmation dialog
+    expect(screen.getByText('Confirm Delete')).toBeInTheDocument()
+    expect(screen.getByText(/Are you sure you want to delete/)).toBeInTheDocument()
+    expect(screen.getByText('Test Organization 1')).toBeInTheDocument()
+    expect(screen.getByText(/This action cannot be undone/)).toBeInTheDocument()
+  })
+
+  it('should close confirmation dialog when Cancel is clicked', async () => {
+    mockUserService.isSuperAdmin.mockReturnValue(true)
+    const user = userEvent.setup()
+
+    render(
+      <BrowserRouter>
+        <OrganizationTable
+          organizations={mockOrganizations}
+          loading={false}
+          onRefresh={mockOnRefresh}
+        />
+      </BrowserRouter>
+    )
+
+    // Click Delete button
+    const deleteButton = screen.getAllByText('Delete')[0]
+    await user.click(deleteButton)
+
+    // Click Cancel button
+    const cancelButton = screen.getByText('Cancel')
+    await user.click(cancelButton)
+
+    // Dialog should be closed
+    expect(screen.queryByText('Confirm Delete')).not.toBeInTheDocument()
+  })
+
+  it('should call delete APIs and update table when confirmed', async () => {
+    mockUserService.isSuperAdmin.mockReturnValue(true)
+    mockOrganizationService.deleteOrganization.mockResolvedValue(undefined)
+    mockUserService.deleteResource.mockResolvedValue(undefined)
+    
+    const user = userEvent.setup()
+
+    render(
+      <BrowserRouter>
+        <OrganizationTable
+          organizations={mockOrganizations}
+          loading={false}
+          onRefresh={mockOnRefresh}
+        />
+      </BrowserRouter>
+    )
+
+    // Click Delete button (the first one in the table)
+    const deleteButtons = screen.getAllByText('Delete')
+    await user.click(deleteButtons[0])
+
+    // Click Confirm button (the one in the dialog)
+    const confirmButton = screen.getByText('Cancel').parentElement?.querySelector('button:last-child') as HTMLElement
+    await user.click(confirmButton)
+
+    // Should call both delete APIs
+    expect(mockOrganizationService.deleteOrganization).toHaveBeenCalledWith('org-1')
+    expect(mockUserService.deleteResource).toHaveBeenCalledWith('org-1')
+
+    // Should refresh the table
+    expect(mockOnRefresh).toHaveBeenCalled()
   })
 })

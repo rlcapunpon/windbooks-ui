@@ -326,4 +326,16 @@ export class OrganizationService {
       throw error
     }
   }
+
+  /**
+   * Deletes an organization
+   */
+  static async deleteOrganization(id: string): Promise<void> {
+    try {
+      await orgApiClient.delete(`${this.BASE_ENDPOINT}/${id}`)
+    } catch (error: any) {
+      console.error('Failed to delete organization:', error)
+      throw error
+    }
+  }
 }
