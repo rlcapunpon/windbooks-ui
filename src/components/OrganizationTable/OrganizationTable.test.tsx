@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { BrowserRouter } from 'react-router-dom'
 import { OrganizationTable } from './OrganizationTable'
@@ -14,6 +14,17 @@ vi.mock('react-router-dom', async () => {
     useNavigate: () => mockNavigate
   }
 })
+
+// Mock UserService
+vi.mock('../../services/userService', () => ({
+  UserService: {
+    isSuperAdmin: vi.fn(),
+    getUserRolesForResources: vi.fn()
+  }
+}))
+
+const { UserService } = await import('../../services/userService')
+const mockUserService = vi.mocked(UserService)
 
 // Mock data
 const mockOrganizations: Organization[] = [
@@ -127,7 +138,7 @@ describe('OrganizationTable', () => {
       )
 
       expect(screen.getByText('Name')).toBeInTheDocument()
-      expect(screen.getByText('TIN')).toBeInTheDocument()
+      expect(screen.getByText('Role')).toBeInTheDocument()
       expect(screen.getByText('Category')).toBeInTheDocument()
       expect(screen.getByText('Tax Classification')).toBeInTheDocument()
       expect(screen.getByText('Status')).toBeInTheDocument()
@@ -146,13 +157,15 @@ describe('OrganizationTable', () => {
       )
 
       expect(screen.getByText('Test Organization 1')).toBeInTheDocument()
-      expect(screen.getByText('001234567890')).toBeInTheDocument()
+      // TIN is now displayed under the name
+      expect(screen.getByText('TIN: 001234567890')).toBeInTheDocument()
       expect(screen.getByText('NON_INDIVIDUAL')).toBeInTheDocument()
       expect(screen.getByText('VAT')).toBeInTheDocument()
       expect(screen.getByText('ACTIVE')).toBeInTheDocument()
 
       expect(screen.getByText('Test Organization 2')).toBeInTheDocument()
-      expect(screen.getByText('001234567891')).toBeInTheDocument()
+      // TIN is now displayed under the name
+      expect(screen.getByText('TIN: 001234567891')).toBeInTheDocument()
       expect(screen.getByText('INDIVIDUAL')).toBeInTheDocument()
       expect(screen.getByText('NON_VAT')).toBeInTheDocument()
       expect(screen.getByText('PENDING_REG')).toBeInTheDocument()
@@ -210,7 +223,9 @@ describe('OrganizationTable', () => {
         </BrowserRouter>
       )
 
-      expect(screen.getByText('N/A')).toBeInTheDocument()
+      // Should show N/A in the status column for organizations without status
+      const statusCells = screen.getAllByText('N/A')
+      expect(statusCells.length).toBeGreaterThan(0)
     })
   })
 
@@ -719,3 +734,118 @@ describe('OrganizationTable', () => {
     });
   });
 });
+
+describe('Step 18 - Organization Dashboard Table Updates', () => {
+  const mockOnRefresh = vi.fn()
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockNavigate.mockClear()
+    mockUserService.isSuperAdmin.mockReturnValue(false)
+    mockUserService.getUserRolesForResources.mockResolvedValue([
+      { resourceId: 'org-1', roleName: 'STAFF', roleId: 'role-1' },
+      { resourceId: 'org-2', roleName: 'MANAGER', roleId: 'role-2' }
+    ])
+  })
+
+  it('should display TIN under the organization name instead of in separate column', () => {
+    render(
+      <BrowserRouter>
+        <OrganizationTable
+          organizations={mockOrganizations}
+          loading={false}
+          onRefresh={mockOnRefresh}
+        />
+      </BrowserRouter>
+    )
+
+    // Should show TIN under the name in the Name column
+    const nameCell = screen.getByText('Test Organization 1').closest('td')
+    expect(nameCell).toContainElement(screen.getByText('TIN: 001234567890'))
+    expect(nameCell).toContainElement(screen.getByText('Test Address 1'))
+  })
+
+  it('should rename TIN column header to Role', () => {
+    render(
+      <BrowserRouter>
+        <OrganizationTable
+          organizations={mockOrganizations}
+          loading={false}
+          onRefresh={mockOnRefresh}
+        />
+      </BrowserRouter>
+    )
+
+    // Should have Role column instead of TIN column
+    expect(screen.getByText('Role')).toBeInTheDocument()
+    expect(screen.queryByText('TIN')).not.toBeInTheDocument()
+  })
+
+  it('should populate Role column with user roles from POST /resources/user-roles endpoint', async () => {
+    render(
+      <BrowserRouter>
+        <OrganizationTable
+          organizations={mockOrganizations}
+          loading={false}
+          onRefresh={mockOnRefresh}
+        />
+      </BrowserRouter>
+    )
+
+    // Wait for the role fetching to complete
+    await waitFor(() => {
+      expect(mockUserService.getUserRolesForResources).toHaveBeenCalledWith(['org-1', 'org-2'])
+    })
+
+    // Should show role data in the Role column
+    expect(screen.getByText('STAFF')).toBeInTheDocument()
+    expect(screen.getByText('MANAGER')).toBeInTheDocument()
+  })
+
+  it('should not call POST /resources/user-roles endpoint for SUPERADMIN users', async () => {
+    mockUserService.isSuperAdmin.mockReturnValue(true)
+
+    render(
+      <BrowserRouter>
+        <OrganizationTable
+          organizations={mockOrganizations}
+          loading={false}
+          onRefresh={mockOnRefresh}
+        />
+      </BrowserRouter>
+    )
+
+    // Wait for component to render
+    await waitFor(() => {
+      expect(screen.getByText('Test Organization 1')).toBeInTheDocument()
+    })
+
+    // Should not call the user-roles endpoint for SUPERADMIN
+    expect(mockUserService.getUserRolesForResources).not.toHaveBeenCalled()
+
+    // Should show SUPERADMIN in Role column
+    expect(screen.getAllByText('SUPERADMIN')).toHaveLength(2)
+  })
+
+  it('should show N/A for organizations without roles', async () => {
+    mockUserService.getUserRolesForResources.mockResolvedValue([])
+
+    render(
+      <BrowserRouter>
+        <OrganizationTable
+          organizations={mockOrganizations}
+          loading={false}
+          onRefresh={mockOnRefresh}
+        />
+      </BrowserRouter>
+    )
+
+    // Wait for the role fetching to complete
+    await waitFor(() => {
+      expect(mockUserService.getUserRolesForResources).toHaveBeenCalled()
+    })
+
+    // Should show N/A for organizations without roles
+    expect(screen.getAllByText('N/A')).toHaveLength(2)
+  })
+})

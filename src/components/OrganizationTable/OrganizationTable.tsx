@@ -1,5 +1,6 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { UserService } from '../../services/userService'
 import type { Organization } from '../../services/organizationService'
 
 interface OrganizationTableProps {
@@ -18,6 +19,37 @@ export const OrganizationTable: React.FC<OrganizationTableProps> = ({
   onSearchChange
 }) => {
   const navigate = useNavigate()
+  const [userRoles, setUserRoles] = useState<{ [resourceId: string]: string }>({})
+
+  // Fetch user roles for organizations
+  useEffect(() => {
+    const fetchUserRoles = async () => {
+      if (organizations.length === 0 || UserService.isSuperAdmin()) {
+        // Don't fetch roles for SUPERADMIN users or when no organizations
+        setUserRoles({})
+        return
+      }
+
+      try {
+        const resourceIds = organizations.map(org => org.id)
+        const roles = await UserService.getUserRolesForResources(resourceIds)
+        
+        // Create a map of resourceId to roleName
+        const roleMap: { [resourceId: string]: string } = {}
+        roles.forEach(role => {
+          roleMap[role.resourceId] = role.roleName
+        })
+        
+        setUserRoles(roleMap)
+      } catch (error) {
+        console.error('Failed to fetch user roles:', error)
+        // Set empty roles on error
+        setUserRoles({})
+      }
+    }
+
+    fetchUserRoles()
+  }, [organizations])
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -51,7 +83,8 @@ export const OrganizationTable: React.FC<OrganizationTableProps> = ({
       (org.tin && org.tin.toLowerCase().includes(query)) ||
       org.category.toLowerCase().includes(query) ||
       org.tax_classification.toLowerCase() === query ||
-      (org.address && org.address.toLowerCase().includes(query))
+      (org.address && org.address.toLowerCase().includes(query)) ||
+      (userRoles[org.id] && userRoles[org.id].toLowerCase().includes(query))
     )
   })
 
@@ -125,7 +158,7 @@ export const OrganizationTable: React.FC<OrganizationTableProps> = ({
                 Name
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                TIN
+                Role
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Category
@@ -152,11 +185,14 @@ export const OrganizationTable: React.FC<OrganizationTableProps> = ({
                     {organization.name}
                   </div>
                   <div className="text-sm text-gray-500">
+                    TIN: {organization.tin}
+                  </div>
+                  <div className="text-sm text-gray-500">
                     {organization.address}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {organization.tin}
+                  {UserService.isSuperAdmin() ? 'SUPERADMIN' : (userRoles[organization.id] || 'N/A')}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {organization.category}

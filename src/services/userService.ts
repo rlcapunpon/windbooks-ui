@@ -316,4 +316,19 @@ export class UserService {
       throw error;
     }
   }
+
+  /**
+   * Gets user roles for multiple resources
+   */
+  static async getUserRolesForResources(resources: string[]): Promise<{ resourceId: string; roleName: string; roleId: string }[]> {
+    try {
+      const response = await apiClient.post('/resources/user-roles', {
+        resources
+      });
+      return response.data?.resourceRoles || [];
+    } catch (error) {
+      console.error('Failed to fetch user roles:', error);
+      throw error;
+    }
+  }
 }
