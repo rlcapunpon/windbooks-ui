@@ -2,11 +2,13 @@ import { useState, useEffect } from 'react';
 import { UserService } from '../../services/userService';
 import type { User } from '../../api/auth';
 import UpdateUserModal from '../../components/UpdateUserModal/UpdateUserModal';
+import ChangePasswordModal from '../../components/ChangePasswordModal/ChangePasswordModal';
 import { getAccessToken, getUserIdFromToken } from '../../utils/tokenStorage';
 
 const Profile = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastLogin, setLastLogin] = useState<string | null>(null);
@@ -45,7 +47,7 @@ const Profile = () => {
         setSecurityLoading(true);
 
         // Load last login information
-        const lastLoginResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/last-login`, {
+        const lastLoginResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/user/last-login`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -61,7 +63,7 @@ const Profile = () => {
         // Load password update information
         const userId = getUserIdFromToken();
         if (userId) {
-          const passwordUpdateResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/last-update/creds/${userId}`, {
+          const passwordUpdateResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/user/last-update/creds/${userId}`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
@@ -151,6 +153,16 @@ const Profile = () => {
           user={user.details}
           onClose={() => setIsModalOpen(false)}
           onSave={handleSaveDetails}
+        />
+      )}
+
+      {isChangePasswordModalOpen && user && (
+        <ChangePasswordModal
+          isOpen={isChangePasswordModalOpen}
+          onClose={() => setIsChangePasswordModalOpen(false)}
+          isSuperAdmin={isSuperAdmin}
+          userId={user.id}
+          userEmail={user.email}
         />
       )}
 
@@ -301,6 +313,7 @@ const Profile = () => {
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold text-gray-900">Security and Auth</h2>
             <button
+              onClick={() => setIsChangePasswordModalOpen(true)}
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               Change Password

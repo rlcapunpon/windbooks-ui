@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import Profile from './index';
 import { UserService } from '../../services/userService';
 import type { User } from '../../api/auth';
@@ -170,12 +171,12 @@ describe('Profile Component', () => {
       // Mock the APIs based on URL
       vi.mocked(global.fetch).mockImplementation((url) => {
         const urlString = url.toString();
-        if (urlString.includes('/user/last-login')) {
+        if (urlString.includes('/api/user/last-login')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve({ last_login: '2025-01-15T10:30:00.000Z' })
           } as Response);
-        } else if (urlString.includes('/user/last-update/creds/')) {
+        } else if (urlString.includes('/api/user/last-update/creds/')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve({
@@ -210,12 +211,12 @@ describe('Profile Component', () => {
       // Mock the APIs based on URL
       vi.mocked(global.fetch).mockImplementation((url) => {
         const urlString = url.toString();
-        if (urlString.includes('/user/last-login')) {
+        if (urlString.includes('/api/user/last-login')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve({ last_login: null })
           } as Response);
-        } else if (urlString.includes('/user/last-update/creds/')) {
+        } else if (urlString.includes('/api/user/last-update/creds/')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve({
@@ -250,12 +251,12 @@ describe('Profile Component', () => {
       // Mock the APIs based on URL
       vi.mocked(global.fetch).mockImplementation((url) => {
         const urlString = url.toString();
-        if (urlString.includes('/user/last-login')) {
+        if (urlString.includes('/api/user/last-login')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve({ last_login: null })
           } as Response);
-        } else if (urlString.includes('/user/last-update/creds/')) {
+        } else if (urlString.includes('/api/user/last-update/creds/')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve({
@@ -273,6 +274,55 @@ describe('Profile Component', () => {
 
       await waitFor(() => {
         expect(screen.getByRole('button', { name: 'Change Password' })).toBeInTheDocument();
+      });
+    });
+
+    it('should open Change Password modal when button is clicked', async () => {
+      vi.spyOn(UserService, 'getCachedUserData').mockReturnValue(mockUser);
+      vi.spyOn(UserService, 'isSuperAdmin').mockReturnValue(false);
+      vi.spyOn(UserService, 'getUserRoles').mockReturnValue(['STAFF']);
+
+      // Mock tokenStorage functions
+      const { getAccessToken, getUserIdFromToken } = await import('../../utils/tokenStorage');
+      vi.mocked(getAccessToken).mockReturnValue('mock-token');
+      vi.mocked(getUserIdFromToken).mockReturnValue('test-user-id');
+
+      // Mock the APIs based on URL
+      vi.mocked(global.fetch).mockImplementation((url) => {
+        const urlString = url.toString();
+        if (urlString.includes('/api/user/last-login')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ last_login: null })
+          } as Response);
+        } else if (urlString.includes('/api/user/last-update/creds/')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({
+              create_date: '2025-01-01T00:00:00.000Z',
+              last_update: null,
+              updated_by: null,
+              how_many: 0
+            })
+          } as Response);
+        }
+        return Promise.reject(new Error('Unexpected URL'));
+      });
+
+      render(<Profile />);
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: 'Change Password' })).toBeInTheDocument();
+      });
+
+      const changePasswordButton = screen.getByRole('button', { name: 'Change Password' });
+      await userEvent.click(changePasswordButton);
+
+      await waitFor(() => {
+        expect(screen.getByRole('dialog')).toBeInTheDocument();
+        expect(screen.getByLabelText('Current Password')).toBeInTheDocument();
+        expect(screen.getByLabelText('New Password')).toBeInTheDocument();
+        expect(screen.getByLabelText('Confirm New Password')).toBeInTheDocument();
       });
     });
   });
