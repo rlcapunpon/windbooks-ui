@@ -225,15 +225,16 @@ const Dashboard = () => {
 
           {/* Organization Access */}
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Assigned Organizations</h3>
-            <p className="text-gray-600 mb-4">You have approval access to the following organizations</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {assignedOrganizations.map((org) => (
-                <div key={org} className="bg-gradient-to-r from-green-50 to-emerald-50 p-3 rounded-lg border border-green-200">
-                  <h4 className="font-medium text-green-800">{getOrganizationDisplayName(org)}</h4>
-                  <p className="text-sm text-green-600">Approval Access</p>
-                </div>
-              ))}
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Organization Access</h3>
+            <p className="text-gray-600 mb-4">You have approval access to organizations</p>
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+                <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <p className="text-2xl font-bold text-gray-800">{assignedOrganizations.length}</p>
+              <p className="text-gray-600">Organization{assignedOrganizations.length !== 1 ? 's' : ''} with approval access</p>
             </div>
           </div>
 
@@ -314,15 +315,16 @@ const Dashboard = () => {
 
           {/* Organization Access */}
           <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 mb-8">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">Assigned Organizations</h3>
-            <p className="text-gray-600 mb-4">You have operational access to the following organizations</p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {assignedOrganizations.map((org) => (
-                <div key={org} className="bg-gradient-to-r from-purple-50 to-indigo-50 p-3 rounded-lg border border-purple-200">
-                  <h4 className="font-medium text-purple-800">{getOrganizationDisplayName(org)}</h4>
-                  <p className="text-sm text-purple-600">Operational Access</p>
-                </div>
-              ))}
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">Organization Access</h3>
+            <p className="text-gray-600 mb-4">You have operational access to organizations</p>
+            <div className="text-center">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-4">
+                <svg className="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <p className="text-2xl font-bold text-gray-800">{assignedOrganizations.length}</p>
+              <p className="text-gray-600">Organization{assignedOrganizations.length !== 1 ? 's' : ''} with operational access</p>
             </div>
           </div>
 
@@ -406,16 +408,17 @@ const Dashboard = () => {
               </svg>
             </div>
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Welcome back, {user?.details?.nickName || user?.email?.split('@')[0] || 'Client'}!</h2>
-            <p className="text-gray-600">You have limited access to the following organizations</p>
+            <p className="text-gray-600">You have limited access to organizations</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            {assignedOrganizations.map((org) => (
-              <div key={org} className="bg-gradient-to-r from-orange-50 to-red-50 p-4 rounded-lg border border-orange-200">
-                <h4 className="font-medium text-orange-800 text-center">{getOrganizationDisplayName(org)}</h4>
-                <p className="text-sm text-orange-600 text-center">Limited Access</p>
-              </div>
-            ))}
+          <div className="text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full mb-4">
+              <svg className="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
+            <p className="text-2xl font-bold text-gray-800">{assignedOrganizations.length}</p>
+            <p className="text-gray-600">Organization{assignedOrganizations.length !== 1 ? 's' : ''} with limited access</p>
           </div>
         </div>
 
