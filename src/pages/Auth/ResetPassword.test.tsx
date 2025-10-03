@@ -96,31 +96,31 @@ describe('ResetPassword', () => {
 
       await waitFor(() => {
         expect(screen.getByText(/error/i)).toBeInTheDocument()
-      })
     })
   })
 
   describe('Navigation Links', () => {
-    it('should have link to home page', () => {
+    it('should have Back to Login link at top left', () => {
       render(
         <BrowserRouter>
           <ResetPassword />
         </BrowserRouter>
       )
 
-      const homeLink = screen.getByText(/home/i)
-      expect(homeLink).toHaveAttribute('href', '/')
-    })
-
-    it('should have link to login page', () => {
-      render(
-        <BrowserRouter>
-          <ResetPassword />
-        </BrowserRouter>
-      )
-
-      const loginLink = screen.getByText(/login/i)
+      const loginLink = screen.getByText(/back to login/i)
       expect(loginLink).toHaveAttribute('href', '/auth/login')
     })
+
+    it('should have Back to Home link at top right', () => {
+      render(
+        <BrowserRouter>
+          <ResetPassword />
+        </BrowserRouter>
+      )
+
+      const homeLink = screen.getByText(/back to home/i)
+      expect(homeLink).toHaveAttribute('href', '/')
+    })
   })
+})
 })
