@@ -1,9 +1,10 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContextTypes';
 import { useState } from 'react';
+import Toast from '../../components/Toast/Toast';
 
 const schema = z.object({
   email: z.string()
@@ -26,9 +27,9 @@ type FormData = z.infer<typeof schema>;
 
 const Register = () => {
   const { register: registerUser } = useAuth();
-  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showToast, setShowToast] = useState(false);
   const {
     register,
     handleSubmit,
@@ -40,7 +41,7 @@ const Register = () => {
   const onSubmit = handleSubmit(async (data) => {
     try {
       await registerUser(data.email, data.password);
-      navigate('/auth/login');
+      setShowToast(true);
     } catch (error) {
       console.error('Registration failed:', error);
     }
@@ -48,7 +49,12 @@ const Register = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background-primary px-4">
-      <form onSubmit={onSubmit} className="bg-white/95 backdrop-blur-xl p-8 rounded-2xl shadow-2xl w-full max-w-md border-2 border-gray-200 ring-1 ring-gray-100">
+      <div className="w-full max-w-md">
+        <Toast
+          message="Please verify your email\nWe’ve sent a verification link to your registered email address. Kindly check your inbox (or spam folder) and click the link to activate your account."
+          isVisible={showToast}
+        />
+        <form onSubmit={onSubmit} className="bg-white/95 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border-2 border-gray-200 ring-1 ring-gray-100">
         <h2 className="text-3xl mb-6 text-center text-gray-800 font-semibold">Register</h2>
         <div className="mb-4">
           <label className="block text-gray-700 mb-2 text-sm font-medium">Email</label>
@@ -140,6 +146,7 @@ const Register = () => {
           </Link>
         </div>
       </form>
+      </div>
     </div>
   );
 };
