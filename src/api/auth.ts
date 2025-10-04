@@ -22,6 +22,7 @@ export interface RolePermission {
 
 export interface UserResource {
   resourceId: string | null;
+  resourceName?: string | null;
   role: string;
 }
 

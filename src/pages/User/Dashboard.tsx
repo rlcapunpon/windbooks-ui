@@ -1,8 +1,43 @@
 import { useAuth } from '../../contexts/AuthContextTypes';
 import { UserService } from '../../services/userService';
+import { useState, useEffect } from 'react';
 
 const Dashboard = () => {
   const { user } = useAuth();
+
+  // Admin status state for SUPERADMIN users
+  const [adminStatus, setAdminStatus] = useState<{
+    totalUsers: number;
+    totalResources: number;
+    activeUsers: number;
+    activeResources: number;
+    inactiveUsers: number;
+    inactiveResources: number;
+    deletedUsers: number;
+    deletedResources: number;
+    totalRoles: number;
+  } | null>(null);
+  const [adminStatusLoading, setAdminStatusLoading] = useState(false);
+
+  // Fetch admin status for SUPERADMIN users
+  useEffect(() => {
+    const fetchAdminStatus = async () => {
+      if (UserService.isSuperAdmin()) {
+        setAdminStatusLoading(true);
+
+        try {
+          const data = await UserService.getAdminStatus();
+          setAdminStatus(data);
+        } catch (error) {
+          console.error('Error fetching admin status:', error);
+        } finally {
+          setAdminStatusLoading(false);
+        }
+      }
+    };
+
+    fetchAdminStatus();
+  }, []);
 
   // Get user roles from the new structure
   const userRoles = user?.resources?.map((resource: { role: string }) => resource.role) || [];
@@ -44,21 +79,19 @@ const Dashboard = () => {
   };
 
   // Get assigned organizations from user resources
-  const getAssignedOrganizations = (): string[] => {
+  const getAssignedOrganizations = (): { resourceId: string; resourceName: string }[] => {
     if (!user?.resources) return [];
 
-    // Extract organization IDs from user resources
+    // Extract organization IDs and names from user resources
     return user.resources
-      .map(resource => resource.resourceId)
-      .filter((id): id is string => id !== null);
+      .filter(resource => resource.resourceId !== null && resource.resourceName != null)
+      .map(resource => ({
+        resourceId: resource.resourceId!,
+        resourceName: resource.resourceName!
+      }));
   };
 
-  // Get organization display names (placeholder for now - would need API call for real names)
-  const getOrganizationDisplayName = (orgId: string) => {
-    // For now, return the organization ID as display name
-    // In a real implementation, this would fetch organization details from API
-    return `Organization ${orgId}`;
-  };
+
 
   const roleLevel = getRoleLevel();
   const assignedOrganizations = getAssignedOrganizations();
@@ -101,30 +134,42 @@ const Dashboard = () => {
             <p className="text-gray-600 mb-4">You have full access to all organizations and resources</p>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {assignedOrganizations.map((org) => (
-                <div key={org} className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 rounded-lg border border-blue-200">
-                  <h4 className="font-medium text-blue-800">{getOrganizationDisplayName(org)}</h4>
+                <div key={org.resourceId} className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 rounded-lg border border-blue-200">
+                  <h4 className="font-medium text-blue-800">{org.resourceName}</h4>
                   <p className="text-sm text-blue-600">Full Access</p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Quick Stats - Placeholder for real metrics */}
+          {/* Quick Stats - Real admin statistics for SUPERADMIN */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Total Users</h3>
-              <p className="text-3xl font-bold text-gray-400">--</p>
-              <p className="text-sm text-gray-500 mt-1">Data will be loaded from API</p>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Users</h3>
+              <p className="text-3xl font-bold text-gray-400">
+                {adminStatusLoading ? '...' : adminStatus?.totalUsers ?? '--'}
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                {adminStatus ? `${adminStatus.activeUsers} active, ${adminStatus.inactiveUsers} inactive` : 'Data will be loaded from API'}
+              </p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Active Organizations</h3>
-              <p className="text-3xl font-bold text-gray-400">--</p>
-              <p className="text-sm text-gray-500 mt-1">Data will be loaded from API</p>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Resources</h3>
+              <p className="text-3xl font-bold text-gray-400">
+                {adminStatusLoading ? '...' : adminStatus?.totalResources ?? '--'}
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                {adminStatus ? `${adminStatus.activeResources} active, ${adminStatus.inactiveResources} inactive` : 'Data will be loaded from API'}
+              </p>
             </div>
             <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-800 mb-2">Total Organizations</h3>
-              <p className="text-3xl font-bold text-gray-400">--</p>
-              <p className="text-sm text-gray-500 mt-1">Data will be loaded from API</p>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">Roles</h3>
+              <p className="text-3xl font-bold text-gray-400">
+                {adminStatusLoading ? '...' : adminStatus?.totalRoles ?? '--'}
+              </p>
+              <p className="text-sm text-gray-500 mt-1">
+                all active
+              </p>
             </div>
           </div>
 

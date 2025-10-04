@@ -343,4 +343,27 @@ export class UserService {
       throw error;
     }
   }
+
+  /**
+   * Gets admin status for SUPERADMIN users
+   */
+  static async getAdminStatus(): Promise<{
+    totalUsers: number;
+    totalResources: number;
+    activeUsers: number;
+    activeResources: number;
+    inactiveUsers: number;
+    inactiveResources: number;
+    deletedUsers: number;
+    deletedResources: number;
+    totalRoles: number;
+  }> {
+    try {
+      const response = await apiClient.get('/admin/status');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch admin status:', error);
+      throw error;
+    }
+  }
 }
