@@ -5,11 +5,13 @@ import Login from './Login'
 
 // Mock react-router-dom
 const mockNavigate = vi.fn()
+const mockLocation = { state: null as any }
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom')
   return {
     ...actual,
-    useNavigate: () => mockNavigate
+    useNavigate: () => mockNavigate,
+    useLocation: () => mockLocation
   }
 })
 
@@ -51,6 +53,33 @@ describe('Login', () => {
       
       // Check that the link has the correct href
       expect(resetPasswordLink).toHaveAttribute('href', '/auth/reset-password')
+    })
+  })
+
+  describe('Verification Toast', () => {
+    it('should show verification toast when location state has showVerificationMessage', () => {
+      mockLocation.state = { showVerificationMessage: true }
+      
+      render(
+        <BrowserRouter>
+          <Login />
+        </BrowserRouter>
+      )
+
+      expect(screen.getByText(/Please verify your email/)).toBeInTheDocument()
+      expect(screen.getByText(/We’ve sent a verification link/)).toBeInTheDocument()
+    })
+
+    it('should not show verification toast when location state does not have showVerificationMessage', () => {
+      mockLocation.state = null
+      
+      render(
+        <BrowserRouter>
+          <Login />
+        </BrowserRouter>
+      )
+
+      expect(screen.queryByText(/Please verify your email/)).not.toBeInTheDocument()
     })
   })
 })

@@ -120,14 +120,11 @@ describe('Register', () => {
     await user.type(confirmPasswordInput, 'Password123!');
     await user.click(submitButton);
 
-    await waitFor(() => {
-      expect(screen.getByText(/Please verify your email/)).toBeInTheDocument();
-    });
-
-    expect(screen.getByText(/We’ve sent a verification link/)).toBeInTheDocument();
+    expect(mockRegister).toHaveBeenCalledWith('test@example.com', 'Password123!');
+    expect(mockNavigate).toHaveBeenCalledWith('/auth/login', { state: { showVerificationMessage: true } });
   });
 
-  it('does not navigate immediately on successful registration', async () => {
+  it('navigates to login on successful registration', async () => {
     const user = userEvent.setup();
     mockRegister.mockResolvedValue(undefined);
 
@@ -149,9 +146,8 @@ describe('Register', () => {
     await user.type(confirmPasswordInput, 'Password123!');
     await user.click(submitButton);
 
-    // Wait for potential navigation, but it shouldn't happen
     await waitFor(() => {
-      expect(mockNavigate).not.toHaveBeenCalled();
-    }, { timeout: 1000 });
+      expect(mockNavigate).toHaveBeenCalledWith('/auth/login', { state: { showVerificationMessage: true } });
+    });
   });
 });

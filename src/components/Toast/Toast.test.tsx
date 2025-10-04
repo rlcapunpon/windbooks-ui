@@ -1,4 +1,6 @@
 import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi } from 'vitest';
 import Toast from './Toast';
 
 describe('Toast', () => {
@@ -29,12 +31,27 @@ describe('Toast', () => {
     expect(toast).toHaveAttribute('aria-live', 'assertive');
   });
 
-  it('renders the verification message correctly', () => {
-    const verificationMessage = "Please verify your email\nWe’ve sent a verification link to your registered email address. Kindly check your inbox (or spam folder) and click the link to activate your account.";
+  it('renders the close button when onClose is provided', () => {
+    render(<Toast message="Test message" isVisible={true} onClose={() => {}} />);
     
-    render(<Toast message={verificationMessage} isVisible={true} />);
+    expect(screen.getByRole('button', { name: 'Close notification' })).toBeInTheDocument();
+  });
+
+  it('does not render the close button when onClose is not provided', () => {
+    render(<Toast message="Test message" isVisible={true} />);
     
-    expect(screen.getByText(/Please verify your email/)).toBeInTheDocument();
-    expect(screen.getByText(/We’ve sent a verification link/)).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Close notification' })).not.toBeInTheDocument();
+  });
+
+  it('calls onClose when close button is clicked', async () => {
+    const user = userEvent.setup();
+    const mockOnClose = vi.fn();
+    
+    render(<Toast message="Test message" isVisible={true} onClose={mockOnClose} />);
+    
+    const closeButton = screen.getByRole('button', { name: 'Close notification' });
+    await user.click(closeButton);
+    
+    expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
 });

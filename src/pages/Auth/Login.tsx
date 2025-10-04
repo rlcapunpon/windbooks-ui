@@ -1,11 +1,12 @@
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContextTypes';
 import { useEffect, useState } from 'react';
 import ErrorModal from '../../components/ErrorModal';
 import NotificationModal from '../../components/NotificationModal';
+import Toast from '../../components/Toast/Toast';
 import type { ErrorInfo } from '../../components/ErrorModal';
 import type { NotificationInfo } from '../../components/NotificationModal';
 import { parseAuthResponse } from '../../utils/authResponseParser';
@@ -26,6 +27,7 @@ type FormData = z.infer<typeof schema>;
 const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [resendStatus, setResendStatus] = useState<{
     isLoading: boolean;
     message: string | null;
@@ -33,6 +35,14 @@ const Login = () => {
     isLoading: false,
     message: null,
   });
+
+  const [showVerificationToast, setShowVerificationToast] = useState(false);
+
+  useEffect(() => {
+    if (location.state?.showVerificationMessage) {
+      setShowVerificationToast(true);
+    }
+  }, [location.state]);
 
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
@@ -188,7 +198,13 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background-primary px-4">
-      <form onSubmit={onSubmit} className="bg-white/95 backdrop-blur-xl p-8 rounded-2xl shadow-2xl w-full max-w-md border-2 border-gray-200 ring-1 ring-gray-100">
+      <div className="w-full max-w-md">
+        <Toast
+          message="Please verify your email. We’ve sent a verification link to your registered email address. Kindly check your inbox (or spam folder) and click the link to activate your account."
+          isVisible={showVerificationToast}
+          onClose={() => setShowVerificationToast(false)}
+        />
+        <form onSubmit={onSubmit} className="bg-white/95 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border-2 border-gray-200 ring-1 ring-gray-100">
         <h2 className="text-3xl mb-6 text-center text-gray-800 font-semibold">Login</h2>
         <div className="mb-4">
           <label className="block text-gray-700 mb-2 text-sm font-medium">Email</label>
@@ -262,6 +278,7 @@ const Login = () => {
         onClose={closeModal}
         notification={modalState.type === 'notification' ? modalState.data as NotificationInfo : null}
       />
+      </div>
     </div>
   );
 };
