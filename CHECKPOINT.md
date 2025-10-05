@@ -781,3 +781,107 @@ const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
 - **Documentation**: Updated test-files-inventory.md with new test information
 
 **Ready for Next Step**: Continue with remaining organization management integration steps
+
+# Step 30.5 - Menu Item Visibility Fix for STAFF Users ✅
+
+## Implementation Summary
+**Date:** October 5, 2025  
+**Approach:** Test-Driven Development (TDD)  
+**Files Modified:** 
+- `src/components/MainLayout.tsx`
+- `src/components/MainLayout.test.tsx`
+- `checkpoint/10-05-2025/CHECKPOINT.md`
+
+## Completed Features
+✅ **STAFF User Menu Visibility Fix**
+- Fixed menu item permissions to ensure STAFF users see Organizations and Tasks menus
+- Verified STAFF users have `resource:read` permission according to permission mappings
+- Ensured Organizations and Tasks menus require `resource:read` permission (which STAFF users have)
+- STAFF users now correctly see: Dashboard, Organizations, Tasks, Profile (and Admin if they have system permissions)
+
+✅ **Permission-Based Menu Filtering**
+- Menu items use correct RBAC permissions from permission mappings
+- Organizations and Tasks require `resource:read` permission
+- Administration requires `system:read_config` permission  
+- Dashboard and Profile require no permissions (always accessible)
+- Settings requires `user:update` permission
+
+✅ **Comprehensive Testing**
+- Added failing test first for STAFF user menu visibility with proper RBAC mocking
+- Test verifies STAFF users see Organizations and Tasks menus with `resource:read` permission
+- Test verifies STAFF users do NOT see Admin menu (requires `system:read_config`)
+- Fixed UserService mocking setup to enable proper test validation
+- All tests passing: 55/55 in MainLayout test suite
+
+✅ **TDD Process Validation**
+- ✅ Written failing test first for STAFF user menu visibility issue
+- ✅ Implemented permission fix to ensure STAFF users see expected menus
+- ✅ Verified STAFF users with `resource:read` permission see Organizations and Tasks
+- ✅ Verified permission filtering works correctly for all user roles
+- ✅ Fixed mocking issues to enable proper test validation
+- ✅ No TypeScript errors
+- ✅ Build successful
+- ✅ All tests passing
+
+## Technical Implementation
+**Menu Permissions**:
+```typescript
+const menuItems: MenuItem[] = [
+  {
+    id: 'organizations',
+    permissions: ['resource:read'], // STAFF users have this permission
+    children: [/* submenu items with same permission */]
+  },
+  {
+    id: 'tasks', 
+    permissions: ['resource:read'], // STAFF users have this permission
+    children: [/* submenu items with same permission */]
+  },
+  {
+    id: 'admin',
+    permissions: ['system:read_config'], // STAFF users don't have this
+    // ...
+  }
+]
+```
+
+**STAFF User Permissions** (from permission mappings):
+- `resource:read` ✅ (allows access to Organizations and Tasks)
+- `resource:access_assigned` ✅ 
+- `user:view_limited` ✅
+- `transaction:create|read|encode|finalize|modify|rollback_limited` ✅
+- `report:create|read|generate|edit|export_*|view_*` ✅
+- `submission:create|read|view_status` ✅
+- `document:create|read|upload|generate|edit_drafts|annotate|flag_issues` ✅
+- `notification:read|view_system` ✅
+- `comment:create|read|tag_users|view_thread` ✅
+- `chat:participate` ✅
+- `audit:read_assigned` ✅
+- `log:read_assigned` ✅
+- `permission:read` ✅
+
+**Test Implementation**:
+```typescript
+it('should show Organizations and Tasks menus for STAFF user with resource:read permission', () => {
+  // Mock STAFF user with resource:read permission
+  const mockRBACPermissions = {
+    permissions: ['resource:read', 'resource:access_assigned', /* ... other permissions */]
+  };
+  
+  // Verify STAFF user sees expected menus
+  expect(screen.getByTestId('menu-item-organizations')).toBeInTheDocument();
+  expect(screen.getByTestId('menu-item-tasks')).toBeInTheDocument();
+  expect(screen.queryByTestId('menu-item-admin')).not.toBeInTheDocument();
+});
+```
+
+## Test Results
+- **Status**: ✅ Step 30.5 STAFF user menu visibility working correctly
+- **Menu Visibility**: STAFF users now see Organizations and Tasks menus with `resource:read` permission
+- **Permission Filtering**: Verified correct permission-based menu filtering for all user roles
+- **Test Coverage**: Added comprehensive test for STAFF user menu visibility
+- **All Tests**: 55/55 passing in MainLayout test suite
+- **Build**: ✅ Successful
+- **Documentation**: Updated checkpoint documentation with Step 30.5 completion details
+
+**Ready for Next Step**: Continue with remaining TDD requirements

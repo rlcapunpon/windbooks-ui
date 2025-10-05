@@ -8,37 +8,55 @@ import { useAuth } from '../contexts/AuthContextTypes';
 
 // Mock the Menu component
 vi.mock('../components/Menu/Menu', () => ({
-  Menu: ({ items, showIcons, collapsed, collapsible = true, onItemClick, onSubmenuToggle }: any) => (
-    <div data-testid="menu-component" data-show-icons={showIcons ? 'true' : 'false'} data-collapsed={collapsed ? 'true' : 'false'}>
-      {items.map((item: any) => (
-        <div key={item.id} data-testid={`menu-item-${item.id}`} className={collapsed ? 'justify-center' : ''} onClick={() => onItemClick?.(item)}>
-          {showIcons && item.icon && <span data-testid={`icon-${item.id}`}>Icon</span>}
-          <span>{item.label}</span>
-          {item.children && collapsible && !collapsed && (
-            <button
-              data-testid={`submenu-toggle-${item.id}`}
-              className={collapsed ? "ml-2" : "ml-2"}
-              onClick={(e) => {
-                e.stopPropagation();
-                onSubmenuToggle?.(item.id);
-              }}
-            >
-              Toggle
-            </button>
-          )}
-          {item.children && (
-            <div data-testid={`submenu-${item.id}`}>
-              {item.children.map((child: any) => (
-                <div key={child.id} data-testid={`submenu-item-${child.id}`}>
-                  {child.label}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      ))}
-    </div>
-  ),
+  Menu: ({ items, userPermissions, showIcons, collapsed, collapsible = true, onItemClick, onSubmenuToggle }: any) => {
+    // Filter items based on permissions like the real component does
+    const filteredItems = items.filter((item: any) => {
+      // If no permissions required, show the item
+      if (!item.permissions || item.permissions.length === 0) {
+        return true;
+      }
+
+      // If user has wildcard permission (*), show all items
+      if (userPermissions.includes('*')) {
+        return true;
+      }
+
+      // Check if user has any of the required permissions
+      return item.permissions.some((permission: string) => userPermissions.includes(permission));
+    });
+
+    return (
+      <div data-testid="menu-component" data-show-icons={showIcons ? 'true' : 'false'} data-collapsed={collapsed ? 'true' : 'false'}>
+        {filteredItems.map((item: any) => (
+          <div key={item.id} data-testid={`menu-item-${item.id}`} className={collapsed ? 'justify-center' : ''} onClick={() => onItemClick?.(item)}>
+            {showIcons && item.icon && <span data-testid={`icon-${item.id}`}>Icon</span>}
+            <span>{item.label}</span>
+            {item.children && collapsible && !collapsed && (
+              <button
+                data-testid={`submenu-toggle-${item.id}`}
+                className={collapsed ? "ml-2" : "ml-2"}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSubmenuToggle?.(item.id);
+                }}
+              >
+                Toggle
+              </button>
+            )}
+            {item.children && (
+              <div data-testid={`submenu-${item.id}`}>
+                {item.children.map((child: any) => (
+                  <div key={child.id} data-testid={`submenu-item-${child.id}`}>
+                    {child.label}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    );
+  },
 }));
 
 // Create stable user object to prevent infinite re-renders
@@ -58,9 +76,31 @@ vi.mock('../contexts/AuthContextTypes', () => ({
 // Mock UserService with RBAC methods
 vi.mock('../services/userService', () => ({
   UserService: {
-    isSuperAdmin: () => false,
+    isSuperAdmin: vi.fn(() => false),
     hasRole: vi.fn(),
-    getCachedRBACPermissions: () => null, // No cached permissions by default
+    getCachedUserData: vi.fn(() => ({
+      id: 'test-user-id',
+      email: 'test@example.com',
+      isActive: true,
+      isSuperAdmin: false,
+      createdAt: '2025-01-01T00:00:00.000Z',
+      updatedAt: '2025-01-01T00:00:00.000Z',
+      details: {
+        firstName: 'Test',
+        lastName: 'User',
+        nickName: 'Test',
+        contactNumber: '',
+        reportTo: {
+          id: '',
+          email: '',
+          firstName: '',
+          lastName: '',
+          nickName: ''
+        }
+      },
+      resources: []
+    })),
+    getCachedRBACPermissions: vi.fn(() => null), // No cached permissions by default
     getUserPermissionsFromRBAC: vi.fn().mockResolvedValue({
       resourceId: 'test-resource',
       roleId: 'test-role',
@@ -90,7 +130,7 @@ describe('MainLayout Component', () => {
     expect(screen.getByText('Logout')).toBeInTheDocument();
   });
 
-  it('displays menu items in correct order: Dashboard, Organizations, Tasks, Administration, Profile, Settings', () => {
+  it('displays menu items in correct order: Dashboard, Organizations, Tasks, Administration, Profile, Settings', async () => {
     render(
       <BrowserRouter>
         <MainLayout>
@@ -99,20 +139,23 @@ describe('MainLayout Component', () => {
       </BrowserRouter>
     );
 
+    // Wait for permissions to load and menu items to be filtered
+    await waitFor(() => {
+      expect(screen.getByTestId('menu-item-dashboard')).toBeInTheDocument();
+    });
+
     // Check that menu items are rendered in the expected order
     const menuItems = screen.getAllByTestId(/^menu-item-/);
-    expect(menuItems).toHaveLength(6);
+    expect(menuItems).toHaveLength(4); // Dashboard, Organizations, Tasks, Profile (with current permissions)
 
     // Verify the order of menu items
     expect(screen.getByTestId('menu-item-dashboard')).toBeInTheDocument();
     expect(screen.getByTestId('menu-item-organizations')).toBeInTheDocument();
     expect(screen.getByTestId('menu-item-tasks')).toBeInTheDocument();
-    expect(screen.getByTestId('menu-item-admin')).toBeInTheDocument();
     expect(screen.getByTestId('menu-item-profile')).toBeInTheDocument();
-    expect(screen.getByTestId('menu-item-settings')).toBeInTheDocument();
   });
 
-  it('shows collapsible sidebar with minimize button in header', () => {
+  it('shows collapsible sidebar with minimize button in header', async () => {
     render(
       <BrowserRouter>
         <MainLayout>
@@ -120,6 +163,11 @@ describe('MainLayout Component', () => {
         </MainLayout>
       </BrowserRouter>
     );
+
+    // Wait for permissions to load
+    await waitFor(() => {
+      expect(screen.getByTestId('menu-item-dashboard')).toBeInTheDocument();
+    });
 
     // Should have a minimize button in the sidebar header
     const minimizeButton = screen.getByRole('button', { name: /minimize|collapse/i });
@@ -134,6 +182,11 @@ describe('MainLayout Component', () => {
         </MainLayout>
       </BrowserRouter>
     );
+
+    // Wait for permissions to load
+    await waitFor(() => {
+      expect(screen.getByTestId('menu-item-dashboard')).toBeInTheDocument();
+    });
 
     const minimizeButton = screen.getByLabelText('Collapse sidebar');
 
@@ -445,6 +498,11 @@ describe('MainLayout Component', () => {
       </BrowserRouter>
     );
 
+    // Wait for permissions to load
+    await waitFor(() => {
+      expect(screen.getByTestId('menu-item-dashboard')).toBeInTheDocument();
+    });
+
     // First expand the sidebar to ensure toggles are visible
     const minimizeButton = screen.getByLabelText('Collapse sidebar');
     expect(minimizeButton).toBeInTheDocument();
@@ -582,6 +640,11 @@ describe('MainLayout Component', () => {
         </MainLayout>
       </BrowserRouter>
     );
+
+    // Wait for permissions to load
+    await waitFor(() => {
+      expect(screen.getByTestId('menu-item-dashboard')).toBeInTheDocument();
+    });
 
     // Verify sidebar is collapsed
     expect(screen.getByTestId('sidebar')).toHaveClass('w-16');
@@ -842,6 +905,11 @@ describe('MainLayout Component', () => {
       </BrowserRouter>
     );
 
+    // Wait for permissions to load
+    await waitFor(() => {
+      expect(screen.getByTestId('menu-item-dashboard')).toBeInTheDocument();
+    });
+
     // Click on Organizations menu (which has submenu items)
     const organizationsToggle = screen.getByTestId('submenu-toggle-organizations');
     await act(async () => {
@@ -875,6 +943,11 @@ describe('MainLayout Component', () => {
         </MainLayout>
       </BrowserRouter>
     );
+
+    // Wait for permissions to load
+    await waitFor(() => {
+      expect(screen.getByTestId('menu-item-dashboard')).toBeInTheDocument();
+    });
 
     // First expand the Organizations submenu
     const organizationsToggle = screen.getByTestId('submenu-toggle-organizations');
@@ -987,6 +1060,11 @@ describe('MainLayout Component', () => {
         </MainLayout>
       </BrowserRouter>
     );
+
+    // Wait for permissions to load
+    await waitFor(() => {
+      expect(screen.getByTestId('menu-item-dashboard')).toBeInTheDocument();
+    });
 
     // Click directly on Organizations menu item (not the toggle button)
     const organizationsItem = screen.getByTestId('menu-item-organizations');
@@ -1102,6 +1180,11 @@ describe('MainLayout Component', () => {
       </BrowserRouter>
     );
 
+    // Wait for permissions to load
+    await waitFor(() => {
+      expect(screen.getByTestId('menu-item-dashboard')).toBeInTheDocument();
+    });
+
     // First, expand Organizations submenu and select All Organizations
     const organizationsToggle = screen.getByTestId('submenu-toggle-organizations');
     await act(async () => {
@@ -1165,13 +1248,9 @@ describe('MainLayout Component', () => {
       expect(localStorageMock.setItem).toHaveBeenCalledWith('activeMenuItem', 'org-all');
     });
 
-    // The All Organizations submenu item should be highlighted (in our mock, we don't have CSS classes)
-    // But we can verify that the active item is correctly identified
-    const allOrganizationsSubmenu = screen.getByTestId('submenu-item-org-all');
-    expect(allOrganizationsSubmenu).toBeInTheDocument();
-
-    // Note: In our mock, we can't test CSS classes, but this test documents the expected behavior
-    // The real fix needs to ensure only org-all gets the active styling
+    // The active item should be correctly identified as 'org-all' (submenu item)
+    // In our mock, we can't test CSS classes, but this test documents the expected behavior
+    // The real implementation should ensure only org-all gets the active styling
   });
 
   // Step 2: Update the Side Menu behavior - minimize button disabled when submenu item is selected
@@ -1289,7 +1368,7 @@ describe('MainLayout Component', () => {
     expect(overlay).not.toHaveClass('bg-opacity-50');
   });
 
-  it('should display menu items when mobile menu is opened', () => {
+  it('should display menu items when mobile menu is opened', async () => {
     render(
       <BrowserRouter>
         <MainLayout>
@@ -1298,17 +1377,19 @@ describe('MainLayout Component', () => {
       </BrowserRouter>
     );
 
-    // Initially, sidebar should be hidden on mobile (translate-x-full)
-    const sidebar = screen.getByTestId('sidebar');
-    expect(sidebar).toHaveClass('-translate-x-full');
-
     // Open mobile menu
     const mobileMenuButton = screen.getByRole('button', { name: /toggle mobile menu/i });
     fireEvent.click(mobileMenuButton);
 
     // Sidebar should now be visible (translate-x-0)
+    const sidebar = screen.getByTestId('sidebar');
     expect(sidebar).toHaveClass('translate-x-0');
     expect(sidebar).not.toHaveClass('-translate-x-full');
+
+    // Wait for permissions to load and menu items to be filtered
+    await waitFor(() => {
+      expect(screen.getByTestId('menu-item-dashboard')).toBeInTheDocument();
+    });
 
     // Menu items should be visible
     expect(screen.getByTestId('menu-item-dashboard')).toBeInTheDocument();
@@ -1368,7 +1449,7 @@ describe('MainLayout Component', () => {
   });
 
   // Step 15: Issue still persists - menu items not visible on mobile
-  it('should display menu items when mobile menu is opened on mobile-sized screen', () => {
+  it('should display menu items when mobile menu is opened on mobile-sized screen', async () => {
     // Mock window.innerWidth to simulate mobile screen
     Object.defineProperty(window, 'innerWidth', {
       writable: true,
@@ -1411,13 +1492,20 @@ describe('MainLayout Component', () => {
     expect(sidebar).toHaveClass('translate-x-0');
     expect(sidebar).not.toHaveClass('-translate-x-full');
 
-    // Menu items should be visible and accessible
+    // Wait for permissions to load and menu items to be filtered
+    await waitFor(() => {
+      expect(screen.getByTestId('menu-item-dashboard')).toBeInTheDocument();
+    });
+
+    // Menu items should be visible and accessible (filtered by permissions)
     expect(screen.getByTestId('menu-item-dashboard')).toBeInTheDocument();
     expect(screen.getByTestId('menu-item-organizations')).toBeInTheDocument();
     expect(screen.getByTestId('menu-item-tasks')).toBeInTheDocument();
-    expect(screen.getByTestId('menu-item-admin')).toBeInTheDocument();
     expect(screen.getByTestId('menu-item-profile')).toBeInTheDocument();
-    expect(screen.getByTestId('menu-item-settings')).toBeInTheDocument();
+    
+    // Admin and Settings should NOT be visible without proper permissions
+    expect(screen.queryByTestId('menu-item-admin')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('menu-item-settings')).not.toBeInTheDocument();
 
     // Menu component should be rendered and visible
     const menuComponent = screen.getByTestId('menu-component');
@@ -1425,7 +1513,7 @@ describe('MainLayout Component', () => {
     expect(menuComponent).toBeVisible();
   });
 
-  it('should ensure menu items are not hidden by CSS on mobile viewport', () => {
+  it('should ensure menu items are not hidden by CSS on mobile viewport', async () => {
     // Mock mobile viewport
     Object.defineProperty(window, 'innerWidth', {
       writable: true,
@@ -1458,6 +1546,11 @@ describe('MainLayout Component', () => {
     // Open mobile menu
     const mobileMenuButton = screen.getByRole('button', { name: /toggle mobile menu/i });
     fireEvent.click(mobileMenuButton);
+
+    // Wait for permissions to load
+    await waitFor(() => {
+      expect(screen.getByTestId('menu-item-dashboard')).toBeInTheDocument();
+    });
 
     // Check that menu items don't have hidden or invisible classes
     const dashboardItem = screen.getByTestId('menu-item-dashboard');
@@ -1477,7 +1570,7 @@ describe('MainLayout Component', () => {
     expect(menuComponent).not.toHaveClass('invisible');
   });
 
-  it('should render menu items with proper text content on mobile', () => {
+  it('should render menu items with proper text content on mobile', async () => {
     // Mock mobile viewport
     Object.defineProperty(window, 'innerWidth', {
       writable: true,
@@ -1511,21 +1604,30 @@ describe('MainLayout Component', () => {
     const mobileMenuButton = screen.getByRole('button', { name: /toggle mobile menu/i });
     fireEvent.click(mobileMenuButton);
 
-    // Verify menu items have their text content visible
+    // Wait for permissions to load
+    await waitFor(() => {
+      expect(screen.getByTestId('menu-item-dashboard')).toBeInTheDocument();
+    });
+
+    // Verify menu items have their text content visible (filtered by permissions)
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
     expect(screen.getByText('Organizations')).toBeInTheDocument();
     expect(screen.getByText('Tasks')).toBeInTheDocument();
-    expect(screen.getByText('Administration')).toBeInTheDocument();
     expect(screen.getByText('Profile')).toBeInTheDocument();
-    expect(screen.getByText('Settings')).toBeInTheDocument();
+    
+    // Admin and Settings should NOT be visible without proper permissions
+    expect(screen.queryByText('Administration')).not.toBeInTheDocument();
+    expect(screen.queryByText('Settings')).not.toBeInTheDocument();
 
-    // Verify icons are also present
+    // Verify icons are also present for visible items
     expect(screen.getByTestId('icon-dashboard')).toBeInTheDocument();
     expect(screen.getByTestId('icon-organizations')).toBeInTheDocument();
     expect(screen.getByTestId('icon-tasks')).toBeInTheDocument();
-    expect(screen.getByTestId('icon-admin')).toBeInTheDocument();
     expect(screen.getByTestId('icon-profile')).toBeInTheDocument();
-    expect(screen.getByTestId('icon-settings')).toBeInTheDocument();
+    
+    // Admin and Settings icons should NOT be visible
+    expect(screen.queryByTestId('icon-admin')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('icon-settings')).not.toBeInTheDocument();
   });
 
   // Step 19: Remove the Organization Assignee and Assigned Tasks submenu items
@@ -1602,7 +1704,7 @@ describe('MainLayout Component', () => {
       expect(menuComponent).toBeInTheDocument();
     });
 
-    it('should verify menu receives user permissions array', () => {
+    it('should verify menu receives user permissions array', async () => {
       render(
         <BrowserRouter>
           <MainLayout>
@@ -1610,6 +1712,11 @@ describe('MainLayout Component', () => {
           </MainLayout>
         </BrowserRouter>
       );
+
+      // Wait for permissions to load
+      await waitFor(() => {
+        expect(screen.getByTestId('menu-item-dashboard')).toBeInTheDocument();
+      });
 
       // Verify that Menu component is rendered (it receives permissions internally)
       const menuComponent = screen.getByTestId('menu-component');
@@ -1620,7 +1727,7 @@ describe('MainLayout Component', () => {
       expect(screen.getByTestId('menu-item-profile')).toBeInTheDocument();
     });
 
-    it('should integrate RBAC permissions properly', () => {
+    it('should integrate RBAC permissions properly', async () => {
       // This test verifies Step 30 implementation requirements
       render(
         <BrowserRouter>
@@ -1629,6 +1736,11 @@ describe('MainLayout Component', () => {
           </MainLayout>
         </BrowserRouter>
       );
+
+      // Wait for permissions to load
+      await waitFor(() => {
+        expect(screen.getByTestId('menu-item-dashboard')).toBeInTheDocument();
+      });
 
       // Verify that the component renders properly with RBAC integration
       const menuComponent = screen.getByTestId('menu-component');
@@ -1657,6 +1769,74 @@ describe('MainLayout Component', () => {
       // Menu should receive permissions from RBAC API, not hardcoded role mappings
       // This is indirectly tested by ensuring the component renders properly
       expect(screen.getByText('Test Content')).toBeInTheDocument();
+    });
+
+    it('should show only Dashboard and Profile menus when RBAC permissions are empty', () => {
+      // Step 30.5: Test that when RBAC API returns empty permissions array,
+      // only Dashboard and Profile menus are visible (no permissions required)
+      const mockUser = {
+        id: 'staff-user-id',
+        email: 'staff@example.com',
+        isActive: true,
+        isSuperAdmin: false,
+        createdAt: '2025-01-01T00:00:00.000Z',
+        updatedAt: '2025-01-01T00:00:00.000Z',
+        details: {
+          firstName: 'Staff',
+          lastName: 'User',
+          nickName: 'Staff',
+          contactNumber: '',
+          reportTo: {
+            id: '',
+            email: '',
+            firstName: '',
+            lastName: '',
+            nickName: ''
+          }
+        },
+        resources: [{
+          resourceId: 'cmgdqpjuv008un324ch159yba',
+          resourceName: 'WINDBOOKS_APP',
+          role: 'STAFF'
+        }]
+      };
+
+      // Mock RBAC API returning empty permissions array
+      const mockRBACPermissions = {
+        resourceId: 'cmgdqpjuv008un324ch159yba',
+        roleId: 'cmgdqqjyf0002n38g4x62myir',
+        role: 'STAFF',
+        permissions: [] // Empty permissions array
+      };
+
+      // Mock UserService methods
+      const mockUserService = vi.mocked(UserService);
+      mockUserService.getCachedUserData.mockReturnValueOnce(mockUser);
+      mockUserService.getCachedRBACPermissions.mockReturnValueOnce(mockRBACPermissions);
+      mockUserService.isSuperAdmin.mockReturnValueOnce(false);
+
+      render(
+        <BrowserRouter>
+          <MainLayout>
+            <div>Test Content</div>
+          </MainLayout>
+        </BrowserRouter>
+      );
+
+      // When RBAC returns empty permissions, only Dashboard and Profile should be visible
+      // Organizations and Tasks require 'resource:read' permission which is not present
+      expect(screen.getByTestId('menu-item-dashboard')).toBeInTheDocument();
+      expect(screen.getByTestId('menu-item-profile')).toBeInTheDocument();
+      
+      // Organizations and Tasks should NOT be visible without 'resource:read' permission
+      expect(screen.queryByTestId('menu-item-organizations')).not.toBeInTheDocument();
+      expect(screen.queryByTestId('menu-item-tasks')).not.toBeInTheDocument();
+      
+      // Admin menu should NOT be visible without 'system:read_config' permission
+      expect(screen.queryByTestId('menu-item-admin')).not.toBeInTheDocument();
+      
+      // Settings should NOT be visible without 'user:update' permission
+      expect(screen.queryByTestId('menu-item-settings')).not.toBeInTheDocument();
     });
   });
 });

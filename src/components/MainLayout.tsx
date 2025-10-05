@@ -50,8 +50,13 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [activeMenuItem, setActiveMenuItem] = useState<string | null>(null);
-  const [rbacPermissions, setRbacPermissions] = useState<string[] | null>(null);
-  const [isLoadingPermissions, setIsLoadingPermissions] = useState(true);
+  const [rbacData, setRbacData] = useState<{
+    resourceId: string;
+    roleId: string;
+    role: string;
+    permissions: string[];
+  } | null>(null);
+  const [isLoadingPermissions, setIsLoadingPermissions] = useState(false);
 
   // Load sidebar collapse state and active menu item from localStorage on mount
   useEffect(() => {
@@ -78,37 +83,38 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     }
   }, []);
 
-  // Fetch RBAC permissions on component mount
+  // Load RBAC permissions - should be cached after login
   useEffect(() => {
-    const fetchRBACPermissions = async () => {
+    const loadRBACPermissions = async () => {
       try {
         setIsLoadingPermissions(true);
         
-        // Check if we have cached RBAC permissions first
+        // Get cached RBAC permissions (fetched during login)
         const cachedPermissions = UserService.getCachedRBACPermissions();
         if (cachedPermissions) {
-          setRbacPermissions(cachedPermissions.permissions);
+          setRbacData(cachedPermissions);
           setIsLoadingPermissions(false);
           return;
         }
 
-        // Fetch from API if not cached
+        // Fallback: fetch from API if not cached (shouldn't happen after login)
+        console.warn('RBAC permissions not cached, fetching from API');
         const rbacData = await UserService.getUserPermissionsFromRBAC();
-        setRbacPermissions(rbacData.permissions);
+        setRbacData(rbacData);
         console.log('Fetched RBAC permissions:', rbacData.permissions);
       } catch (error) {
-        console.error('Failed to fetch RBAC permissions:', error);
+        console.error('Failed to load RBAC permissions:', error);
         // Fallback to empty permissions array on error
-        setRbacPermissions([]);
+        setRbacData(null);
       } finally {
         setIsLoadingPermissions(false);
       }
     };
 
-    if (user?.email && rbacPermissions === null && !isLoadingPermissions) {
-      fetchRBACPermissions();
+    if (user?.email && rbacData === null) {
+      loadRBACPermissions();
     }
-  }, [user?.email, rbacPermissions, isLoadingPermissions]);
+  }, [user?.email, rbacData]);
 
   // Save sidebar collapse state to localStorage whenever it changes
   useEffect(() => {
@@ -126,14 +132,16 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   if (UserService.isSuperAdmin()) {
     // SUPERADMIN users see everything
     userPermissions.push('*');
-  } else if (rbacPermissions !== null && rbacPermissions.length > 0) {
+  } else if (rbacData && rbacData.permissions.length > 0) {
     // Use RBAC permissions from API when available
-    userPermissions.push(...rbacPermissions);
-  } else if (!isLoadingPermissions) {
-    // For users with no primary role or new users: only Dashboard and Profile
-    // No permissions needed for Dashboard and Profile as per Step 30
-    // This handles the case where user has no existing primary role
+    userPermissions.push(...rbacData.permissions);
   }
+  // No fallback permissions - strictly rely on RBAC API response
+
+  console.log('User permissions for menu:', userPermissions);
+  console.log('RBAC data state:', rbacData);
+  console.log('Is loading permissions:', isLoadingPermissions);
+  console.log('Primary role:', primaryRole);
 
   const menuItems: MenuItem[] = [
     {
@@ -157,7 +165,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
         </svg>
       ),
       href: '/organizations',
-      permissions: ['resource:read'],
+      permissions: ['resource:read'], // STAFF users have resource:read permission
       children: [
         {
           id: 'org-all',
@@ -194,7 +202,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
         </svg>
       ),
       href: '/tasks',
-      permissions: ['resource:read'],
+      permissions: ['resource:read'], // STAFF users have resource:read permission
       children: [
         {
           id: 'my-tasks',

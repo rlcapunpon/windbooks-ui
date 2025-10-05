@@ -72,6 +72,13 @@ export class UserService {
   }
 
   /**
+   * Clears cached RBAC permissions from localStorage
+   */
+  static clearRBACPermissions(): void {
+    localStorage.removeItem('windbooks_rbac_permissions');
+  }
+
+  /**
    * Gets user roles from cached data
    */
   static getUserRoles(): string[] {

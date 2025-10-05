@@ -117,6 +117,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           console.log('🔧 Using fallback user data for superadmin with large token');
           UserService.clearUserData(); // Clear any existing cache
           localStorage.setItem('windbooks_user_data', JSON.stringify(fallbackUser));
+          
+          // Try to fetch RBAC permissions even with large token
+          try {
+            await UserService.getUserPermissionsFromRBAC();
+          } catch (error) {
+            console.warn('Failed to fetch RBAC permissions for superadmin with large token:', error);
+            // Continue with login even if RBAC fetch fails
+          }
+          
           setUser(fallbackUser);
           return;
         }
@@ -124,6 +133,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       
       // Normal flow for users with manageable token sizes
       const user = await UserService.fetchAndStoreUserData();
+      
+      // Fetch and cache RBAC permissions on login
+      try {
+        await UserService.getUserPermissionsFromRBAC();
+      } catch (error) {
+        console.warn('Failed to fetch RBAC permissions on login:', error);
+        // Continue with login even if RBAC fetch fails
+      }
+      
       setUser(user);
     } catch (error: unknown) {
       // Check if this is a large token authentication error
@@ -150,6 +168,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
     clearTokens();
     UserService.clearUserData(); // Clear user data cache
+    UserService.clearRBACPermissions(); // Clear RBAC permissions cache
     setUser(null);
   };
 
