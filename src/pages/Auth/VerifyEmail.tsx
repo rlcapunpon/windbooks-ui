@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
 const VerifyEmail = () => {
@@ -8,38 +8,6 @@ const VerifyEmail = () => {
   const [message, setMessage] = useState('');
   const [email, setEmail] = useState('');
   const [isResending, setIsResending] = useState(false);
-  
-  const verifyEmail = useCallback(async (verificationCode: string) => {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/verify/${verificationCode}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (response.ok) {
-        setStatus('success');
-        setMessage('Email verified successfully! Redirecting to login page...');
-        
-        // Auto redirect after 10 seconds
-        setTimeout(() => {
-          navigate('/auth/login');
-        }, 10000);
-      } else {
-        const errorData = await response.text();
-        const errorMessage = `Email verification failed with status ${response.status}: ${errorData}`;
-        console.error('Email verification API error:', errorMessage);
-        setStatus('error');
-        setMessage('Email verification failed. Please try again.');
-      }
-    } catch (error) {
-      const errorMessage = `Network error during email verification: ${error}`;
-      console.error('Email verification network error:', errorMessage);
-      setStatus('error');
-      setMessage('Network error occurred. Please try again.');
-    }
-  }, [navigate]);
 
   useEffect(() => {
     if (!code) {
@@ -61,9 +29,41 @@ const VerifyEmail = () => {
       return;
     }
 
-    // Call verification API
-    verifyEmail(code);
-  }, [code, navigate, verifyEmail]);
+    // Call verification API directly to avoid multiple calls
+    const performVerification = async (verificationCode: string) => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/auth/verify/${verificationCode}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (response.ok) {
+          setStatus('success');
+          setMessage('Email verified successfully! Redirecting to login page...');
+          
+          // Auto redirect after 10 seconds
+          setTimeout(() => {
+            navigate('/auth/login');
+          }, 10000);
+        } else {
+          const errorData = await response.text();
+          const errorMessage = `Email verification failed with status ${response.status}: ${errorData}`;
+          console.error('Email verification API error:', errorMessage);
+          setStatus('error');
+          setMessage('Email verification failed. Please try again.');
+        }
+      } catch (error) {
+        const errorMessage = `Network error during email verification: ${error}`;
+        console.error('Email verification network error:', errorMessage);
+        setStatus('error');
+        setMessage('Network error occurred. Please try again.');
+      }
+    };
+
+    performVerification(code);
+  }, [code, navigate]);
 
   const handleResendVerification = async () => {
     if (!email) {
