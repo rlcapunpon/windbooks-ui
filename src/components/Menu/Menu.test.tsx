@@ -138,18 +138,42 @@ describe('Menu Component', () => {
     expect(screen.queryByText('Settings')).not.toBeInTheDocument();
   });
 
-  it('shows Settings menu item only for super admin users', () => {
-    // Test with super admin permissions - Settings should be visible
+  it('shows Profile menu item for Viewer role users', () => {
+    const menuItemsWithProfile: MenuItem[] = [
+      {
+        id: 'dashboard',
+        label: 'Dashboard',
+        href: '/dashboard',
+        permissions: ['USER.READ'],
+      },
+      {
+        id: 'profile',
+        label: 'Profile',
+        href: '/profile',
+        permissions: ['USER.READ'],
+      },
+      {
+        id: 'admin',
+        label: 'Administration',
+        href: '/admin',
+        permissions: ['*'], // Super admin only
+      },
+    ];
+
+    // Test with Viewer role permissions (USER.READ only)
     render(
       <Menu
-        items={mockMenuItems}
-        userPermissions={['*']}
+        items={menuItemsWithProfile}
+        userPermissions={['USER.READ']}
       />
     );
 
+    // Profile should be visible for Viewer role
+    expect(screen.getByText('Profile')).toBeInTheDocument();
+    // Dashboard should also be visible
     expect(screen.getByText('Dashboard')).toBeInTheDocument();
-    expect(screen.getByText('Users')).toBeInTheDocument();
-    expect(screen.getByText('Settings')).toBeInTheDocument();
+    // Admin should be hidden
+    expect(screen.queryByText('Administration')).not.toBeInTheDocument();
   });
 
   it('shows submenu when parent is clicked', async () => {
