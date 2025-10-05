@@ -203,4 +203,43 @@ describe('UserService', () => {
       await expect(UserService.assignRole('user-123', 'resource-456', 'role-789')).rejects.toThrow('Assignment API Error');
     });
   });
+
+  describe('getUserPermissionsFromRBAC', () => {
+    it('should fetch user permissions from RBAC API for WINDBOOKS_APP resource', async () => {
+      const mockResponse = {
+        resourceId: 'cmga8vhx10000n3q4mqfdvqea',
+        roleId: 'cmga8vhx50002n3q4abc123def',
+        role: 'STAFF',
+        permissions: ['user:read', 'resource:read']
+      };
+
+      mockGet.mockResolvedValue({ data: mockResponse });
+
+      const result = await UserService.getUserPermissionsFromRBAC();
+
+      expect(mockGet).toHaveBeenCalledWith('/permission', {
+        params: { resourceName: 'WINDBOOKS_APP' }
+      });
+      expect(result).toEqual(mockResponse);
+    });
+
+    it('should handle API errors gracefully', async () => {
+      const mockError = new Error('RBAC API Error');
+      mockGet.mockRejectedValue(mockError);
+
+      await expect(UserService.getUserPermissionsFromRBAC()).rejects.toThrow('RBAC API Error');
+    });
+
+    it('should handle 404 error when user has no role for WINDBOOKS_APP', async () => {
+      const mockError = {
+        response: {
+          status: 404,
+          data: { message: 'No role found for this user on the specified resource' }
+        }
+      };
+      mockGet.mockRejectedValue(mockError);
+
+      await expect(UserService.getUserPermissionsFromRBAC()).rejects.toThrow();
+    });
+  });
 });

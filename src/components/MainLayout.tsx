@@ -50,6 +50,8 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [activeMenuItem, setActiveMenuItem] = useState<string | null>(null);
+  const [rbacPermissions, setRbacPermissions] = useState<string[] | null>(null);
+  const [isLoadingPermissions, setIsLoadingPermissions] = useState(true);
 
   // Load sidebar collapse state and active menu item from localStorage on mount
   useEffect(() => {
@@ -76,42 +78,61 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     }
   }, []);
 
+  // Fetch RBAC permissions on component mount
+  useEffect(() => {
+    const fetchRBACPermissions = async () => {
+      try {
+        setIsLoadingPermissions(true);
+        
+        // Check if we have cached RBAC permissions first
+        const cachedPermissions = UserService.getCachedRBACPermissions();
+        if (cachedPermissions) {
+          setRbacPermissions(cachedPermissions.permissions);
+          setIsLoadingPermissions(false);
+          return;
+        }
+
+        // Fetch from API if not cached
+        const rbacData = await UserService.getUserPermissionsFromRBAC();
+        setRbacPermissions(rbacData.permissions);
+        console.log('Fetched RBAC permissions:', rbacData.permissions);
+      } catch (error) {
+        console.error('Failed to fetch RBAC permissions:', error);
+        // Fallback to empty permissions array on error
+        setRbacPermissions([]);
+      } finally {
+        setIsLoadingPermissions(false);
+      }
+    };
+
+    if (user?.email && rbacPermissions === null && !isLoadingPermissions) {
+      fetchRBACPermissions();
+    }
+  }, [user?.email, rbacPermissions, isLoadingPermissions]);
+
   // Save sidebar collapse state to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('sidebarCollapsed', isSidebarCollapsed.toString());
   }, [isSidebarCollapsed]);
 
-  // Get user roles from the new structure
+  // Get user roles and permissions according to Step 30 requirements
   const userRoles = user?.resources?.map((resource: { role: string }) => resource.role) || [];
   const primaryRole = userRoles[0] || 'viewer';
 
   // Create user permissions array for the Menu component
+  // Step 30: Use RBAC API permissions, don't assign roles manually
   const userPermissions: string[] = [];
+  
   if (UserService.isSuperAdmin()) {
+    // SUPERADMIN users see everything
     userPermissions.push('*');
-  } else {
-    // Ensure all authenticated users have at least basic permissions
-    // Default to viewer permissions if no roles are assigned
-    const effectiveRoles = userRoles.length > 0 ? userRoles : ['viewer'];
-
-    // Add permissions based on roles
-    effectiveRoles.forEach((role: string) => {
-      switch (role.toLowerCase()) {
-        case 'admin':
-          userPermissions.push('USER.READ', 'USER.CREATE', 'USER.UPDATE', 'USER.DELETE', 'SETTINGS.MANAGE', 'REPORTS.EXPORT');
-          break;
-        case 'manager':
-          userPermissions.push('USER.READ', 'USER.CREATE', 'USER.UPDATE', 'REPORTS.EXPORT');
-          break;
-        case 'editor':
-          userPermissions.push('USER.READ', 'USER.UPDATE', 'REPORTS.EXPORT');
-          break;
-        case 'viewer':
-        default:
-          userPermissions.push('USER.READ');
-          break;
-      }
-    });
+  } else if (rbacPermissions !== null && rbacPermissions.length > 0) {
+    // Use RBAC permissions from API when available
+    userPermissions.push(...rbacPermissions);
+  } else if (!isLoadingPermissions) {
+    // For users with no primary role or new users: only Dashboard and Profile
+    // No permissions needed for Dashboard and Profile as per Step 30
+    // This handles the case where user has no existing primary role
   }
 
   const menuItems: MenuItem[] = [
@@ -125,7 +146,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
         </svg>
       ),
       href: '/user',
-      permissions: ['USER.READ'], // All authenticated users can access dashboard
+      permissions: [], // No specific permissions needed for dashboard
     },
     {
       id: 'organizations',
@@ -136,31 +157,31 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
         </svg>
       ),
       href: '/organizations',
-      permissions: ['USER.READ'], // Basic permission to view organizations
+      permissions: ['resource:read'],
       children: [
         {
           id: 'org-all',
           label: 'All Organizations',
           href: '/organizations/dashboard',
-          permissions: ['USER.READ'],
+          permissions: ['resource:read'],
         },
         {
           id: 'org-vat',
           label: 'VAT',
           href: '/organizations/vat',
-          permissions: ['USER.READ'],
+          permissions: ['resource:read'],
         },
         {
           id: 'org-percentage-tax',
           label: 'Percentage Tax',
           href: '/organizations/percentage-tax',
-          permissions: ['USER.READ'],
+          permissions: ['resource:read'],
         },
         {
           id: 'org-tax-excempt',
           label: 'Tax Excempt',
           href: '/organizations/tax-excempt',
-          permissions: ['USER.READ'],
+          permissions: ['resource:read'],
         },
       ],
     },
@@ -173,19 +194,19 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
         </svg>
       ),
       href: '/tasks',
-      permissions: ['USER.READ'], // All authenticated users can view tasks
+      permissions: ['resource:read'],
       children: [
         {
           id: 'my-tasks',
           label: 'My Tasks',
           href: '/tasks/my-tasks',
-          permissions: ['USER.READ'],
+          permissions: ['resource:read'],
         },
         {
           id: 'task-management',
           label: 'Task Management',
           href: '/tasks/management',
-          permissions: ['USER.CREATE', 'USER.READ'],
+          permissions: ['resource:read'],
         },
       ],
     },
@@ -197,25 +218,25 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
         </svg>
       ),
-      permissions: ['*'], // Only super administrators
+      permissions: ['system:read_config'],
       children: [
         {
           id: 'user-management',
           label: 'User Management',
           href: '/admin/users',
-          permissions: ['USER.CREATE', 'USER.READ'],
+          permissions: ['system:read_config', 'user:read'],
         },
         {
           id: 'role-management',
           label: 'Role Management',
           href: '/admin/roles',
-          permissions: ['*'],
+          permissions: ['system:read_config', 'role:read'],
         },
         {
           id: 'system-settings',
           label: 'System Settings',
           href: '/admin/settings',
-          permissions: ['SETTINGS.MANAGE'],
+          permissions: ['system:read_config', 'system:configure'],
         },
       ],
     },
@@ -228,7 +249,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
         </svg>
       ),
       href: '/profile',
-      permissions: ['USER.READ'], // All authenticated users can view their profile
+      permissions: [], // No specific permissions needed for profile
     },
     {
       id: 'settings',
@@ -240,7 +261,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
         </svg>
       ),
       href: '/settings',
-      permissions: ['*'], // Only super administrators
+      permissions: ['user:update'],
     },
   ];
 

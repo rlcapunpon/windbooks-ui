@@ -116,6 +116,48 @@ export class UserService {
   }
 
   /**
+   * Fetches user permissions from RBAC API for WINDBOOKS_APP resource
+   */
+  static async getUserPermissionsFromRBAC(): Promise<{
+    resourceId: string;
+    roleId: string;
+    role: string;
+    permissions: string[];
+  }> {
+    try {
+      const response = await apiClient.get('/permission', {
+        params: { resourceName: 'WINDBOOKS_APP' }
+      });
+
+      // Cache the permissions in localStorage
+      localStorage.setItem('windbooks_rbac_permissions', JSON.stringify(response.data));
+
+      return response.data;
+    } catch (error: any) {
+      console.error('Failed to fetch RBAC permissions:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Gets cached RBAC permissions from localStorage
+   */
+  static getCachedRBACPermissions(): {
+    resourceId: string;
+    roleId: string;
+    role: string;
+    permissions: string[];
+  } | null {
+    try {
+      const cached = localStorage.getItem('windbooks_rbac_permissions');
+      return cached ? JSON.parse(cached) : null;
+    } catch (error) {
+      console.error('Failed to parse cached RBAC permissions:', error);
+      return null;
+    }
+  }
+
+  /**
    * Checks if user has specific permission
    */
   static hasPermission(permission: string): boolean {
