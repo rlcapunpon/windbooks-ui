@@ -90,8 +90,12 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   if (UserService.isSuperAdmin()) {
     userPermissions.push('*');
   } else {
+    // Ensure all authenticated users have at least basic permissions
+    // Default to viewer permissions if no roles are assigned
+    const effectiveRoles = userRoles.length > 0 ? userRoles : ['viewer'];
+
     // Add permissions based on roles
-    userRoles.forEach((role: string) => {
+    effectiveRoles.forEach((role: string) => {
       switch (role.toLowerCase()) {
         case 'admin':
           userPermissions.push('USER.READ', 'USER.CREATE', 'USER.UPDATE', 'USER.DELETE', 'SETTINGS.MANAGE', 'REPORTS.EXPORT');

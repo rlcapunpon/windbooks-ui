@@ -176,6 +176,44 @@ describe('Menu Component', () => {
     expect(screen.queryByText('Administration')).not.toBeInTheDocument();
   });
 
+  it('shows Profile menu item for users with no roles (empty permissions array)', () => {
+    const menuItemsWithProfile: MenuItem[] = [
+      {
+        id: 'dashboard',
+        label: 'Dashboard',
+        href: '/dashboard',
+        permissions: ['USER.READ'],
+      },
+      {
+        id: 'profile',
+        label: 'Profile',
+        href: '/profile',
+        permissions: ['USER.READ'],
+      },
+      {
+        id: 'admin',
+        label: 'Administration',
+        href: '/admin',
+        permissions: ['*'], // Super admin only
+      },
+    ];
+
+    // Test with empty permissions array (simulating user with no roles)
+    render(
+      <Menu
+        items={menuItemsWithProfile}
+        userPermissions={[]}
+      />
+    );
+
+    // Profile should NOT be visible when user has no permissions
+    expect(screen.queryByText('Profile')).not.toBeInTheDocument();
+    // Dashboard should also NOT be visible
+    expect(screen.queryByText('Dashboard')).not.toBeInTheDocument();
+    // Admin should be hidden (requires wildcard permission)
+    expect(screen.queryByText('Administration')).not.toBeInTheDocument();
+  });
+
   it('shows submenu when parent is clicked', async () => {
     render(
       <Menu
