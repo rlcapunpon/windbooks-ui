@@ -1,6 +1,8 @@
+import React from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { BrowserRouter } from 'react-router-dom'
 import { CreateOrganizationModal } from '../components/CreateOrganizationModal/CreateOrganizationModal'
 
 // Mock the organization service
@@ -81,11 +83,13 @@ import { OrganizationService } from '../services/organizationService'
   describe('Complete Organization Creation Journey', () => {
     it('should successfully create a NON_INDIVIDUAL organization through all steps', { timeout: 10000 }, async () => {
       render(
-        <CreateOrganizationModal
-          isOpen={true}
-          onClose={mockOnClose}
-          onSuccess={mockOnSuccess}
-        />
+        <BrowserRouter>
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        </BrowserRouter>
       )
 
       const user = userEvent.setup()
@@ -255,11 +259,13 @@ import { OrganizationService } from '../services/organizationService'
 
     it('should successfully create an INDIVIDUAL organization through all steps', async () => {
       render(
-        <CreateOrganizationModal
-          isOpen={true}
-          onClose={mockOnClose}
-          onSuccess={mockOnSuccess}
-        />
+        <BrowserRouter>
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        </BrowserRouter>
       )
 
       const user = userEvent.setup()
@@ -352,11 +358,13 @@ import { OrganizationService } from '../services/organizationService'
 
     it('should handle form validation and prevent progression with invalid data', async () => {
       render(
-        <CreateOrganizationModal
-          isOpen={true}
-          onClose={mockOnClose}
-          onSuccess={mockOnSuccess}
-        />
+        <BrowserRouter>
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        </BrowserRouter>
       )
 
       const user = userEvent.setup()
@@ -390,11 +398,13 @@ import { OrganizationService } from '../services/organizationService'
 
     it('should allow navigating back and forth between steps', async () => {
       render(
-        <CreateOrganizationModal
-          isOpen={true}
-          onClose={mockOnClose}
-          onSuccess={mockOnSuccess}
-        />
+        <BrowserRouter>
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        </BrowserRouter>
       )
 
       const user = userEvent.setup()
@@ -423,11 +433,13 @@ import { OrganizationService } from '../services/organizationService'
 
     it('should handle file upload correctly', async () => {
       render(
-        <CreateOrganizationModal
-          isOpen={true}
-          onClose={mockOnClose}
-          onSuccess={mockOnSuccess}
-        />
+        <BrowserRouter>
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        </BrowserRouter>
       )
 
       const user = userEvent.setup()
@@ -468,11 +480,13 @@ import { OrganizationService } from '../services/organizationService'
       )
 
       render(
-        <CreateOrganizationModal
-          isOpen={true}
-          onClose={mockOnClose}
-          onSuccess={mockOnSuccess}
-        />
+        <BrowserRouter>
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        </BrowserRouter>
       )
 
       const user = userEvent.setup()
@@ -547,11 +561,13 @@ import { OrganizationService } from '../services/organizationService'
   describe('Accessibility and UX', () => {
     it('should maintain focus management during step navigation', async () => {
       render(
-        <CreateOrganizationModal
-          isOpen={true}
-          onClose={mockOnClose}
-          onSuccess={mockOnSuccess}
-        />
+        <BrowserRouter>
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        </BrowserRouter>
       )
 
       const user = userEvent.setup()
@@ -575,11 +591,13 @@ import { OrganizationService } from '../services/organizationService'
 
     it('should support keyboard navigation', async () => {
       render(
-        <CreateOrganizationModal
-          isOpen={true}
-          onClose={mockOnClose}
-          onSuccess={mockOnSuccess}
-        />
+        <BrowserRouter>
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        </BrowserRouter>
       )
 
       const user = userEvent.setup()
@@ -617,11 +635,13 @@ import { OrganizationService } from '../services/organizationService'
       )
 
       render(
-        <CreateOrganizationModal
-          isOpen={true}
-          onClose={mockOnClose}
-          onSuccess={mockOnSuccess}
-        />
+        <BrowserRouter>
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        </BrowserRouter>
       )
 
       const user = userEvent.setup()
@@ -691,13 +711,15 @@ import { OrganizationService } from '../services/organizationService'
       })
     })
 
-    it('should display autosave checkbox in Step 1', async () => {
+    it('should display autosave checkbox in Step 1', () => {
       render(
-        <CreateOrganizationModal
-          isOpen={true}
-          onClose={mockOnClose}
-          onSuccess={mockOnSuccess}
-        />
+        <BrowserRouter>
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        </BrowserRouter>
       )
 
       // Check that autosave checkbox is present in Step 1
@@ -708,11 +730,13 @@ import { OrganizationService } from '../services/organizationService'
 
     it('should display updated region options in Step 4', async () => {
       render(
-        <CreateOrganizationModal
-          isOpen={true}
-          onClose={mockOnClose}
-          onSuccess={mockOnSuccess}
-        />
+        <BrowserRouter>
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        </BrowserRouter>
       )
 
       const user = userEvent.setup()
@@ -761,11 +785,13 @@ import { OrganizationService } from '../services/organizationService'
 
     it('should display EXCEMPT tax classification option in Step 1', async () => {
       render(
-        <CreateOrganizationModal
-          isOpen={true}
-          onClose={mockOnClose}
-          onSuccess={mockOnSuccess}
-        />
+        <BrowserRouter>
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        </BrowserRouter>
       )
 
       // Check that EXCEMPT tax classification option is present
@@ -776,11 +802,13 @@ import { OrganizationService } from '../services/organizationService'
 
     it('should have updated TIN placeholder without dashes', async () => {
       render(
-        <CreateOrganizationModal
-          isOpen={true}
-          onClose={mockOnClose}
-          onSuccess={mockOnSuccess}
-        />
+        <BrowserRouter>
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        </BrowserRouter>
       )
 
       const user = userEvent.setup()
@@ -806,11 +834,13 @@ import { OrganizationService } from '../services/organizationService'
 
     it('should send correct POST request DTO without invalid properties', async () => {
       render(
-        <CreateOrganizationModal
-          isOpen={true}
-          onClose={mockOnClose}
-          onSuccess={mockOnSuccess}
-        />
+        <BrowserRouter>
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        </BrowserRouter>
       )
 
       const user = userEvent.setup()
@@ -899,11 +929,13 @@ import { OrganizationService } from '../services/organizationService'
 
     it('should NOT include name field in organization creation API request', async () => {
       render(
-        <CreateOrganizationModal
-          isOpen={true}
-          onClose={mockOnClose}
-          onSuccess={mockOnSuccess}
-        />
+        <BrowserRouter>
+          <CreateOrganizationModal
+            isOpen={true}
+            onClose={mockOnClose}
+            onSuccess={mockOnSuccess}
+          />
+        </BrowserRouter>
       )
 
       const user = userEvent.setup()
@@ -978,11 +1010,13 @@ import { OrganizationService } from '../services/organizationService'
     describe('Radio Button Visual State', () => {
       it('should update organization category radio button visual state when selected', async () => {
         render(
-          <CreateOrganizationModal
-            isOpen={true}
-            onClose={mockOnClose}
-            onSuccess={mockOnSuccess}
-          />
+          <BrowserRouter>
+            <CreateOrganizationModal
+              isOpen={true}
+              onClose={mockOnClose}
+              onSuccess={mockOnSuccess}
+            />
+          </BrowserRouter>
         )
 
         const user = userEvent.setup()
@@ -1034,11 +1068,13 @@ import { OrganizationService } from '../services/organizationService'
 
       it('should update tax classification radio button visual state when selected', async () => {
         render(
-          <CreateOrganizationModal
-            isOpen={true}
-            onClose={mockOnClose}
-            onSuccess={mockOnSuccess}
-          />
+          <BrowserRouter>
+            <CreateOrganizationModal
+              isOpen={true}
+              onClose={mockOnClose}
+              onSuccess={mockOnSuccess}
+            />
+          </BrowserRouter>
         )
 
         const user = userEvent.setup()
@@ -1112,11 +1148,13 @@ import { OrganizationService } from '../services/organizationService'
 
       it('should handle complete Step 1 interaction flow with both radio button groups', async () => {
         render(
-          <CreateOrganizationModal
-            isOpen={true}
-            onClose={mockOnClose}
-            onSuccess={mockOnSuccess}
-          />
+          <BrowserRouter>
+            <CreateOrganizationModal
+              isOpen={true}
+              onClose={mockOnClose}
+              onSuccess={mockOnSuccess}
+            />
+          </BrowserRouter>
         )
 
         const user = userEvent.setup()

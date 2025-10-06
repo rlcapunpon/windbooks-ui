@@ -5,7 +5,7 @@ import Login from './Login'
 
 // Mock react-router-dom
 const mockNavigate = vi.fn()
-const mockLocation: { state: Record<string, unknown> | null } = { state: null }
+const mockLocation: { state: Record<string, unknown> | null; search: string } = { state: null, search: '' }
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom')
   return {
@@ -28,6 +28,8 @@ describe('Login', () => {
     vi.clearAllMocks()
     mockNavigate.mockClear()
     mockLogin.mockClear()
+    mockLocation.state = null
+    mockLocation.search = ''
 
     // Clear document for theme tests
     document.head.innerHTML = ''
@@ -207,6 +209,56 @@ describe('Login', () => {
 
       const mainContainer = document.querySelector('.min-h-screen')
       expect(mainContainer).toHaveClass('bg-background-primary')
+    })
+  })
+
+  describe('Expired Session Toast', () => {
+    it('should show expired session toast when URL has e=login-expired query parameter', () => {
+      mockLocation.search = '?e=login-expired'
+
+      render(
+        <BrowserRouter>
+          <Login />
+        </BrowserRouter>
+      )
+
+      expect(screen.getByText('User session expired. Please login again.')).toBeInTheDocument()
+    })
+
+    it('should not show expired session toast when URL does not have e=login-expired query parameter', () => {
+      mockLocation.search = ''
+
+      render(
+        <BrowserRouter>
+          <Login />
+        </BrowserRouter>
+      )
+
+      expect(screen.queryByText('User session expired. Please login again.')).not.toBeInTheDocument()
+    })
+
+    it('should not show expired session toast when URL has different query parameter', () => {
+      mockLocation.search = '?other=param'
+
+      render(
+        <BrowserRouter>
+          <Login />
+        </BrowserRouter>
+      )
+
+      expect(screen.queryByText('User session expired. Please login again.')).not.toBeInTheDocument()
+    })
+
+    it('should show expired session toast when URL has multiple query parameters including e=login-expired', () => {
+      mockLocation.search = '?other=param&e=login-expired&another=value'
+
+      render(
+        <BrowserRouter>
+          <Login />
+        </BrowserRouter>
+      )
+
+      expect(screen.getByText('User session expired. Please login again.')).toBeInTheDocument()
     })
   })
 })

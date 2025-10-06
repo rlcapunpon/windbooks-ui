@@ -37,12 +37,21 @@ const Login = () => {
   });
 
   const [showVerificationToast, setShowVerificationToast] = useState(false);
+  const [showExpiredSessionToast, setShowExpiredSessionToast] = useState(false);
 
   useEffect(() => {
     if (location.state?.showVerificationMessage) {
       setShowVerificationToast(true);
     }
   }, [location.state]);
+
+  // Check for expired session query parameter
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    if (urlParams.get('e') === 'login-expired') {
+      setShowExpiredSessionToast(true);
+    }
+  }, [location.search]);
 
   const [modalState, setModalState] = useState<{
     isOpen: boolean;
@@ -203,6 +212,11 @@ const Login = () => {
           message="Please verify your email. We’ve sent a verification link to your registered email address. Kindly check your inbox (or spam folder) and click the link to activate your account."
           isVisible={showVerificationToast}
           onClose={() => setShowVerificationToast(false)}
+        />
+        <Toast
+          message="User session expired. Please login again."
+          isVisible={showExpiredSessionToast}
+          onClose={() => setShowExpiredSessionToast(false)}
         />
         <form onSubmit={onSubmit} className="bg-white/95 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border-2 border-gray-200 ring-1 ring-gray-100">
         <h2 className="text-heading text-3xl mb-6 text-center font-semibold">Login</h2>

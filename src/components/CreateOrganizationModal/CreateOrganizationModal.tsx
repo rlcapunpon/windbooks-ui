@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { OrganizationService, type Organization, type CreateOrganizationRequestDto, type UpdateOrganizationOperationRequestDto } from '../../services/organizationService'
 import { RadioOptionSelector } from '../RadioOptionSelector'
 
@@ -13,6 +14,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
   onClose,
   onSuccess
 }) => {
+  const navigate = useNavigate()
   const [currentStep, setCurrentStep] = useState(1)
   const [formData, setFormData] = useState({
     // Step 1: Organization Type
@@ -1033,7 +1035,16 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
       
       onSuccess(result)
     } catch (error) {
-      // Error is handled by the component - modal remains open for user to retry
+      // Check if it's a 401 error (session expired)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const statusCode = (error as any)?.response?.status
+      if (statusCode === 401) {
+        // Redirect to login page with session expired parameter
+        navigate('/auth/login?e=login-expired')
+        return
+      }
+      
+      // For other errors, keep modal open for user to retry
       console.error('Failed to create organization:', error)
     } finally {
       setIsSubmitting(false)
@@ -1091,7 +1102,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                 type="button"
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="w-full inline-flex justify-center items-center rounded-lg border border-transparent shadow-sm px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-base font-semibold text-white hover:from-primary-dark hover:to-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all duration-200 sm:ml-3 sm:w-auto"
+                className="btn-primary w-full inline-flex justify-center items-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 sm:ml-3 sm:w-auto"
               >
                 {isSubmitting ? (
                   <>

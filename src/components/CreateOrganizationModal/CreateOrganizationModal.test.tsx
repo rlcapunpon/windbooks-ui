@@ -3,6 +3,27 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { CreateOrganizationModal } from './CreateOrganizationModal'
 
+// Mock organization service
+vi.mock('../../services/organizationService', () => ({
+  OrganizationService: {
+    createOrganization: vi.fn(),
+    updateOrganizationOperation: vi.fn(),
+  }
+}))
+
+// Import after mocking
+import { OrganizationService } from '../../services/organizationService'
+
+// Mock react-router-dom
+const mockNavigate = vi.fn()
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom')
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  }
+})
+
 describe('CreateOrganizationModal', () => {
   const mockOnClose = vi.fn()
   const mockOnSuccess = vi.fn()
@@ -1129,6 +1150,216 @@ describe('CreateOrganizationModal', () => {
 
       const modal = screen.getByRole('dialog')
       expect(modal).toBeInTheDocument()
+    })
+  })
+
+  describe('Submit Button Styling', () => {
+    it('should use btn-primary class for submit button', async () => {
+      render(
+        <CreateOrganizationModal
+          isOpen={true}
+          onClose={mockOnClose}
+          onSuccess={mockOnSuccess}
+        />
+      )
+
+      // Navigate to final step where submit button appears
+      const individualRadio = screen.getByLabelText('Individual')
+      const vatRadio = screen.getByLabelText('VAT')
+      await userEvent.click(individualRadio)
+      await userEvent.click(vatRadio)
+
+      const nextButton = screen.getByText('Next Step')
+      await userEvent.click(nextButton) // Step 2
+
+      // Fill step 2
+      const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
+      const registrationDateInput = screen.getByLabelText('Registration Date *')
+      await userEvent.type(tinInput, '123456789')
+      await userEvent.type(registrationDateInput, '2023-01-15')
+      await userEvent.click(nextButton) // Step 3
+
+      // Fill step 3
+      const firstNameInput = screen.getByLabelText('First Name')
+      const lastNameInput = screen.getByLabelText('Last Name')
+      await userEvent.type(firstNameInput, 'John')
+      await userEvent.type(lastNameInput, 'Doe')
+      await userEvent.click(nextButton) // Step 4
+
+      // Fill step 4
+      const addressInput = screen.getByLabelText('Street Address *')
+      const cityInput = screen.getByLabelText('City *')
+      const regionSelect = screen.getByLabelText('Region *')
+      const zipInput = screen.getByLabelText('ZIP Code *')
+      const contactInput = screen.getByLabelText('Contact Number *')
+      const emailInput = screen.getByLabelText('Email Address *')
+      await userEvent.type(addressInput, '123 Main St')
+      await userEvent.type(cityInput, 'Manila')
+      await userEvent.selectOptions(regionSelect, 'NCR')
+      await userEvent.type(zipInput, '1000')
+      await userEvent.type(contactInput, '+639123456789')
+      await userEvent.type(emailInput, 'test@example.com')
+      await userEvent.click(nextButton) // Step 5
+
+      // Fill step 5
+      const lineOfBusinessInput = screen.getByLabelText('Line of Business')
+      const rdoInput = screen.getByLabelText('RDO Code *')
+      const startDateInput = screen.getByLabelText('Start Date *')
+      await userEvent.type(lineOfBusinessInput, '12345')
+      await userEvent.type(rdoInput, '123')
+      await userEvent.type(startDateInput, '2023-01-15')
+      await userEvent.click(nextButton) // Step 6
+
+      const submitButton = screen.getByText('Create Organization')
+      expect(submitButton).toHaveClass('btn-primary')
+      expect(submitButton).toHaveClass('w-full')
+      expect(submitButton).toHaveClass('inline-flex')
+      expect(submitButton).toHaveClass('justify-center')
+      expect(submitButton).toHaveClass('items-center')
+      expect(submitButton).toHaveClass('focus:outline-none')
+      expect(submitButton).toHaveClass('focus:ring-2')
+      expect(submitButton).toHaveClass('focus:ring-offset-2')
+      expect(submitButton).toHaveClass('focus:ring-primary')
+      expect(submitButton).toHaveClass('disabled:opacity-50')
+      expect(submitButton).toHaveClass('disabled:cursor-not-allowed')
+      expect(submitButton).toHaveClass('transition-all')
+      expect(submitButton).toHaveClass('duration-200')
+      expect(submitButton).toHaveClass('sm:ml-3')
+      expect(submitButton).toHaveClass('sm:w-auto')
+    })
+  })
+
+  describe('401 Error Handling', () => {
+    it('should redirect to login page with expired query parameter on 401 error', async () => {
+      ;(OrganizationService.createOrganization as any).mockRejectedValue({
+        response: { status: 401 }
+      })
+
+      render(
+        <CreateOrganizationModal
+          isOpen={true}
+          onClose={mockOnClose}
+          onSuccess={mockOnSuccess}
+        />
+      )
+
+      // Navigate to final step and submit
+      const individualRadio = screen.getByLabelText('Individual')
+      const vatRadio = screen.getByLabelText('VAT')
+      await userEvent.click(individualRadio)
+      await userEvent.click(vatRadio)
+
+      const nextButton = screen.getByText('Next Step')
+      await userEvent.click(nextButton) // Step 2
+
+      // Fill step 2
+      const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
+      const registrationDateInput = screen.getByLabelText('Registration Date *')
+      await userEvent.type(tinInput, '123456789')
+      await userEvent.type(registrationDateInput, '2023-01-15')
+      await userEvent.click(nextButton) // Step 3
+
+      // Fill step 3
+      const firstNameInput = screen.getByLabelText('First Name')
+      const lastNameInput = screen.getByLabelText('Last Name')
+      await userEvent.type(firstNameInput, 'John')
+      await userEvent.type(lastNameInput, 'Doe')
+      await userEvent.click(nextButton) // Step 4
+
+      // Fill step 4
+      const addressInput = screen.getByLabelText('Street Address *')
+      const cityInput = screen.getByLabelText('City *')
+      const regionSelect = screen.getByLabelText('Region *')
+      const zipInput = screen.getByLabelText('ZIP Code *')
+      const contactInput = screen.getByLabelText('Contact Number *')
+      const emailInput = screen.getByLabelText('Email Address *')
+      await userEvent.type(addressInput, '123 Main St')
+      await userEvent.type(cityInput, 'Manila')
+      await userEvent.selectOptions(regionSelect, 'NCR')
+      await userEvent.type(zipInput, '1000')
+      await userEvent.type(contactInput, '+639123456789')
+      await userEvent.type(emailInput, 'test@example.com')
+      await userEvent.click(nextButton) // Step 5
+
+      // Fill step 5
+      const lineOfBusinessInput = screen.getByLabelText('Line of Business')
+      const rdoInput = screen.getByLabelText('RDO Code *')
+      const startDateInput = screen.getByLabelText('Start Date *')
+      await userEvent.type(lineOfBusinessInput, '12345')
+      await userEvent.type(rdoInput, '123')
+      await userEvent.type(startDateInput, '2023-01-15')
+      await userEvent.click(nextButton) // Step 6
+
+      const submitButton = screen.getByText('Create Organization')
+      await userEvent.click(submitButton)
+
+      expect(mockNavigate).toHaveBeenCalledWith('/auth/login?e=login-expired')
+    })
+
+    it('should not redirect on other error statuses', async () => {
+      vi.mocked(OrganizationService.createOrganization).mockRejectedValue({
+        response: { status: 500 }
+      })
+
+      render(
+        <CreateOrganizationModal
+          isOpen={true}
+          onClose={mockOnClose}
+          onSuccess={mockOnSuccess}
+        />
+      )
+
+      // Navigate to final step and submit
+      const individualRadio = screen.getByLabelText('Individual')
+      const vatRadio = screen.getByLabelText('VAT')
+      await userEvent.click(individualRadio)
+      await userEvent.click(vatRadio)
+
+      const nextButton = screen.getByText('Next Step')
+      await userEvent.click(nextButton) // Step 2
+
+      // Fill step 2
+      const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
+      const registrationDateInput = screen.getByLabelText('Registration Date *')
+      await userEvent.type(tinInput, '123456789')
+      await userEvent.type(registrationDateInput, '2023-01-15')
+      await userEvent.click(nextButton) // Step 3
+
+      // Fill step 3
+      const firstNameInput = screen.getByLabelText('First Name')
+      const lastNameInput = screen.getByLabelText('Last Name')
+      await userEvent.type(firstNameInput, 'John')
+      await userEvent.type(lastNameInput, 'Doe')
+      await userEvent.click(nextButton) // Step 4
+
+      // Fill step 4
+      const addressInput = screen.getByLabelText('Street Address *')
+      const cityInput = screen.getByLabelText('City *')
+      const regionSelect = screen.getByLabelText('Region *')
+      const zipInput = screen.getByLabelText('ZIP Code *')
+      const contactInput = screen.getByLabelText('Contact Number *')
+      const emailInput = screen.getByLabelText('Email Address *')
+      await userEvent.type(addressInput, '123 Main St')
+      await userEvent.type(cityInput, 'Manila')
+      await userEvent.selectOptions(regionSelect, 'NCR')
+      await userEvent.type(zipInput, '1000')
+      await userEvent.type(contactInput, '+639123456789')
+      await userEvent.type(emailInput, 'test@example.com')
+      await userEvent.click(nextButton) // Step 5
+
+      // Fill step 5
+      const lineOfBusinessInput = screen.getByLabelText('Line of Business')
+      const rdoInput = screen.getByLabelText('RDO Code *')
+      const startDateInput = screen.getByLabelText('Start Date *')
+      await userEvent.type(lineOfBusinessInput, '12345')
+      await userEvent.type(rdoInput, '123')
+      await userEvent.type(startDateInput, '2023-01-15')
+      await userEvent.click(nextButton) // Step 6
+
+      const submitButton = screen.getByText('Create Organization')
+      await userEvent.click(submitButton)
+
+      expect(mockNavigate).not.toHaveBeenCalled()
     })
   })
 })
