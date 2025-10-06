@@ -173,7 +173,7 @@ const Landing = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-primary to-primary-dark">
+      <section className="py-20 bg-gradient-to-r from-green-600 via-primary to-green-400">
         <div className="max-w-4xl mx-auto text-center px-4">
           <h2 className="text-5xl font-bold text-white mb-8">
             Join the DV Consulting Digital Transformation

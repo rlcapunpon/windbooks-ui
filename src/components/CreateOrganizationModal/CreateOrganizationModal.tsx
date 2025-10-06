@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { OrganizationService } from '../../services/organizationService'
+import { RadioOptionSelector } from '../RadioOptionSelector'
 
 interface CreateOrganizationModalProps {
   isOpen: boolean
@@ -210,156 +211,56 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                   <label className="block text-sm font-semibold text-gray-700 mb-4">
                     Organization Category *
                   </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <label className="relative">
-                      <input
-                        type="radio"
-                        name="category"
-                        value="INDIVIDUAL"
-                        checked={formData.category === 'INDIVIDUAL'}
-                        onChange={(e) => updateFormData('category', e.target.value)}
-                        className="sr-only"
-                        aria-label="Individual"
-                      />
-                      <div className={`p-4 border-2 rounded-lg cursor-pointer hover:border-gray-300 transition-all duration-200 ${
-                        formData.category === 'INDIVIDUAL'
-                          ? 'border-primary bg-primary/5'
-                          : 'border-gray-200'
-                      }`}>
-                        <div className="flex items-center">
-                          <div className="w-4 h-4 border-2 border-gray-300 rounded-full mr-3 flex items-center justify-center">
-                            <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                              formData.category === 'INDIVIDUAL' ? 'bg-primary' : 'bg-white'
-                            }`}></div>
-                          </div>
-                          <div>
-                            <div className="font-medium text-gray-900">Individual</div>
-                            <div className="text-sm text-gray-600">For sole proprietors and freelancers</div>
-                          </div>
-                        </div>
-                      </div>
-                    </label>
-                    <label className="relative">
-                      <input
-                        type="radio"
-                        name="category"
-                        value="NON_INDIVIDUAL"
-                        checked={formData.category === 'NON_INDIVIDUAL'}
-                        onChange={(e) => updateFormData('category', e.target.value)}
-                        className="sr-only"
-                        aria-label="Non-Individual"
-                      />
-                      <div className={`p-4 border-2 rounded-lg cursor-pointer hover:border-gray-300 transition-all duration-200 ${
-                        formData.category === 'NON_INDIVIDUAL'
-                          ? 'border-primary bg-primary/5'
-                          : 'border-gray-200'
-                      }`}>
-                        <div className="flex items-center">
-                          <div className="w-4 h-4 border-2 border-gray-300 rounded-full mr-3 flex items-center justify-center">
-                            <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                              formData.category === 'NON_INDIVIDUAL' ? 'bg-primary' : 'bg-white'
-                            }`}></div>
-                          </div>
-                          <div>
-                            <div className="font-medium text-gray-900">Non-Individual</div>
-                            <div className="text-sm text-gray-600">For corporations and organizations</div>
-                          </div>
-                        </div>
-                      </div>
-                    </label>
-                  </div>
+                  <RadioOptionSelector
+                    name="category"
+                    selectedValue={formData.category}
+                    onChange={(value) => updateFormData('category', value)}
+                    options={[
+                      {
+                        value: 'INDIVIDUAL',
+                        label: 'Individual',
+                        description: 'For sole proprietors and freelancers',
+                        ariaLabel: 'Individual'
+                      },
+                      {
+                        value: 'NON_INDIVIDUAL',
+                        label: 'Non-Individual',
+                        description: 'For corporations and organizations',
+                        ariaLabel: 'Non-Individual'
+                      }
+                    ]}
+                  />
                 </div>
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-4">
                     Tax Classification *
                   </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <label className="relative">
-                      <input
-                        type="radio"
-                        name="tax_classification"
-                        value="VAT"
-                        checked={formData.tax_classification === 'VAT'}
-                        onChange={(e) => updateFormData('tax_classification', e.target.value)}
-                        className="sr-only"
-                        aria-label="VAT"
-                      />
-                      <div className={`p-4 border-2 rounded-lg cursor-pointer hover:border-gray-300 transition-all duration-200 ${
-                        formData.tax_classification === 'VAT'
-                          ? 'border-primary bg-primary/5'
-                          : 'border-gray-200'
-                      }`}>
-                        <div className="flex items-center">
-                          <div className="w-4 h-4 border-2 border-gray-300 rounded-full mr-3 flex items-center justify-center">
-                            <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                              formData.tax_classification === 'VAT' ? 'bg-primary' : 'bg-white'
-                            }`}></div>
-                          </div>
-                          <div>
-                            <div className="font-medium text-gray-900">VAT Registered</div>
-                            <div className="text-sm text-gray-600">Subject to VAT</div>
-                          </div>
-                        </div>
-                      </div>
-                    </label>
-                    <label className="relative">
-                      <input
-                        type="radio"
-                        name="tax_classification"
-                        value="NON_VAT"
-                        checked={formData.tax_classification === 'NON_VAT'}
-                        onChange={(e) => updateFormData('tax_classification', e.target.value)}
-                        className="sr-only"
-                        aria-label="Non-VAT"
-                      />
-                      <div className={`p-4 border-2 rounded-lg cursor-pointer hover:border-gray-300 transition-all duration-200 ${
-                        formData.tax_classification === 'NON_VAT'
-                          ? 'border-primary bg-primary/5'
-                          : 'border-gray-200'
-                      }`}>
-                        <div className="flex items-center">
-                          <div className="w-4 h-4 border-2 border-gray-300 rounded-full mr-3 flex items-center justify-center">
-                            <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                              formData.tax_classification === 'NON_VAT' ? 'bg-primary' : 'bg-white'
-                            }`}></div>
-                          </div>
-                          <div>
-                            <div className="font-medium text-gray-900">Percentage Tax</div>
-                            <div className="text-sm text-gray-600">Not subject to VAT</div>
-                          </div>
-                        </div>
-                      </div>
-                    </label>
-                    <label className="relative">
-                      <input
-                        type="radio"
-                        name="tax_classification"
-                        value="EXCEMPT"
-                        checked={formData.tax_classification === 'EXCEMPT'}
-                        onChange={(e) => updateFormData('tax_classification', e.target.value)}
-                        className="sr-only"
-                        aria-label="Tax Excempted"
-                      />
-                      <div className={`p-4 border-2 rounded-lg cursor-pointer hover:border-gray-300 transition-all duration-200 ${
-                        formData.tax_classification === 'EXCEMPT'
-                          ? 'border-primary bg-primary/5'
-                          : 'border-gray-200'
-                      }`}>
-                        <div className="flex items-center">
-                          <div className="w-4 h-4 border-2 border-gray-300 rounded-full mr-3 flex items-center justify-center">
-                            <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                              formData.tax_classification === 'EXCEMPT' ? 'bg-primary' : 'bg-white'
-                            }`}></div>
-                          </div>
-                          <div>
-                            <div className="font-medium text-gray-900">Tax Excempted</div>
-                            <div className="text-sm text-gray-600">Excempt from tax</div>
-                          </div>
-                        </div>
-                      </div>
-                    </label>
-                  </div>
+                  <RadioOptionSelector
+                    name="tax_classification"
+                    selectedValue={formData.tax_classification}
+                    onChange={(value) => updateFormData('tax_classification', value)}
+                    options={[
+                      {
+                        value: 'VAT',
+                        label: 'VAT Registered',
+                        description: 'Subject to VAT',
+                        ariaLabel: 'VAT'
+                      },
+                      {
+                        value: 'NON_VAT',
+                        label: 'Percentage Tax',
+                        description: 'Not subject to VAT',
+                        ariaLabel: 'Non-VAT'
+                      },
+                      {
+                        value: 'EXCEMPT',
+                        label: 'Tax Excempted',
+                        description: 'Excempt from tax',
+                        ariaLabel: 'Tax Excempted'
+                      }
+                    ]}
+                  />
                 </div>
 
                 {formData.category && (
@@ -1193,7 +1094,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                 type="button"
                 onClick={nextStep}
                 disabled={!canProceedToNext()}
-                className="w-full inline-flex justify-center items-center rounded-lg border border-transparent shadow-sm px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-base font-semibold text-white hover:from-primary-dark hover:to-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all duration-200 sm:ml-3 sm:w-auto"
+                className="btn-primary w-full inline-flex justify-center items-center focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 sm:ml-3 sm:w-auto"
               >
                 Next Step
                 <svg className="ml-2 -mr-1 w-4 h-4" fill="currentColor" viewBox="0 0 20 20">

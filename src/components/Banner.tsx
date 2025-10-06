@@ -24,7 +24,7 @@ const Banner: React.FC<BannerProps> = ({
 
   const variantClasses = {
     default: "h-16",
-    hero: "h-24 bg-gradient-to-r from-blue-600 via-purple-600 to-green-600 text-white",
+    hero: "h-24 bg-gradient-to-r from-primary to-green-400 text-white",
     compact: "h-12 px-4 py-2"
   };
 
