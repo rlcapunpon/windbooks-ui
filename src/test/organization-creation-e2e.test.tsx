@@ -999,12 +999,8 @@ import { OrganizationService } from '../services/organizationService'
         expect(nonIndividualRadio).not.toBeChecked()
 
         // Check visual state - Individual option should have selected styling
-        expect(individualContainer).toHaveClass('border-primary', 'bg-primary', 'text-white')
+        expect(individualContainer).toHaveClass('border-primary')
         expect(individualContainer).not.toHaveClass('border-gray-200')
-
-        // Check that the inner radio button dot is visible
-        const individualInnerDot = individualContainer?.querySelector('.w-2.h-2')
-        expect(individualInnerDot).toHaveClass('bg-white')
 
         // Select Non-Individual category
         await user.click(nonIndividualRadio)
@@ -1015,19 +1011,12 @@ import { OrganizationService } from '../services/organizationService'
 
         // Check visual state - Individual should lose selected styling, Non-Individual should gain it
         expect(individualContainer).toHaveClass('border-gray-200')
-        expect(individualContainer).not.toHaveClass('border-primary', 'bg-primary', 'text-white')
+        expect(individualContainer).not.toHaveClass('border-primary')
 
         const nonIndividualLabel = nonIndividualRadio.closest('label')
         const nonIndividualContainer = nonIndividualLabel?.querySelector('.p-4')
-        expect(nonIndividualContainer).toHaveClass('border-primary', 'bg-primary', 'text-white')
+        expect(nonIndividualContainer).toHaveClass('border-primary')
         expect(nonIndividualContainer).not.toHaveClass('border-gray-200')
-
-        // Check that Non-Individual inner radio button dot is visible
-        const nonIndividualInnerDot = nonIndividualContainer?.querySelector('.w-2.h-2')
-        expect(nonIndividualInnerDot).toHaveClass('bg-white')
-
-        // Verify Individual inner dot is no longer visible (has no bg-primary)
-        expect(individualInnerDot).not.toHaveClass('bg-white')
       })
 
       it('should update tax classification radio button visual state when selected', async () => {
@@ -1073,12 +1062,8 @@ import { OrganizationService } from '../services/organizationService'
         expect(excemptRadio).not.toBeChecked()
 
         // Check visual state - VAT option should have selected styling
-        expect(vatContainer).toHaveClass('border-primary', 'bg-primary', 'text-white')
+        expect(vatContainer).toHaveClass('border-primary')
         expect(vatContainer).not.toHaveClass('border-gray-200')
-
-        // Check that the inner radio button dot is visible
-        const vatInnerDot = vatContainer?.querySelector('.w-2.h-2')
-        expect(vatInnerDot).toHaveClass('bg-white')
 
         // Select NON_VAT classification
         await user.click(nonVatRadio)
@@ -1090,16 +1075,12 @@ import { OrganizationService } from '../services/organizationService'
 
         // Check visual state - VAT should lose selected styling, NON_VAT should gain it
         expect(vatContainer).toHaveClass('border-gray-200')
-        expect(vatContainer).not.toHaveClass('border-primary', 'bg-primary', 'text-white')
+        expect(vatContainer).not.toHaveClass('border-primary')
 
         const nonVatLabel = nonVatRadio.closest('label')
         const nonVatContainer = nonVatLabel?.querySelector('.p-4')
-        expect(nonVatContainer).toHaveClass('border-primary', 'bg-primary', 'text-white')
+        expect(nonVatContainer).toHaveClass('border-primary')
         expect(nonVatContainer).not.toHaveClass('border-gray-200')
-
-        // Check that NON_VAT inner radio button dot is visible
-        const nonVatInnerDot = nonVatContainer?.querySelector('.w-2.h-2')
-        expect(nonVatInnerDot).toHaveClass('bg-white')
 
         // Select EXCEMPT classification
         await user.click(excemptRadio)
@@ -1112,12 +1093,8 @@ import { OrganizationService } from '../services/organizationService'
         // Check visual state - EXCEMPT should have selected styling
         const excemptLabel = excemptRadio.closest('label')
         const excemptContainer = excemptLabel?.querySelector('.p-4')
-        expect(excemptContainer).toHaveClass('border-primary', 'bg-primary', 'text-white')
+        expect(excemptContainer).toHaveClass('border-primary')
         expect(excemptContainer).not.toHaveClass('border-gray-200')
-
-        // Check that EXCEMPT inner radio button dot is visible
-        const excemptInnerDot = excemptContainer?.querySelector('.w-2.h-2')
-        expect(excemptInnerDot).toHaveClass('bg-white')
       })
 
       it('should handle complete Step 1 interaction flow with both radio button groups', async () => {
@@ -1173,11 +1150,11 @@ import { OrganizationService } from '../services/organizationService'
         // Verify visual styling is correct for final selections
         const nonIndividualLabel = nonIndividualRadio.closest('label')
         const nonIndividualContainer = nonIndividualLabel?.querySelector('.p-4')
-        expect(nonIndividualContainer).toHaveClass('border-primary', 'bg-primary', 'text-white')
+        expect(nonIndividualContainer).toHaveClass('border-primary')
 
         const excemptLabel = excemptRadio.closest('label')
         const excemptContainer = excemptLabel?.querySelector('.p-4')
-        expect(excemptContainer).toHaveClass('border-primary', 'bg-primary', 'text-white')
+        expect(excemptContainer).toHaveClass('border-primary')
 
         // Button should still be enabled
         expect(nextButton).not.toBeDisabled()

@@ -479,6 +479,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                     />
                   </div>
                   <div>
+                    <br></br>
                     <label htmlFor="trade-name" className="block text-sm font-semibold text-gray-700 mb-2">
                       Trade Name
                     </label>
