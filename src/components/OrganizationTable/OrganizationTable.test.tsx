@@ -657,7 +657,7 @@ describe('OrganizationTable', () => {
       
       viewButtons.forEach(button => {
         expect(button).toHaveAttribute('type', 'button')
-        expect(button).toHaveClass('text-blue-600', 'hover:text-blue-900')
+        expect(button).toHaveClass('text-primary', 'hover:text-primary-dark')
       })
     });
 

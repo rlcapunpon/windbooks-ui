@@ -247,7 +247,7 @@ const OrganizationPage: React.FC = () => {
           <div className="flex items-center justify-between mb-4">
             <button
               onClick={() => navigate('/organizations/dashboard')}
-              className="flex items-center text-blue-600 hover:text-blue-800"
+              className="flex items-center text-emerald-500 hover:text-emerald-700"
             >
               <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -287,7 +287,7 @@ const OrganizationPage: React.FC = () => {
                   onClick={() => setActiveMenu(item.id)}
                   className={`py-4 px-1 border-b-2 font-medium text-sm ${
                     activeMenu === item.id
-                      ? 'border-blue-500 text-blue-600'
+                      ? 'border-primary text-primary'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
@@ -777,7 +777,7 @@ const OrganizationDetails: React.FC<{
               onClick={() => setActiveTab(tab.id)}
               className={`py-2 px-1 border-b-2 font-medium text-sm ${
                 activeTab === tab.id
-                  ? 'border-blue-500 text-blue-600'
+                  ? 'border-primary text-primary'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
               }`}
             >

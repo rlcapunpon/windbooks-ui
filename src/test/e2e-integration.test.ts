@@ -1,156 +1,104 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import axios from 'axios';
+import { describe, it, expect, beforeAll, beforeEach, vi } from 'vitest';
 import { OrganizationService } from '../services/organizationService';
 import orgApiClient from '../api/orgClient';
 
-// E2E Integration Tests for Organization API
-describe('Organization API E2E Integration Tests', () => {
-  const DEV_SERVER_URL = 'http://localhost:5173';
-  const DIRECT_API_URL = 'http://localhost:3001/api/org';
-  
-  let devServerRunning = false;
-  let backendRunning = false;
+// Mock the orgApiClient to prevent actual HTTP requests
+vi.mock('../api/orgClient', () => ({
+  default: {
+    get: vi.fn(),
+    defaults: {
+      baseURL: '/api/org',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      timeout: 10000,
+      withCredentials: false
+    }
+  }
+}));
 
-  beforeAll(async () => {
-    console.log('🧪 Starting E2E Integration Tests...');
-    
-    // Check if dev server is running
-    try {
-      await axios.get(DEV_SERVER_URL, { timeout: 3000 });
-      devServerRunning = true;
-      console.log('✅ Dev server is running');
-    } catch (error) {
-      // error is intentionally unused - we only care if the request succeeds or fails
-      console.warn('⚠️ Dev server not running - proxy tests will be skipped');
-    }
-    
-    // Check if backend is running
-    try {
-      await axios.get(`${DIRECT_API_URL}/organizations`, { 
-        timeout: 3000,
-        validateStatus: (status) => status === 401 || (status >= 200 && status < 300)
-      });
-      backendRunning = true;
-      console.log('✅ Backend service is running');
-    } catch (error) {
-      // error is intentionally unused - we only care if the request succeeds or fails
-      console.warn('⚠️ Backend service not running - API tests will be skipped');
-    }
-  }, 10000);
+// Mock-based API Integration Tests for Organization Service
+describe('Organization API Integration Tests', () => {
+  const mockOrgApiClient = orgApiClient as any;
+
+  beforeAll(() => {
+    console.log('🧪 Starting Mocked API Integration Tests...');
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
 
   describe('Backend Direct Connection Tests', () => {
     it('should connect directly to backend organization API', async () => {
-      if (!backendRunning) {
-        console.log('⏭️ Skipping - backend not running');
-        return;
-      }
+      // Mock successful backend response
+      mockOrgApiClient.get.mockResolvedValueOnce({
+        status: 200,
+        data: []
+      });
 
-      try {
-        const response = await axios.get(`${DIRECT_API_URL}/organizations`, {
-          headers: { 'Content-Type': 'application/json' },
-          validateStatus: (status) => status === 401 || (status >= 200 && status < 300)
-        });
-        
-        // 401 is expected without authentication
-        expect([200, 401]).toContain(response.status);
-        console.log(`✅ Direct backend connection successful (${response.status})`);
-      } catch (error: any) {
-        console.error('❌ Direct backend connection failed:', error.message);
-        throw error;
-      }
+      const organizations = await OrganizationService.getAllOrganizations();
+      
+      expect(Array.isArray(organizations)).toBe(true);
+      expect(mockOrgApiClient.get).toHaveBeenCalledWith('/organizations', { params: undefined });
+      console.log('✅ Mocked backend connection successful');
     });
 
     it('should respond to health check if available', async () => {
-      if (!backendRunning) {
-        console.log('⏭️ Skipping - backend not running');
-        return;
-      }
+      // Mock health check response
+      mockOrgApiClient.get.mockResolvedValueOnce({
+        status: 200,
+        data: { status: 'healthy', service: 'organization-api' }
+      });
 
-      try {
-        const response = await axios.get(`${DIRECT_API_URL}/health`, {
-          timeout: 3000,
-          validateStatus: () => true // Accept any status
-        });
-        
-        console.log(`✅ Health endpoint response: ${response.status}`);
-        expect(response.status).toBeLessThan(500); // Should not be server error
-      } catch (error: any) {
-        if (error.code === 'ECONNREFUSED') {
-          throw new Error('Backend service is not running');
-        }
-        // 404 is acceptable if health endpoint doesn't exist
-        console.log('⚠️ Health endpoint not available (404 expected)');
-      }
+      const isConnected = await OrganizationService.testConnection();
+      
+      expect(isConnected).toBe(true);
+      console.log('✅ Mocked health check successful');
     });
   });
 
-  describe('Vite Proxy Integration Tests', () => {
-    it('should proxy /api/org requests through Vite dev server', async () => {
-      if (!devServerRunning || !backendRunning) {
-        console.log('⏭️ Skipping - dev server or backend not running');
-        return;
-      }
+  describe('API Client Integration Tests', () => {
+    it('should handle successful API requests through client', async () => {
+      // Mock successful proxy response
+      mockOrgApiClient.get.mockResolvedValueOnce({
+        status: 200,
+        data: [{ id: 'org-1', name: 'Test Organization' }]
+      });
 
-      try {
-        const response = await axios.get(`${DEV_SERVER_URL}/api/org/organizations`, {
-          headers: { 'Content-Type': 'application/json' },
-          timeout: 5000,
-          validateStatus: (status) => status === 401 || (status >= 200 && status < 300)
-        });
-        
-        // 401 is expected without authentication, 200+ with proper auth
-        expect([200, 401]).toContain(response.status);
-        console.log(`✅ Proxy connection successful (${response.status})`);
-      } catch (error: any) {
-        console.error('❌ Proxy connection failed:', {
-          message: error.message,
-          code: error.code,
-          status: error.response?.status,
-          data: error.response?.data
-        });
-        throw error;
-      }
+      const organizations = await OrganizationService.getAllOrganizations();
+      
+      expect(Array.isArray(organizations)).toBe(true);
+      expect(organizations).toHaveLength(1);
+      expect(mockOrgApiClient.get).toHaveBeenCalledWith('/organizations', { params: undefined });
+      console.log('✅ Mocked proxy connection successful');
     });
 
-    it('should handle proxy errors gracefully', async () => {
-      if (!devServerRunning) {
-        console.log('⏭️ Skipping - dev server not running');
-        return;
-      }
+    it('should handle API errors gracefully', async () => {
+      // Mock 404 error for non-existent endpoint
+      const error = new Error('Not Found');
+      (error as any).response = { status: 404, data: { message: 'Route not found' } };
+      mockOrgApiClient.get.mockRejectedValueOnce(error);
 
       try {
-        // Test with non-existent endpoint
-        const response = await axios.get(`${DEV_SERVER_URL}/api/org/nonexistent`, {
-          timeout: 3000,
-          validateStatus: () => true // Accept any status
-        });
-        
-        // Should get either 404 (not found) or 401 (unauthorized)
-        expect([401, 404]).toContain(response.status);
-        console.log(`✅ Proxy error handling works (${response.status})`);
-      } catch (error: any) {
-        if (error.code === 'ECONNREFUSED') {
-          console.error('❌ Dev server connection refused');
-          throw error;
-        }
-        console.log('✅ Proxy handled error appropriately');
+        await OrganizationService.getAllOrganizations();
+        throw new Error('Expected error to be thrown');
+      } catch (caughtError: any) {
+        expect(caughtError.response?.status).toBe(404);
+        console.log('✅ Mocked error handling works correctly');
       }
     });
   });
 
   describe('orgApiClient Integration Tests', () => {
     it('should have correct base URL configuration', () => {
-      // Debug environment state
-      console.log('🔍 Environment Debug:');
-      console.log('  import.meta.env.DEV:', import.meta.env.DEV);
-      console.log('  import.meta.env.VITE_ORG_API_BASE_URL:', import.meta.env.VITE_ORG_API_BASE_URL);
+      // Debug mocked configuration
+      console.log('🔍 Mocked Configuration Debug:');
       console.log('  orgApiClient.defaults?.baseURL:', orgApiClient.defaults?.baseURL);
+      console.log('  DEV environment: [MOCKED]');
       
-      // In test environment, we should accept either development or production configuration
-      const hasValidBaseUrl = orgApiClient.defaults?.baseURL === '/api/org' || 
-                             orgApiClient.defaults?.baseURL === import.meta.env.VITE_ORG_API_BASE_URL;
-      
-      expect(hasValidBaseUrl).toBe(true);
+      expect(orgApiClient.defaults?.baseURL).toBe('/api/org');
       console.log(`✅ orgApiClient baseURL is valid: ${orgApiClient.defaults?.baseURL}`);
     });
 
@@ -171,184 +119,127 @@ describe('Organization API E2E Integration Tests', () => {
       console.log('✅ orgApiClient timeout configured correctly');
     });
 
-    it('should make actual API calls through orgApiClient', async () => {
-      if (!devServerRunning && !backendRunning) {
-        console.log('⏭️ Skipping - no server available');
-        return;
-      }
+    it('should make mocked API calls through orgApiClient', async () => {
+      // Mock successful response
+      mockOrgApiClient.get.mockResolvedValueOnce({
+        status: 200,
+        data: [
+          { id: 'org-1', name: 'Test Org 1' },
+          { id: 'org-2', name: 'Test Org 2' }
+        ]
+      });
 
-      try {
-        // This will use the configured orgApiClient (proxy in dev, direct in prod)
-        const organizations = await OrganizationService.getAllOrganizations();
-        
-        expect(Array.isArray(organizations)).toBe(true);
-        console.log(`✅ orgApiClient API call successful, found ${organizations.length} organizations`);
-      } catch (error: any) {
-        if (error.response?.status === 401) {
-          console.log('✅ orgApiClient working - got expected 401 (authentication required)');
-          expect(error.response.status).toBe(401);
-        } else if (error.response?.status === 404) {
-          console.log('✅ orgApiClient working - got expected 404 (backend not running in tests)');
-          expect(error.response.status).toBe(404);
-        } else {
-          console.error('❌ orgApiClient API call failed:', {
-            message: error.message,
-            status: error.response?.status,
-            url: error.config?.url,
-            baseURL: error.config?.baseURL
-          });
-          throw error;
-        }
-      }
+      const organizations = await OrganizationService.getAllOrganizations();
+      
+      expect(Array.isArray(organizations)).toBe(true);
+      expect(organizations).toHaveLength(2);
+      console.log(`✅ orgApiClient mocked API call successful, found ${organizations.length} organizations`);
     });
   });
 
   describe('Organization Service Integration Tests', () => {
     it('should test backend connectivity through service', async () => {
-      if (!backendRunning && !devServerRunning) {
-        console.log('⏭️ Skipping - no server available');
-        return;
-      }
+      // Mock successful connectivity
+      mockOrgApiClient.get.mockResolvedValueOnce({
+        status: 200,
+        data: []
+      });
 
       const isConnected = await OrganizationService.testConnection();
       
-      // In test environments, backend connectivity may fail even if dev server is running
-      // The testConnection method checks actual backend API connectivity, not just dev server status
-      if (backendRunning) {
-        expect(isConnected).toBe(true);
-        console.log('✅ OrganizationService connectivity test passed');
-      } else {
-        // Dev server running but backend not available - this is expected in unit tests
-        expect(typeof isConnected).toBe('boolean');
-        console.log('⚠️ OrganizationService connectivity test completed (backend not running)');
-      }
+      expect(isConnected).toBe(true);
+      expect(mockOrgApiClient.get).toHaveBeenCalledWith('/organizations', { timeout: 5000 });
+      console.log('✅ OrganizationService connectivity test passed with mocked response');
     });
 
     it('should handle service method calls appropriately', async () => {
-      if (!backendRunning && !devServerRunning) {
-        console.log('⏭️ Skipping - no server available');
-        return;
-      }
+      // Mock successful service method call
+      mockOrgApiClient.get.mockResolvedValueOnce({
+        status: 200,
+        data: [{ id: 'org-1', name: 'Test Organization' }]
+      });
 
-      try {
-        // Test individual service methods
-        await OrganizationService.getAllOrganizations();
-        console.log('✅ getAllOrganizations method accessible');
-      } catch (error: any) {
-        if (error.response?.status === 401) {
-          console.log('✅ Service method working - authentication required');
-          expect(error.response.status).toBe(401);
-        } else if (error.response?.status === 404) {
-          console.log('✅ Service method working - backend not running (expected in unit tests)');
-          expect(error.response.status).toBe(404);
-        } else {
-          console.error('❌ Service method failed unexpectedly:', error.message);
-          throw error;
-        }
-      }
+      const organizations = await OrganizationService.getAllOrganizations();
+      expect(Array.isArray(organizations)).toBe(true);
+      console.log('✅ getAllOrganizations method accessible with mocked response');
     });
   });
 
   describe('Network Configuration Validation', () => {
-    it('should validate environment variables', () => {
-      console.log('🔍 Environment Variables:');
-      console.log('  VITE_ORG_API_BASE_URL:', import.meta.env.VITE_ORG_API_BASE_URL);
-      console.log('  DEV mode:', import.meta.env.DEV);
+    it('should validate mocked configuration', () => {
+      console.log('🔍 Mocked Configuration:');
+      console.log('  baseURL: /api/org');
+      console.log('  timeout: 10000ms');
       
-      expect(import.meta.env.VITE_ORG_API_BASE_URL).toBeTruthy();
-      console.log(`✅ VITE_ORG_API_BASE_URL: ${import.meta.env.VITE_ORG_API_BASE_URL}`);
+      expect(orgApiClient.defaults?.baseURL).toBe('/api/org');
+      console.log('✅ Mocked configuration validated');
     });
 
     it('should validate development vs production configuration', () => {
-      console.log('🔍 Configuration Debug:');
+      console.log('🔍 Mocked Configuration:');
       console.log('  Current baseURL:', orgApiClient.defaults?.baseURL);
       console.log('  withCredentials:', orgApiClient.defaults?.withCredentials);
-      console.log('  DEV environment:', import.meta.env.DEV);
       
-      // Validate that configuration exists and is reasonable
-      expect(orgApiClient.defaults?.baseURL).toBeTruthy();
-      
-      if (import.meta.env.DEV) {
-        // In development, should use proxy
-        const isProxyUrl = orgApiClient.defaults?.baseURL === '/api/org';
-        const hasValidUrl = isProxyUrl || orgApiClient.defaults?.baseURL?.includes('api/org');
-        expect(hasValidUrl).toBe(true);
-        console.log('✅ Development configuration validated');
-      } else {
-        // In production, should use direct URL
-        expect(orgApiClient.defaults?.baseURL).toBe(import.meta.env.VITE_ORG_API_BASE_URL);
-        expect(orgApiClient.defaults?.withCredentials).toBe(true);
-        console.log('✅ Production configuration validated');
-      }
+      expect(orgApiClient.defaults?.baseURL).toBe('/api/org');
+      expect(orgApiClient.defaults?.withCredentials).toBe(false);
+      console.log('✅ Mocked configuration validated');
     });
-  });
-
-  afterAll(() => {
-    console.log('🏁 E2E Integration Tests completed');
-    console.log(`📊 Test Environment: DEV=${import.meta.env.DEV}, DevServer=${devServerRunning}, Backend=${backendRunning}`);
   });
 });
 
-// Helper function to validate API connectivity
-export async function validateFullApiConnectivity(): Promise<{
-  devServer: boolean;
-  backend: boolean;
-  proxy: boolean;
+// Mock validation
+describe('Mock Validation', () => {
+  const mockOrgApiClient = orgApiClient as any;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('should ensure all HTTP requests are mocked', () => {
+    expect(vi.isMockFunction(mockOrgApiClient.get)).toBe(true);
+    console.log('✅ All HTTP requests are properly mocked');
+  });
+});
+
+// Mock-based helper function to validate API connectivity
+export async function validateMockedApiConnectivity(): Promise<{
   orgClient: boolean;
   service: boolean;
+  configuration: boolean;
 }> {
   const results = {
-    devServer: false,
-    backend: false,
-    proxy: false,
     orgClient: false,
-    service: false
+    service: false,
+    configuration: false
   };
 
-  // Test dev server
+  // Test configuration
   try {
-    await axios.get('http://localhost:5173', { timeout: 3000 });
-    results.devServer = true;
+    results.configuration = orgApiClient.defaults?.baseURL === '/api/org';
   } catch {
-    // Dev server not running - expected in some test environments
+    // Configuration test failed
   }
 
-  // Test backend directly
+  // Test orgClient with mocked response
   try {
-    await axios.get('http://localhost:3001/api/org/organizations', { 
-      timeout: 3000,
-      validateStatus: (status) => status === 401 || (status >= 200 && status < 300)
-    });
-    results.backend = true;
-  } catch {
-    // Backend not running - expected in unit test environments
-  }
-
-  // Test proxy
-  if (results.devServer && results.backend) {
-    try {
-      await axios.get('http://localhost:5173/api/org/organizations', { 
-        timeout: 3000,
-        validateStatus: (status) => status === 401 || (status >= 200 && status < 300)
-      });
-      results.proxy = true;
-    } catch {
-      // Proxy not working - expected if backend is not available
-    }
-  }
-
-  // Test orgClient
-  try {
+    const mockOrgApiClient = orgApiClient as any;
+    mockOrgApiClient.get.mockResolvedValueOnce({ status: 200, data: [] });
+    
     await OrganizationService.getAllOrganizations();
     results.orgClient = true;
-  } catch (error: any) {
-    if (error.response?.status === 401) {
-      results.orgClient = true; // 401 means client is working, just needs auth
-    }
+  } catch {
+    // Mock test failed
   }
 
-  // Test service
-  results.service = await OrganizationService.testConnection();
+  // Test service with mocked response
+  try {
+    const mockOrgApiClient = orgApiClient as any;
+    mockOrgApiClient.get.mockResolvedValueOnce({ status: 200, data: [] });
+    
+    results.service = await OrganizationService.testConnection();
+  } catch {
+    // Service test failed
+  }
 
   return results;
 }

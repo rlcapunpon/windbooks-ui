@@ -135,7 +135,7 @@ const ResetPasswordToken = () => {
             <div className="space-y-3">
               <button
                 onClick={() => navigate('/auth/login')}
-                className="w-full bg-gradient-to-r from-blue-500 via-purple-600 to-cyan-500 text-white p-3 rounded-lg hover:shadow-lg hover:shadow-blue-500/25 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 transform hover:scale-105 font-semibold"
+                className="w-full bg-gradient-to-r from-primary via-purple-600 to-cyan-500 text-white p-3 rounded-lg hover:shadow-lg hover:shadow-primary/25 focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-300 transform hover:scale-105 font-semibold"
               >
                 Go to Login
               </button>
@@ -172,7 +172,7 @@ const ResetPasswordToken = () => {
               value={formData.newPassword}
               onChange={handleInputChange}
               placeholder="Enter new password"
-              className="w-full p-3 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
+              className="w-full p-3 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
               required
             />
             {errors.newPassword && (
@@ -191,7 +191,7 @@ const ResetPasswordToken = () => {
               value={formData.confirmPassword}
               onChange={handleInputChange}
               placeholder="Confirm new password"
-              className="w-full p-3 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
+              className="w-full p-3 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
               required
             />
             {errors.confirmPassword && (
@@ -210,7 +210,7 @@ const ResetPasswordToken = () => {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-blue-500 via-purple-600 to-cyan-500 text-white p-3 rounded-lg hover:shadow-lg hover:shadow-blue-500/25 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 transform hover:scale-105 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-gradient-to-r from-primary via-purple-600 to-cyan-500 text-white p-3 rounded-lg hover:shadow-lg hover:shadow-primary/25 focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-300 transform hover:scale-105 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? 'Resetting password...' : 'Reset Password'}
           </button>

@@ -54,12 +54,14 @@
 }
 
 .menu-item:focus {
-  @apply outline-none ring-2 ring-blue-500/50;
+  @apply outline-none ring-2;
+  --tw-ring-color: rgba(14, 217, 119, 0.5);
 }
 
 /* Active state */
 .menu-item.active {
-  @apply bg-blue-50 text-blue-600;
+  background-color: rgba(14, 217, 119, 0.1);
+  color: #0ED977;
 }
 
 /* Disabled state */
@@ -74,7 +76,8 @@
 
 /* Badge styles */
 .menu-item .badge {
-  @apply ml-auto bg-blue-600 text-white text-xs px-2 py-1 rounded-full;
+  @apply ml-auto text-white text-xs px-2 py-1 rounded-full;
+  background-color: #0ED977;
 }
 
 /* Icon styles */
@@ -133,7 +136,8 @@
 
 /* Focus visible for accessibility */
 .menu-item:focus-visible {
-  @apply outline-none ring-2 ring-blue-500/50;
+  @apply outline-none ring-2;
+  --tw-ring-color: rgba(14, 217, 119, 0.5);
 }
 
 /* High contrast mode support */
@@ -144,7 +148,8 @@
 
   .menu-item:hover,
   .menu-item:focus {
-    @apply border-blue-600 bg-blue-50;
+    border-color: #0ED977;
+    background-color: rgba(14, 217, 119, 0.1);
   }
 }
 

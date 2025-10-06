@@ -205,14 +205,14 @@ const Login = () => {
           onClose={() => setShowVerificationToast(false)}
         />
         <form onSubmit={onSubmit} className="bg-white/95 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border-2 border-gray-200 ring-1 ring-gray-100">
-        <h2 className="text-3xl mb-6 text-center text-gray-800 font-semibold">Login</h2>
+        <h2 className="text-heading text-3xl mb-6 text-center font-semibold">Login</h2>
         <div className="mb-4">
           <label className="block text-gray-700 mb-2 text-sm font-medium">Email</label>
           <input
             {...register('email')}
             type="email"
             placeholder="Enter your email"
-            className="w-full p-3 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
+            className="form-input w-full p-3"
           />
           {errors.email && <p className="text-red-600 text-sm mt-1">{errors.email.message}</p>}
         </div>
@@ -222,7 +222,7 @@ const Login = () => {
             {...register('password')}
             type="password"
             placeholder="Enter your password"
-            className="w-full p-3 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
+            className="form-input w-full p-3 pr-12"
           />
           {errors.password && <p className="text-red-600 text-sm mt-1">{errors.password.message}</p>}
         </div>
@@ -231,27 +231,27 @@ const Login = () => {
             <input
               {...register('rememberMe')}
               type="checkbox"
-              className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+              className="w-4 h-4 text-primary bg-gray-100 border-gray-300 rounded focus:ring-primary focus:ring-2"
             />
             <span className="ml-2 text-sm text-gray-700">Remember me</span>
           </label>
           <Link
             to="/auth/reset-password"
-            className="text-blue-600 hover:text-blue-800 text-sm transition-colors"
+            className="text-emerald-500 hover:text-emerald-700 text-sm transition-colors"
           >
             Reset Password
           </Link>
         </div>
         <button
           type="submit"
-          className="w-full bg-gradient-to-r from-blue-500 via-purple-600 to-cyan-500 text-white p-3 rounded-lg hover:shadow-lg hover:shadow-blue-500/25 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 transform hover:scale-105 font-semibold"
+          className="btn-primary w-full p-3 rounded-lg font-semibold"
         >
           Login
         </button>
         <div className="mt-4 flex justify-between items-center">
           <Link
             to="/"
-            className="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm transition-colors"
+            className="inline-flex items-center text-emerald-500 hover:text-emerald-700 text-sm transition-colors"
           >
             <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -260,7 +260,7 @@ const Login = () => {
           </Link>
           <Link
             to="/auth/register"
-            className="text-blue-600 hover:text-blue-800 text-sm transition-colors"
+            className="text-emerald-500 hover:text-emerald-700 text-sm transition-colors"
           >
             Register Now
           </Link>

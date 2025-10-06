@@ -24,25 +24,25 @@ const RoleLevel1Dashboard = () => {
 
       <div className="max-w-7xl mx-auto p-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Super Admin Dashboard</h1>
-          <p className="text-text-light-secondary">Full system access and management capabilities</p>
+          <h1 className="text-heading">Super Admin Dashboard</h1>
+          <p className="text-body">Full system access and management capabilities</p>
         </div>
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-2">Total Users</h3>
-            <p className="text-3xl font-bold text-blue-600">1,247</p>
+            <p className="text-3xl font-bold text-primary">1,247</p>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-2">Active Sessions</h3>
             <p className="text-3xl font-bold text-green-600">89</p>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-2">System Health</h3>
             <p className="text-3xl font-bold text-green-600">98%</p>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-2">Revenue</h3>
             <p className="text-3xl font-bold text-purple-600">$45,231</p>
           </div>
@@ -50,28 +50,22 @@ const RoleLevel1Dashboard = () => {
 
         {/* Admin Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">User Management</h3>
             <p className="text-gray-600 mb-4">Create, edit, and manage all user accounts</p>
-            <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
-              Manage Users
-            </button>
+            <button className="btn-primary w-full">Manage Users</button>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">System Settings</h3>
             <p className="text-gray-600 mb-4">Configure system-wide settings and preferences</p>
-            <button className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors">
-              System Config
-            </button>
+            <button className="btn-primary w-full">System Config</button>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Reports & Analytics</h3>
             <p className="text-gray-600 mb-4">View comprehensive system reports and analytics</p>
-            <button className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
-              View Reports
-            </button>
+            <button className="btn-primary w-full">View Reports</button>
           </div>
         </div>
 

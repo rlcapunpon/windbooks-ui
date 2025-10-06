@@ -24,18 +24,18 @@ const RoleLevel3Dashboard = () => {
 
       <div className="max-w-7xl mx-auto p-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Staff Dashboard</h1>
+          <h1 className="text-3xl font-bold mb-2 text-heading">Staff Dashboard</h1>
           <p className="text-text-light-secondary">Daily operations and reporting access</p>
         </div>
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card">
             <h3 className="text-lg font-semibold text-gray-800 mb-2">My Tasks</h3>
-            <p className="text-3xl font-bold text-blue-600">7</p>
+            <p className="text-3xl font-bold text-primary">7</p>
             <p className="text-sm text-gray-600 mt-1">3 completed today</p>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card">
             <h3 className="text-lg font-semibold text-gray-800 mb-2">Reports Generated</h3>
             <p className="text-3xl font-bold text-green-600">12</p>
             <p className="text-sm text-gray-600 mt-1">This month</p>
@@ -44,25 +44,25 @@ const RoleLevel3Dashboard = () => {
 
         {/* Staff Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">User Directory</h3>
             <p className="text-gray-600 mb-4">View team member information and contact details</p>
-            <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+            <button className="w-full btn-primary">
               View Directory
             </button>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">Generate Reports</h3>
             <p className="text-gray-600 mb-4">Create and export operational reports</p>
-            <button className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
+            <button className="w-full btn-primary">
               Export Reports
             </button>
           </div>
         </div>
 
         {/* Current Tasks */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="card">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">My Current Tasks</h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">

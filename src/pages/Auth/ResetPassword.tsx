@@ -46,13 +46,13 @@ const ResetPassword = () => {
       <div className="flex justify-between items-center p-4">
         <Link
           to="/auth/login"
-          className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors duration-300 flex items-center gap-1"
+          className="text-primary hover:text-primary-dark text-sm font-medium transition-colors duration-300 flex items-center gap-1"
         >
           ← Back to Login
         </Link>
         <Link
           to="/"
-          className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors duration-300 flex items-center gap-1"
+          className="text-primary hover:text-primary-dark text-sm font-medium transition-colors duration-300 flex items-center gap-1"
         >
           Back to Home →
         </Link>
@@ -81,7 +81,7 @@ const ResetPassword = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email address"
-                className="w-full p-3 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
+                className="w-full p-3 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
                 required
               />
             </div>
@@ -95,7 +95,7 @@ const ResetPassword = () => {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-blue-500 via-purple-600 to-cyan-500 text-white p-3 rounded-lg hover:shadow-lg hover:shadow-blue-500/25 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 transform hover:scale-105 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-primary via-purple-600 to-cyan-500 text-white p-3 rounded-lg hover:shadow-lg hover:shadow-primary/25 focus:outline-none focus:ring-2 focus:ring-primary transition-all duration-300 transform hover:scale-105 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Sending...' : 'Send Reset Email'}
             </button>

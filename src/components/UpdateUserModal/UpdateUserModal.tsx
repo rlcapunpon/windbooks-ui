@@ -84,7 +84,7 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({ user, onClose, onSave
               value={updatedUser.firstName || ''}
               onChange={handleChange}
               placeholder="Enter your first name"
-              className="w-full p-3 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
+              className="w-full p-3 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
             />
             {errors.firstName && <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>}
           </div>
@@ -96,7 +96,7 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({ user, onClose, onSave
               value={updatedUser.lastName || ''}
               onChange={handleChange}
               placeholder="Enter your last name"
-              className="w-full p-3 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
+              className="w-full p-3 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
             />
             {errors.lastName && <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>}
           </div>
@@ -108,7 +108,7 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({ user, onClose, onSave
               value={updatedUser.nickName || ''}
               onChange={handleChange}
               placeholder="Enter your nickname"
-              className="w-full p-3 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
+              className="w-full p-3 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
             />
             {errors.nickName && <p className="text-red-500 text-sm mt-1">{errors.nickName}</p>}
           </div>
@@ -120,7 +120,7 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({ user, onClose, onSave
               value={updatedUser.contactNumber || ''}
               onChange={handleChange}
               placeholder="Enter your contact number"
-              className="w-full p-3 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
+              className="w-full p-3 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
             />
             {errors.contactNumber && <p className="text-red-500 text-sm mt-1">{errors.contactNumber}</p>}
           </div>

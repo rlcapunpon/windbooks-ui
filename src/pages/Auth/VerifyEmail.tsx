@@ -121,11 +121,11 @@ const VerifyEmail = () => {
           {status === 'success' ? (
             <div>
               <div className="text-green-500 text-6xl mb-4">✓</div>
-              <h2 className="text-2xl font-semibold text-gray-800 mb-4">Email Verified!</h2>
+              <h2 className="text-heading">Email Verified!</h2>
               <p className="text-gray-600 mb-6">{message}</p>
               <button
                 onClick={() => navigate('/auth/login')}
-                className="w-full bg-gradient-to-r from-blue-500 via-purple-600 to-cyan-500 text-white p-3 rounded-lg hover:shadow-lg hover:shadow-blue-500/25 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 transform hover:scale-105 font-semibold"
+                className="btn-primary"
               >
                 Go to Login
               </button>
@@ -133,7 +133,7 @@ const VerifyEmail = () => {
           ) : (
             <div>
               <div className="text-red-500 text-6xl mb-4">✗</div>
-              <h2 className="text-2xl font-semibold text-gray-800 mb-4">Verification Failed</h2>
+              <h2 className="text-heading">Verification Failed</h2>
               <p className="text-gray-600 mb-6">{message}</p>
 
               <div className="mb-4">
@@ -144,14 +144,14 @@ const VerifyEmail = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
-                  className="w-full p-3 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
+                  className="form-input"
                 />
               </div>
 
               <button
                 onClick={handleResendVerification}
                 disabled={isResending}
-                className="w-full bg-gradient-to-r from-blue-500 via-purple-600 to-cyan-500 text-white p-3 rounded-lg hover:shadow-lg hover:shadow-blue-500/25 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300 transform hover:scale-105 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary"
               >
                 {isResending ? 'Sending...' : 'Resend Verification Email'}
               </button>

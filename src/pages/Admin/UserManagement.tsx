@@ -219,11 +219,11 @@ const UserManagement = () => {
                     value={emailFilter}
                     onChange={(e) => handleEmailFilterChange(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    className="block w-full px-3 py-2 border border-gray-300 rounded-l-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className="block w-full px-3 py-2 border border-gray-300 rounded-l-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                   />
                   <button
                     onClick={handleSearch}
-                    className="inline-flex items-center px-3 py-2 border border-l-0 border-gray-300 rounded-r-md bg-gray-50 text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                    className="inline-flex items-center px-3 py-2 border border-l-0 border-gray-300 rounded-r-md bg-gray-50 text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-primary focus:border-primary"
                     type="button"
                   >
                     <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -237,7 +237,7 @@ const UserManagement = () => {
                   id="status-filter"
                   value={statusFilter}
                   onChange={(e) => handleStatusFilterChange(e.target.value)}
-                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
                 >
                   <option value="">All Status</option>
                   <option value="true">Active</option>
@@ -248,7 +248,7 @@ const UserManagement = () => {
             <div className="flex-shrink-0">
               <button
                 onClick={handleClearFilters}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
               >
                 Clear Filters
               </button>
@@ -295,7 +295,7 @@ const UserManagement = () => {
                     {user.isActive ? (
                       <button
                         onClick={() => handleDeactivate(user)}
-                        className="text-blue-600 hover:text-blue-900 mr-4"
+                        className="text-emerald-500 hover:text-emerald-700 mr-4"
                       >
                         Deactivate
                       </button>

@@ -24,21 +24,21 @@ const RoleLevel2Dashboard = () => {
 
       <div className="max-w-7xl mx-auto p-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Manager Dashboard</h1>
+          <h1 className="text-3xl font-bold mb-2 text-heading">Manager Dashboard</h1>
           <p className="text-text-light-secondary">Team management and operational oversight</p>
         </div>
 
         {/* Quick Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card">
             <h3 className="text-lg font-semibold text-gray-800 mb-2">Team Members</h3>
-            <p className="text-3xl font-bold text-blue-600">24</p>
+            <p className="text-3xl font-bold text-primary">24</p>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card">
             <h3 className="text-lg font-semibold text-gray-800 mb-2">Active Projects</h3>
             <p className="text-3xl font-bold text-green-600">8</p>
           </div>
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card">
             <h3 className="text-lg font-semibold text-gray-800 mb-2">Pending Tasks</h3>
             <p className="text-3xl font-bold text-orange-600">12</p>
           </div>
@@ -46,25 +46,25 @@ const RoleLevel2Dashboard = () => {
 
         {/* Manager Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">User Management</h3>
             <p className="text-gray-600 mb-4">Create and manage team member accounts</p>
-            <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+            <button className="w-full btn-primary">
               Manage Team
             </button>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">System Settings</h3>
             <p className="text-gray-600 mb-4">Configure team and operational settings</p>
-            <button className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors">
+            <button className="w-full btn-primary">
               Settings
             </button>
           </div>
         </div>
 
         {/* Recent Activity */}
-        <div className="mt-8 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="mt-8 card">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Recent Team Activity</h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between py-2 border-b border-gray-100">

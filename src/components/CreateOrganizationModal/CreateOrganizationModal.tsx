@@ -198,8 +198,8 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
           <div className="space-y-8">
             <div>
               <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                  <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mr-3">
+                  <svg className="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
                   </svg>
                 </div>
@@ -223,13 +223,13 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                       />
                       <div className={`p-4 border-2 rounded-lg cursor-pointer hover:border-gray-300 transition-all duration-200 ${
                         formData.category === 'INDIVIDUAL'
-                          ? 'border-blue-500 bg-blue-50'
+                          ? 'border-primary bg-primary/5'
                           : 'border-gray-200'
                       }`}>
                         <div className="flex items-center">
                           <div className="w-4 h-4 border-2 border-gray-300 rounded-full mr-3 flex items-center justify-center">
                             <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                              formData.category === 'INDIVIDUAL' ? 'bg-blue-500' : 'bg-white'
+                              formData.category === 'INDIVIDUAL' ? 'bg-primary' : 'bg-white'
                             }`}></div>
                           </div>
                           <div>
@@ -251,13 +251,13 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                       />
                       <div className={`p-4 border-2 rounded-lg cursor-pointer hover:border-gray-300 transition-all duration-200 ${
                         formData.category === 'NON_INDIVIDUAL'
-                          ? 'border-blue-500 bg-blue-50'
+                          ? 'border-primary bg-primary/5'
                           : 'border-gray-200'
                       }`}>
                         <div className="flex items-center">
                           <div className="w-4 h-4 border-2 border-gray-300 rounded-full mr-3 flex items-center justify-center">
                             <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                              formData.category === 'NON_INDIVIDUAL' ? 'bg-blue-500' : 'bg-white'
+                              formData.category === 'NON_INDIVIDUAL' ? 'bg-primary' : 'bg-white'
                             }`}></div>
                           </div>
                           <div>
@@ -287,13 +287,13 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                       />
                       <div className={`p-4 border-2 rounded-lg cursor-pointer hover:border-gray-300 transition-all duration-200 ${
                         formData.tax_classification === 'VAT'
-                          ? 'border-blue-500 bg-blue-50'
+                          ? 'border-primary bg-primary/5'
                           : 'border-gray-200'
                       }`}>
                         <div className="flex items-center">
                           <div className="w-4 h-4 border-2 border-gray-300 rounded-full mr-3 flex items-center justify-center">
                             <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                              formData.tax_classification === 'VAT' ? 'bg-blue-500' : 'bg-white'
+                              formData.tax_classification === 'VAT' ? 'bg-primary' : 'bg-white'
                             }`}></div>
                           </div>
                           <div>
@@ -315,13 +315,13 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                       />
                       <div className={`p-4 border-2 rounded-lg cursor-pointer hover:border-gray-300 transition-all duration-200 ${
                         formData.tax_classification === 'NON_VAT'
-                          ? 'border-blue-500 bg-blue-50'
+                          ? 'border-primary bg-primary/5'
                           : 'border-gray-200'
                       }`}>
                         <div className="flex items-center">
                           <div className="w-4 h-4 border-2 border-gray-300 rounded-full mr-3 flex items-center justify-center">
                             <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                              formData.tax_classification === 'NON_VAT' ? 'bg-blue-500' : 'bg-white'
+                              formData.tax_classification === 'NON_VAT' ? 'bg-primary' : 'bg-white'
                             }`}></div>
                           </div>
                           <div>
@@ -343,13 +343,13 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                       />
                       <div className={`p-4 border-2 rounded-lg cursor-pointer hover:border-gray-300 transition-all duration-200 ${
                         formData.tax_classification === 'EXCEMPT'
-                          ? 'border-blue-500 bg-blue-50'
+                          ? 'border-primary bg-primary/5'
                           : 'border-gray-200'
                       }`}>
                         <div className="flex items-center">
                           <div className="w-4 h-4 border-2 border-gray-300 rounded-full mr-3 flex items-center justify-center">
                             <div className={`w-2 h-2 rounded-full transition-all duration-200 ${
-                              formData.tax_classification === 'EXCEMPT' ? 'bg-blue-500' : 'bg-white'
+                              formData.tax_classification === 'EXCEMPT' ? 'bg-primary' : 'bg-white'
                             }`}></div>
                           </div>
                           <div>
@@ -370,7 +370,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                     <select
                       value={formData.subcategory}
                       onChange={(e) => updateFormData('subcategory', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-white"
                       aria-label="Subcategory"
                     >
                       <option value="">Select subcategory (optional)</option>
@@ -410,7 +410,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                       type="checkbox"
                       checked={formData.enable_autosave}
                       onChange={(e) => updateFormData('enable_autosave', e.target.checked)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                     />
                     <div className="ml-3">
                       <span className="text-sm font-medium text-gray-900">Enable Autosave</span>
@@ -428,8 +428,8 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
           <div className="space-y-8">
             <div>
               <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                  <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mr-3">
+                  <svg className="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 20 20">
                     <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
@@ -444,7 +444,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                     type="text"
                     value={formData.registered_name}
                     onChange={(e) => updateFormData('registered_name', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-white"
                     placeholder="Enter registered business name"
                     aria-label="Registered Business Name"
                   />
@@ -458,7 +458,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                     type="text"
                     value={formData.tin}
                     onChange={(e) => updateFormData('tin', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white font-mono"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-white font-mono"
                     placeholder="123456789 or 123456789012"
                     maxLength={15}
                     aria-label="Tax Identification Number (TIN) *"
@@ -474,23 +474,23 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                     type="date"
                     value={formData.registration_date}
                     onChange={(e) => updateFormData('registration_date', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-white"
                     aria-label="Registration Date *"
                   />
                   <p className="text-xs text-gray-500 mt-1">Date when the business was registered</p>
                 </div>
 
                 {getOrganizationNamePreview() && (
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
                     <div className="flex items-start">
-                      <svg className="w-5 h-5 text-blue-600 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-5 h-5 text-primary mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                       </svg>
                       <div>
-                        <p className="text-sm font-medium text-blue-800">
+                        <p className="text-sm font-medium text-primary-dark">
                           Organization will be named:
                         </p>
-                        <p className="text-lg font-semibold text-blue-900 mt-1">
+                        <p className="text-lg font-semibold text-primary mt-1">
                           {getOrganizationNamePreview()}
                         </p>
                       </div>
@@ -507,8 +507,8 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
           <div className="space-y-8">
             <div>
               <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                  <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mr-3">
+                  <svg className="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                   </svg>
                 </div>
@@ -526,7 +526,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                         type="text"
                         value={formData.first_name}
                         onChange={(e) => updateFormData('first_name', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-white"
                         placeholder="Enter first name"
                         aria-label="First Name"
                       />
@@ -540,7 +540,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                         type="text"
                         value={formData.middle_name}
                         onChange={(e) => updateFormData('middle_name', e.target.value)}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-white"
                         placeholder="Enter middle name (optional)"
                         aria-label="Middle Name"
                       />
@@ -555,7 +555,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                       type="text"
                       value={formData.last_name}
                       onChange={(e) => updateFormData('last_name', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-white"
                       placeholder="Enter last name"
                       aria-label="Last Name"
                     />
@@ -572,7 +572,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                       type="text"
                       value={formData.registered_name}
                       onChange={(e) => updateFormData('registered_name', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-white"
                       placeholder="Enter registered business name"
                       aria-label="Registered Business Name"
                     />
@@ -586,7 +586,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                       type="text"
                       value={formData.trade_name}
                       onChange={(e) => updateFormData('trade_name', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-white"
                       placeholder="Enter trade name (optional)"
                       aria-label="Trade Name"
                     />
@@ -595,16 +595,16 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                 </div>
 
                 {getOrganizationNamePreview() && (
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
                     <div className="flex items-start">
-                      <svg className="w-5 h-5 text-blue-600 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-5 h-5 text-primary mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                       </svg>
                       <div>
-                        <p className="text-sm font-medium text-blue-800">
+                        <p className="text-sm font-medium text-primary-dark">
                           Organization will be named:
                         </p>
-                        <p className="text-lg font-semibold text-blue-900 mt-1">
+                        <p className="text-lg font-semibold text-primary mt-1">
                           {getOrganizationNamePreview()}
                         </p>
                       </div>
@@ -659,8 +659,8 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
           <div className="space-y-8">
             <div>
               <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                  <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mr-3">
+                  <svg className="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
                   </svg>
                 </div>
@@ -676,7 +676,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                     type="text"
                     value={formData.address_line}
                     onChange={(e) => updateFormData('address_line', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-white"
                     placeholder="Street address"
                     aria-label="Street Address"
                   />
@@ -692,7 +692,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                       type="text"
                       value={formData.city}
                       onChange={(e) => updateFormData('city', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-white"
                       placeholder="City"
                       aria-label="City"
                     />
@@ -705,7 +705,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                       id="region"
                       value={formData.region}
                       onChange={(e) => updateFormData('region', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-white"
                       aria-label="Region"
                     >
                       <option value="">Select region</option>
@@ -738,7 +738,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                     type="text"
                     value={formData.zip_code}
                     onChange={(e) => updateFormData('zip_code', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-white"
                     placeholder="ZIP code"
                     aria-label="ZIP Code"
                   />
@@ -754,7 +754,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                       type="tel"
                       value={formData.contact_number}
                       onChange={(e) => updateFormData('contact_number', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-white"
                       placeholder="+63XXXXXXXXXX"
                       aria-label="Contact Number"
                     />
@@ -768,7 +768,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                       type="email"
                       value={formData.email_address}
                       onChange={(e) => updateFormData('email_address', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-white"
                       placeholder="email@example.com"
                       aria-label="Email Address"
                     />
@@ -784,8 +784,8 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
           <div className="space-y-8">
             <div>
               <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                  <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mr-3">
+                  <svg className="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" clipRule="evenodd" />
                   </svg>
                 </div>
@@ -801,7 +801,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                     type="text"
                     value={formData.line_of_business}
                     onChange={(e) => updateFormData('line_of_business', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-white"
                     placeholder="PSIC code"
                     aria-label="Line of Business"
                   />
@@ -817,7 +817,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                     type="text"
                     value={formData.rdo_code}
                     onChange={(e) => updateFormData('rdo_code', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-white"
                     placeholder="RDO code"
                     maxLength={3}
                     aria-label="RDO Code"
@@ -834,22 +834,22 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                     type="date"
                     value={formData.start_date}
                     onChange={(e) => updateFormData('start_date', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-white"
                     aria-label="Start Date"
                   />
                   <p className="text-xs text-gray-500 mt-1">Business registration start date</p>
                 </div>
 
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
                   <div className="flex items-start">
-                    <svg className="w-5 h-5 text-blue-600 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="w-5 h-5 text-primary mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                     </svg>
                     <div>
-                      <p className="text-sm font-medium text-blue-800">
+                      <p className="text-sm font-medium text-primary-dark">
                         Registration Summary
                       </p>
-                      <div className="text-sm text-blue-700 mt-2 space-y-1">
+                      <div className="text-sm text-primary mt-2 space-y-1">
                         <p><strong>PSIC Code:</strong> {formData.line_of_business || 'Not specified'}</p>
                         <p><strong>RDO Code:</strong> {formData.rdo_code || 'Not specified'}</p>
                         <p><strong>Start Date:</strong> {formData.start_date ? new Date(formData.start_date).toLocaleDateString() : 'Not specified'}</p>
@@ -867,8 +867,8 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
           <div className="space-y-8">
             <div>
               <h3 className="text-xl font-semibold text-gray-900 mb-6 flex items-center">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                  <svg className="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center mr-3">
+                  <svg className="w-4 h-4 text-primary" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.947c-1.37-.559-2.914.371-2.355 1.742A1.532 1.532 0 016 8.05v4.118c0 .621.504 1.125 1.125 1.125h.81c.621 0 1.125-.504 1.125-1.125V8.05a1.532 1.532 0 011.494-1.49c.947 0 1.621-.814 1.494-1.743a1.532 1.532 0 012.286-.947c1.37.559 2.914-.371 2.355-1.742zM10 13a3 3 0 100 6 3 3 0 000-6zm0 2a1 1 0 110 2 1 1 0 010-2z" clipRule="evenodd" />
                   </svg>
                 </div>
@@ -889,7 +889,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                       type="date"
                       value={formData.fy_start}
                       onChange={(e) => updateFormData('fy_start', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-white"
                       aria-label="Fiscal Year Start"
                     />
                     <p className="text-xs text-gray-500 mt-1">Optional: Leave blank for default</p>
@@ -903,7 +903,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                       type="date"
                       value={formData.fy_end}
                       onChange={(e) => updateFormData('fy_end', e.target.value)}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-white"
                       aria-label="Fiscal Year End"
                     />
                     <p className="text-xs text-gray-500 mt-1">Optional: Leave blank for default</p>
@@ -918,7 +918,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                     id="accounting-method"
                     value={formData.accounting_method}
                     onChange={(e) => updateFormData('accounting_method', e.target.value)}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-white"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-white"
                     aria-label="Accounting Method"
                   >
                     <option value="">Select accounting method</option>
@@ -938,7 +938,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                         type="checkbox"
                         checked={formData.has_foreign}
                         onChange={(e) => updateFormData('has_foreign', e.target.checked)}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                       />
                       <div className="ml-3">
                         <span className="text-sm font-medium text-gray-900">Has foreign transactions</span>
@@ -952,7 +952,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                         type="checkbox"
                         checked={formData.has_employees}
                         onChange={(e) => updateFormData('has_employees', e.target.checked)}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                       />
                       <div className="ml-3">
                         <span className="text-sm font-medium text-gray-900">Has employees</span>
@@ -966,7 +966,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                         type="checkbox"
                         checked={formData.is_ewt}
                         onChange={(e) => updateFormData('is_ewt', e.target.checked)}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                       />
                       <div className="ml-3">
                         <span className="text-sm font-medium text-gray-900">Expanded withholding tax</span>
@@ -980,7 +980,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                         type="checkbox"
                         checked={formData.is_fwt}
                         onChange={(e) => updateFormData('is_fwt', e.target.checked)}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                       />
                       <div className="ml-3">
                         <span className="text-sm font-medium text-gray-900">Final withholding tax</span>
@@ -994,7 +994,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                         type="checkbox"
                         checked={formData.is_bir_withholding_agent}
                         onChange={(e) => updateFormData('is_bir_withholding_agent', e.target.checked)}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded"
                       />
                       <div className="ml-3">
                         <span className="text-sm font-medium text-gray-900">BIR withholding agent</span>
@@ -1155,7 +1155,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300 ease-out"
+                  className="bg-primary h-2 rounded-full transition-all duration-300 ease-out"
                   style={{ width: `${(currentStep / totalSteps) * 100}%` }}
                 ></div>
               </div>
@@ -1174,7 +1174,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                 type="button"
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="w-full inline-flex justify-center items-center rounded-lg border border-transparent shadow-sm px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-base font-semibold text-white hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all duration-200 sm:ml-3 sm:w-auto"
+                className="w-full inline-flex justify-center items-center rounded-lg border border-transparent shadow-sm px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-base font-semibold text-white hover:from-primary-dark hover:to-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all duration-200 sm:ml-3 sm:w-auto"
               >
                 {isSubmitting ? (
                   <>
@@ -1193,7 +1193,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                 type="button"
                 onClick={nextStep}
                 disabled={!canProceedToNext()}
-                className="w-full inline-flex justify-center items-center rounded-lg border border-transparent shadow-sm px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-base font-semibold text-white hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all duration-200 sm:ml-3 sm:w-auto"
+                className="w-full inline-flex justify-center items-center rounded-lg border border-transparent shadow-sm px-6 py-3 bg-gradient-to-r from-primary to-primary-dark text-base font-semibold text-white hover:from-primary-dark hover:to-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all duration-200 sm:ml-3 sm:w-auto"
               >
                 Next Step
                 <svg className="ml-2 -mr-1 w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -1206,7 +1206,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
               <button
                 type="button"
                 onClick={prevStep}
-                className="mt-3 w-full inline-flex justify-center items-center rounded-lg border border-gray-300 shadow-sm px-6 py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 sm:mt-0 sm:ml-3 sm:w-auto"
+                className="mt-3 w-full inline-flex justify-center items-center rounded-lg border border-gray-300 shadow-sm px-6 py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 sm:mt-0 sm:ml-3 sm:w-auto"
               >
                 <svg className="mr-2 -ml-1 w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -1218,7 +1218,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
             <button
               type="button"
               onClick={onClose}
-              className="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-6 py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 sm:mt-0 sm:ml-3 sm:w-auto"
+              className="mt-3 w-full inline-flex justify-center rounded-lg border border-gray-300 shadow-sm px-6 py-3 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200 sm:mt-0 sm:ml-3 sm:w-auto"
             >
               Cancel
             </button>

@@ -60,13 +60,13 @@ export const MenuItemComponent = ({
   const itemClasses = cn(
     'menu-item',
     'group relative flex items-center py-2 text-sm font-medium rounded-lg transition-all duration-200',
-    'hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50',
+    'hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary/50',
     {
       'px-3': !collapsed,
       'px-1': collapsed,
       'justify-center': collapsed, // Center all items when collapsed
-      'bg-blue-50 text-blue-600': isActive,
-      'text-gray-900 hover:text-blue-600': !isActive,
+      'bg-blue-50 text-primary': isActive,
+      'text-gray-900 hover:text-primary': !isActive,
       'cursor-pointer': !item.disabled,
       'cursor-not-allowed opacity-50': item.disabled,
       'pl-6': level > 0 && !collapsed,
@@ -108,7 +108,7 @@ export const MenuItemComponent = ({
             )}
             <span className="truncate">{item.label}</span>
             {item.badge && (
-              <span className="ml-auto bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+              <span className="ml-auto bg-primary text-white text-xs px-2 py-1 rounded-full">
                 {item.badge}
               </span>
             )}
@@ -133,7 +133,7 @@ export const MenuItemComponent = ({
             )}
             <span className="truncate">{item.label}</span>
             {item.badge && (
-              <span className="ml-auto bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+              <span className="ml-auto bg-primary text-white text-xs px-2 py-1 rounded-full">
                 {item.badge}
               </span>
             )}

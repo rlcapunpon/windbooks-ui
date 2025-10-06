@@ -761,7 +761,7 @@ describe('Organization Page', () => {
 
     // General tab should be active by default
     const generalTab = screen.getByRole('button', { name: /general/i })
-    expect(generalTab).toHaveClass('border-blue-500', 'text-blue-600')
+    expect(generalTab).toHaveClass('border-primary', 'text-primary')
 
     // Should show Basic Information and Business Status sections
     expect(screen.getByText('Basic Information')).toBeInTheDocument()
@@ -788,7 +788,7 @@ describe('Organization Page', () => {
     await userEvent.click(operationTab)
 
     // Operation tab should be active
-    expect(operationTab).toHaveClass('border-blue-500', 'text-blue-600')
+    expect(operationTab).toHaveClass('border-primary', 'text-primary')
 
     // Should show Operation Details section
     expect(screen.getByText('Operation Details')).toBeInTheDocument()
@@ -815,7 +815,7 @@ describe('Organization Page', () => {
     await userEvent.click(birTab)
 
     // BIR Registration tab should be active
-    expect(birTab).toHaveClass('border-blue-500', 'text-blue-600')
+    expect(birTab).toHaveClass('border-primary', 'text-primary')
 
     // Should show Registration Information section
     expect(screen.getByText('Registration Information')).toBeInTheDocument()
@@ -1139,7 +1139,7 @@ describe('Step 15.3 - Organization Details Page Layout Updates', () => {
 
     // General tab should be active by default
     const generalTab = screen.getByRole('button', { name: /general/i })
-    expect(generalTab).toHaveClass('border-blue-500', 'text-blue-600')
+    expect(generalTab).toHaveClass('border-primary', 'text-primary')
 
     // Should show Business Status section first
     const businessStatusSection = screen.getByText('Business Status')

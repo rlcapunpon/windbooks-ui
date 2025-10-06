@@ -111,7 +111,7 @@ const Dashboard = () => {
         <div className="flex items-center space-x-4">
           <button
             onClick={() => setShowCreateModal(true)}
-            className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105"
+            className="btn-primary"
           >
             + Add User
           </button>
@@ -127,28 +127,28 @@ const Dashboard = () => {
       <div className="max-w-7xl mx-auto p-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white/95 backdrop-blur-xl p-6 rounded-xl shadow-lg border border-gray-200">
+          <div className="card p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-2">Total Users</h3>
-            <p className="text-3xl font-bold text-blue-600">{users.length}</p>
+            <p className="text-3xl font-bold text-primary">{users.length}</p>
           </div>
-          <div className="bg-white/95 backdrop-blur-xl p-6 rounded-xl shadow-lg border border-gray-200">
+          <div className="card p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-2">Active Users</h3>
             <p className="text-3xl font-bold text-green-600">{users.filter(u => u.status === 'active').length}</p>
           </div>
-          <div className="bg-white/95 backdrop-blur-xl p-6 rounded-xl shadow-lg border border-gray-200">
+          <div className="card p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-2">Admins</h3>
             <p className="text-3xl font-bold text-red-600">{users.filter(u => u.role === 'ROLE_LEVEL_1').length}</p>
           </div>
-          <div className="bg-white/95 backdrop-blur-xl p-6 rounded-xl shadow-lg border border-gray-200">
+          <div className="card p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-2">Managers</h3>
             <p className="text-3xl font-bold text-purple-600">{users.filter(u => u.role === 'ROLE_LEVEL_2').length}</p>
           </div>
         </div>
 
         {/* Users Table */}
-        <div className="bg-white/95 backdrop-blur-xl rounded-xl shadow-lg border border-gray-200 overflow-hidden">
+        <div className="card overflow-hidden">
           <div className="p-6 border-b border-gray-200">
-            <h2 className="text-2xl font-bold text-gray-800">User Management</h2>
+            <h2 className="text-heading">User Management</h2>
             <p className="text-gray-600">Manage users, roles, and permissions</p>
           </div>
 
@@ -191,7 +191,7 @@ const Dashboard = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <button
                         onClick={() => handleEditUser(user)}
-                        className="text-blue-600 hover:text-blue-900 mr-4"
+                        className="text-primary hover:text-primary-dark mr-4"
                       >
                         Edit
                       </button>
@@ -213,7 +213,7 @@ const Dashboard = () => {
       {/* Create User Modal */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+          <div className="card w-full max-w-md">
             <h3 className="text-xl font-bold mb-4">Create New User</h3>
             <div className="space-y-4">
               <input
@@ -221,26 +221,26 @@ const Dashboard = () => {
                 placeholder="Email"
                 value={newUser.email}
                 onChange={(e) => setNewUser({...newUser, email: e.target.value})}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="form-input"
               />
               <input
                 type="password"
                 placeholder="Password"
                 value={newUser.password}
                 onChange={(e) => setNewUser({...newUser, password: e.target.value})}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="form-input"
               />
               <input
                 type="password"
                 placeholder="Confirm Password"
                 value={newUser.confirmPassword}
                 onChange={(e) => setNewUser({...newUser, confirmPassword: e.target.value})}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="form-input"
               />
               <select
                 value={newUser.role}
                 onChange={(e) => setNewUser({...newUser, role: e.target.value as any})}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="form-input"
               >
                 <option value="ROLE_LEVEL_1">Level 1 (Super Admin)</option>
                 <option value="ROLE_LEVEL_2">Level 2 (Manager)</option>
@@ -252,7 +252,7 @@ const Dashboard = () => {
             <div className="flex space-x-3 mt-6">
               <button
                 onClick={handleCreateUser}
-                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+                className="btn-primary flex-1"
               >
                 Create User
               </button>
@@ -270,19 +270,19 @@ const Dashboard = () => {
       {/* Edit User Modal */}
       {editingUser && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+          <div className="card w-full max-w-md">
             <h3 className="text-xl font-bold mb-4">Edit User</h3>
             <div className="space-y-4">
               <input
                 type="email"
                 value={editingUser.email}
                 onChange={(e) => setEditingUser({...editingUser, email: e.target.value})}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="form-input"
               />
               <select
                 value={editingUser.role}
                 onChange={(e) => setEditingUser({...editingUser, role: e.target.value as any})}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="form-input"
               >
                 <option value="ROLE_LEVEL_1">Level 1 (Super Admin)</option>
                 <option value="ROLE_LEVEL_2">Level 2 (Manager)</option>
@@ -293,7 +293,7 @@ const Dashboard = () => {
               <select
                 value={editingUser.status}
                 onChange={(e) => setEditingUser({...editingUser, status: e.target.value as any})}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="form-input"
               >
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
@@ -302,7 +302,7 @@ const Dashboard = () => {
             <div className="flex space-x-3 mt-6">
               <button
                 onClick={handleUpdateUser}
-                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+                className="btn-primary flex-1"
               >
                 Update User
               </button>

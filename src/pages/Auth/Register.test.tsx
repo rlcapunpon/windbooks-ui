@@ -37,6 +37,84 @@ vi.mock('react-router-dom', async () => {
 describe('Register', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+
+    // Clear document for theme tests
+    document.head.innerHTML = '';
+    document.body.innerHTML = '';
+
+    // Manually inject the CSS custom properties from theme.css
+    const style = document.createElement('style');
+    style.textContent = `
+      :root {
+        /* Primary green palette */
+        --color-primary: #0ED977;
+        --color-primary-hover: #0ED675;
+        --color-primary-dark: #088D4D;
+
+        /* Backgrounds */
+        --color-background-primary: #FFFFFF;
+        --color-background-secondary: #F9F9F9;
+        --color-background-surface: #F9F9F9;
+
+        /* Text colors */
+        --color-text-primary: #231F20;
+        --color-text-secondary: #231F20;
+        --color-text-disabled: #A8EFC2;
+
+        /* Border and dividers */
+        --color-border: #E0E0E0;
+        --color-divider: #E0E0E0;
+
+        /* State colors */
+        --color-state-success: #0ED977;
+        --color-state-success-dark: #088D4D;
+        --color-state-warning: #F59E0B;
+        --color-state-error: #EF4444;
+
+        /* Accent colors */
+        --color-accent-light: #C7F9CC;
+        --color-accent-dark: #073B27;
+
+        /* Input colors */
+        --color-input-background: #FFFFFF;
+        --color-input-border: #E0E0E0;
+        --color-input-focus: #0ED977;
+      }
+
+      .btn-primary {
+        background-color: var(--color-primary);
+        color: #FFFFFF;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 0.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 14px 0 rgba(14, 217, 119, 0.25);
+      }
+
+      .text-heading {
+        color: var(--color-text-primary);
+        font-weight: 700;
+        font-size: 2rem;
+        line-height: 1.2;
+      }
+
+      .form-input {
+        background-color: var(--color-input-background);
+        border: 2px solid var(--color-input-border);
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        color: var(--color-text-primary);
+        transition: all 0.3s ease;
+      }
+
+      .form-input:focus {
+        outline: none;
+        border-color: var(--color-input-focus);
+        box-shadow: 0 0 0 3px rgba(14, 217, 119, 0.1);
+      }
+    `;
+    document.head.appendChild(style);
   });
 
   it('renders the registration form', () => {
@@ -148,6 +226,63 @@ describe('Register', () => {
 
     await waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith('/auth/login', { state: { showVerificationMessage: true } });
+    });
+  });
+
+  describe('Theme Usage', () => {
+    it('uses btn-primary class for submit button', () => {
+      render(
+        <BrowserRouter>
+          <AuthContext.Provider value={mockAuthContext}>
+            <Register />
+          </AuthContext.Provider>
+        </BrowserRouter>
+      );
+
+      const submitButton = screen.getByRole('button', { name: 'Register' });
+      expect(submitButton).toHaveClass('btn-primary');
+    });
+
+    it('uses text-heading class for page heading', () => {
+      render(
+        <BrowserRouter>
+          <AuthContext.Provider value={mockAuthContext}>
+            <Register />
+          </AuthContext.Provider>
+        </BrowserRouter>
+      );
+
+      const heading = screen.getByRole('heading', { name: 'Register' });
+      expect(heading).toHaveClass('text-heading');
+    });
+
+    it('uses form-input class for email input', () => {
+      render(
+        <BrowserRouter>
+          <AuthContext.Provider value={mockAuthContext}>
+            <Register />
+          </AuthContext.Provider>
+        </BrowserRouter>
+      );
+
+      const emailInput = screen.getByPlaceholderText('Enter your email');
+      expect(emailInput).toHaveClass('form-input');
+    });
+
+    it('uses form-input class for password inputs', () => {
+      render(
+        <BrowserRouter>
+          <AuthContext.Provider value={mockAuthContext}>
+            <Register />
+          </AuthContext.Provider>
+        </BrowserRouter>
+      );
+
+      const passwordInput = screen.getByPlaceholderText('Enter your password');
+      const confirmPasswordInput = screen.getByPlaceholderText('Confirm your password');
+
+      expect(passwordInput).toHaveClass('form-input');
+      expect(confirmPasswordInput).toHaveClass('form-input');
     });
   });
 });

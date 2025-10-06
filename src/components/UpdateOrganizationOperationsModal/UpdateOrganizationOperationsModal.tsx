@@ -134,7 +134,7 @@ export const UpdateOrganizationOperationsModal: React.FC<UpdateOrganizationOpera
                   value={formData.fy_start}
                   onChange={(e) => setFormData({ ...formData, fy_start: e.target.value })}
                   disabled={loading}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -149,7 +149,7 @@ export const UpdateOrganizationOperationsModal: React.FC<UpdateOrganizationOpera
                   value={formData.fy_end}
                   onChange={(e) => setFormData({ ...formData, fy_end: e.target.value })}
                   disabled={loading}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -164,7 +164,7 @@ export const UpdateOrganizationOperationsModal: React.FC<UpdateOrganizationOpera
                   value={formData.vat_reg_effectivity}
                   onChange={(e) => setFormData({ ...formData, vat_reg_effectivity: e.target.value })}
                   disabled={loading}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -179,7 +179,7 @@ export const UpdateOrganizationOperationsModal: React.FC<UpdateOrganizationOpera
                   value={formData.registration_effectivity}
                   onChange={(e) => setFormData({ ...formData, registration_effectivity: e.target.value })}
                   disabled={loading}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -195,7 +195,7 @@ export const UpdateOrganizationOperationsModal: React.FC<UpdateOrganizationOpera
                   onChange={(e) => setFormData({ ...formData, payroll_cut_off: stringToArray(e.target.value) })}
                   disabled={loading}
                   placeholder="e.g. 15,30"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -211,7 +211,7 @@ export const UpdateOrganizationOperationsModal: React.FC<UpdateOrganizationOpera
                   onChange={(e) => setFormData({ ...formData, payment_cut_off: stringToArray(e.target.value) })}
                   disabled={loading}
                   placeholder="e.g. 10,25"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -227,7 +227,7 @@ export const UpdateOrganizationOperationsModal: React.FC<UpdateOrganizationOpera
                   onChange={(e) => setFormData({ ...formData, quarter_closing: stringToArray(e.target.value) })}
                   disabled={loading}
                   placeholder="e.g. 03-31,06-30,09-30,12-31"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -241,7 +241,7 @@ export const UpdateOrganizationOperationsModal: React.FC<UpdateOrganizationOpera
                   value={formData.accounting_method}
                   onChange={(e) => setFormData({ ...formData, accounting_method: e.target.value })}
                   disabled={loading}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <option value="">Select method</option>
                   {ACCOUNTING_METHOD_OPTIONS.map((option) => (
@@ -264,7 +264,7 @@ export const UpdateOrganizationOperationsModal: React.FC<UpdateOrganizationOpera
                     checked={formData.has_foreign}
                     onChange={(e) => setFormData({ ...formData, has_foreign: e.target.checked })}
                     disabled={loading}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <label htmlFor="has_foreign" className="ml-2 block text-sm text-gray-900">
                     Has Foreign Transactions
@@ -278,7 +278,7 @@ export const UpdateOrganizationOperationsModal: React.FC<UpdateOrganizationOpera
                     checked={formData.has_employees}
                     onChange={(e) => setFormData({ ...formData, has_employees: e.target.checked })}
                     disabled={loading}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <label htmlFor="has_employees" className="ml-2 block text-sm text-gray-900">
                     Has Employees
@@ -292,7 +292,7 @@ export const UpdateOrganizationOperationsModal: React.FC<UpdateOrganizationOpera
                     checked={formData.is_ewt}
                     onChange={(e) => setFormData({ ...formData, is_ewt: e.target.checked })}
                     disabled={loading}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <label htmlFor="is_ewt" className="ml-2 block text-sm text-gray-900">
                     Expanded Withholding Tax (EWT)
@@ -306,7 +306,7 @@ export const UpdateOrganizationOperationsModal: React.FC<UpdateOrganizationOpera
                     checked={formData.is_fwt}
                     onChange={(e) => setFormData({ ...formData, is_fwt: e.target.checked })}
                     disabled={loading}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <label htmlFor="is_fwt" className="ml-2 block text-sm text-gray-900">
                     Final Withholding Tax (FWT)
@@ -320,7 +320,7 @@ export const UpdateOrganizationOperationsModal: React.FC<UpdateOrganizationOpera
                     checked={formData.is_bir_withholding_agent}
                     onChange={(e) => setFormData({ ...formData, is_bir_withholding_agent: e.target.checked })}
                     disabled={loading}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                   <label htmlFor="is_bir_withholding_agent" className="ml-2 block text-sm text-gray-900">
                     BIR Withholding Agent
@@ -334,14 +334,14 @@ export const UpdateOrganizationOperationsModal: React.FC<UpdateOrganizationOpera
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Saving...' : 'Save'}
               </button>

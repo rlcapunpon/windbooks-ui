@@ -24,15 +24,15 @@ const RoleLevel4Dashboard = () => {
 
       <div className="max-w-7xl mx-auto p-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">User Dashboard</h1>
+          <h1 className="text-3xl font-bold mb-2 text-heading">User Dashboard</h1>
           <p className="text-text-light-secondary">Access your account information and basic features</p>
         </div>
 
         {/* Welcome Section */}
-        <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200 mb-8">
+        <div className="card mb-8">
           <div className="text-center">
             <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-10 h-10 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
               </svg>
             </div>
@@ -43,22 +43,22 @@ const RoleLevel4Dashboard = () => {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card">
             <div className="flex items-center mb-4">
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
-                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
               <h3 className="text-lg font-semibold text-gray-800">Profile</h3>
             </div>
             <p className="text-gray-600 mb-4">View and update your personal information</p>
-            <button className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+            <button className="w-full btn-primary">
               View Profile
             </button>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card">
             <div className="flex items-center mb-4">
               <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
                 <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -68,12 +68,12 @@ const RoleLevel4Dashboard = () => {
               <h3 className="text-lg font-semibold text-gray-800">Directory</h3>
             </div>
             <p className="text-gray-600 mb-4">Browse team members and contact information</p>
-            <button className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors">
+            <button className="w-full btn-primary">
               Browse Directory
             </button>
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <div className="card">
             <div className="flex items-center mb-4">
               <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
                 <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,14 +83,14 @@ const RoleLevel4Dashboard = () => {
               <h3 className="text-lg font-semibold text-gray-800">Help & Support</h3>
             </div>
             <p className="text-gray-600 mb-4">Get help and support for using the system</p>
-            <button className="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-colors">
+            <button className="w-full btn-primary">
               Get Help
             </button>
           </div>
         </div>
 
         {/* Account Info */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="card">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Account Information</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>

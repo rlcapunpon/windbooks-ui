@@ -13,9 +13,9 @@ const FeatureUnderDevelopment: React.FC<FeatureUnderDevelopmentProps> = ({
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="bg-white shadow-lg rounded-lg p-8 text-center">
-          <div className="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-blue-100">
+          <div className="mx-auto flex items-center justify-center h-24 w-24 rounded-full bg-primary/10">
             <svg
-              className="h-12 w-12 text-blue-600"
+              className="h-12 w-12 text-primary"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
