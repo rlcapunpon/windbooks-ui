@@ -33,7 +33,7 @@ const ResetPassword = () => {
       } else {
         setError('Failed to send reset email. Please try again.');
       }
-    } catch (err) {
+    } catch {
       setError('Network error occurred. Please try again.');
     } finally {
       setIsLoading(false);

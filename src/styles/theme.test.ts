@@ -284,7 +284,7 @@ describe('Theme CSS - Central Color Palette and Component Styles', () => {
       overlay.className = 'modal-overlay';
       document.body.appendChild(overlay);
       
-      const overlayStyles = getComputedStyle(overlay);
+      // const overlayStyles = getComputedStyle(overlay);
       // backdrop-filter may not be supported in test environment
       expect(overlay.classList.contains('modal-overlay')).toBe(true);
       

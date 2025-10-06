@@ -174,7 +174,7 @@ export const MenuExample = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">Menu Variant</label>
             <select
               value={variant}
-              onChange={(e) => setVariant(e.target.value as any)}
+              onChange={(e) => setVariant(e.target.value as 'sidebar' | 'drawer' | 'horizontal')}
               className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="sidebar">Sidebar</option>

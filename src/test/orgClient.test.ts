@@ -46,7 +46,7 @@ describe('orgApiClient Unit and Integration Tests', () => {
           timeout: 1000,
           validateStatus: () => true // Accept any status for testing
         });
-      } catch (error) {
+      } catch {
         // error is intentionally unused - connection errors are expected in testing
       }
 
@@ -72,7 +72,7 @@ describe('orgApiClient Unit and Integration Tests', () => {
           timeout: 1000,
           validateStatus: () => true
         });
-      } catch (error) {
+      } catch {
         // Expected
       }
 
@@ -93,7 +93,7 @@ describe('orgApiClient Unit and Integration Tests', () => {
           timeout: 1000,
           validateStatus: () => true
         });
-      } catch (error) {
+      } catch {
         // Expected
       }
 
@@ -120,7 +120,7 @@ describe('orgApiClient Unit and Integration Tests', () => {
           call.some(arg => typeof arg === 'string' && arg.includes('✅ Org API Response:'))
         );
         expect(hasResponseLog).toBe(true);
-      } catch (error) {
+      } catch {
         // If there's an actual error (network, timeout, etc.), should have error log
         const errorCalls = consoleErrorSpy.mock.calls;
         const hasErrorLog = errorCalls.some(call => 

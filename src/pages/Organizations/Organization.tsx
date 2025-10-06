@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { OrganizationService } from '../../services/organizationService'
 import { UserService } from '../../services/userService'
-import type { Organization, OrganizationStatus, OrganizationRegistration, OrganizationOwnership } from '../../services/organizationService'
+import type { Organization, OrganizationStatus, OrganizationRegistration, OrganizationOwnership, OrganizationOperation, UpdateOrganizationStatusRequestDto } from '../../services/organizationService'
 import { UpdateOrganizationStatusModal, type UpdateStatusFormData } from '../../components/UpdateOrganizationStatusModal'
 import { UpdateOrganizationOperationsModal, type UpdateOperationFormData } from '../../components/UpdateOrganizationOperationsModal/UpdateOrganizationOperationsModal'
 import { UpdateOrganizationRegistrationModal, type UpdateRegistrationFormData } from '../../components/UpdateOrganizationRegistrationModal/UpdateOrganizationRegistrationModal'
@@ -72,7 +72,7 @@ const OrganizationPage: React.FC = () => {
   const navigate = useNavigate()
   const [organization, setOrganization] = useState<Organization | null>(null)
   const [organizationStatus, setOrganizationStatus] = useState<OrganizationStatus | null>(null)
-  const [organizationOperation, setOrganizationOperation] = useState<any | null>(null)
+  const [organizationOperation, setOrganizationOperation] = useState<OrganizationOperation | null>(null)
   const [organizationRegistration, setOrganizationRegistration] = useState<OrganizationRegistration | null>(null)
   const [organizationOwnership, setOrganizationOwnership] = useState<OrganizationOwnership | null>(null)
   const [loading, setLoading] = useState(true)
@@ -312,10 +312,10 @@ const OrganizationPage: React.FC = () => {
 const OrganizationDetails: React.FC<{
   organization: Organization
   organizationStatus: OrganizationStatus | null
-  organizationOperation: any | null
+  organizationOperation: OrganizationOperation | null
   organizationRegistration: OrganizationRegistration | null
   onStatusUpdate: (status: OrganizationStatus) => void
-  onOperationUpdate: (operation: any) => void
+  onOperationUpdate: (operation: OrganizationOperation) => void
   onRegistrationUpdate: (registration: OrganizationRegistration) => void
 }> = ({ organization, organizationStatus, organizationOperation, organizationRegistration, onStatusUpdate, onOperationUpdate, onRegistrationUpdate }) => {
   const [activeTab, setActiveTab] = useState<'general' | 'operation' | 'bir'>('general')
@@ -369,8 +369,8 @@ const OrganizationDetails: React.FC<{
       setStatusUpdateLoading(true)
       // Convert form data to the correct API type
       const requestData = {
-        status: formData.status as any, // Type assertion needed due to string vs enum
-        reason: formData.reason as any,
+        status: formData.status as UpdateOrganizationStatusRequestDto['status'],
+        reason: formData.reason as UpdateOrganizationStatusRequestDto['reason'],
         description: formData.description || undefined
       }
       const updatedStatus = await OrganizationService.updateOrganizationStatus(organization.id, requestData)
@@ -828,42 +828,42 @@ const OrganizationDetails: React.FC<{
   )
 }
 
-const Contacts: React.FC<{ organization: Organization }> = ({ organization: _organization }) => (
+const Contacts: React.FC<{ organization: Organization }> = () => (
   <div>
     <h2 className="text-xl font-semibold mb-4">Contacts</h2>
     <p className="text-gray-600">Contact management functionality coming soon.</p>
   </div>
 )
 
-const TaxObligations: React.FC<{ organization: Organization }> = ({ organization: _organization }) => (
+const TaxObligations: React.FC<{ organization: Organization }> = () => (
   <div>
     <h2 className="text-xl font-semibold mb-4">Tax Obligations</h2>
     <p className="text-gray-600">Tax obligations functionality coming soon.</p>
   </div>
 )
 
-const Books: React.FC<{ organization: Organization }> = ({ organization: _organization }) => (
+const Books: React.FC<{ organization: Organization }> = () => (
   <div>
     <h2 className="text-xl font-semibold mb-4">Books</h2>
     <p className="text-gray-600">Books management functionality coming soon.</p>
   </div>
 )
 
-const Employees: React.FC<{ organization: Organization }> = ({ organization: _organization }) => (
+const Employees: React.FC<{ organization: Organization }> = () => (
   <div>
     <h2 className="text-xl font-semibold mb-4">Employees</h2>
     <p className="text-gray-600">Employee management functionality coming soon.</p>
   </div>
 )
 
-const History: React.FC<{ organization: Organization }> = ({ organization: _organization }) => (
+const History: React.FC<{ organization: Organization }> = () => (
   <div>
     <h2 className="text-xl font-semibold mb-4">History</h2>
     <p className="text-gray-600">Organization history functionality coming soon.</p>
   </div>
 )
 
-const Settings: React.FC<{ organization: Organization }> = ({ organization: _organization }) => (
+const Settings: React.FC<{ organization: Organization }> = () => (
   <div>
     <h2 className="text-xl font-semibold mb-4">Settings</h2>
     <p className="text-gray-600">Organization settings functionality coming soon.</p>

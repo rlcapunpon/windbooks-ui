@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import type { OrganizationRegistration } from '../../services/organizationService'
 
 // Tax type options from the requirements
 const TAX_TYPE_OPTIONS = [
@@ -51,7 +52,7 @@ export interface UpdateOrganizationRegistrationModalProps {
   isOpen: boolean
   onClose: () => void
   onSave: (data: UpdateRegistrationFormData) => void
-  currentRegistration: any
+  currentRegistration: OrganizationRegistration | null
   loading: boolean
 }
 
@@ -91,7 +92,7 @@ export const UpdateOrganizationRegistrationModal: React.FC<UpdateOrganizationReg
         first_name: currentRegistration.first_name || '',
         middle_name: currentRegistration.middle_name || '',
         last_name: currentRegistration.last_name || '',
-        registered_name: currentRegistration.registered_name || '',
+        registered_name: (currentRegistration as any).registered_name || '', // Optional field, preserve if provided
         trade_name: currentRegistration.trade_name || '',
         line_of_business: currentRegistration.line_of_business || '',
         address_line: currentRegistration.address_line || '',

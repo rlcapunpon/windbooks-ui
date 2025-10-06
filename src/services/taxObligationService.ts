@@ -1,12 +1,20 @@
 import apiClient from '../api/client'
 
+// Due rule interface for tax obligations
+export interface DueRule {
+  type: 'FIXED_DATE' | 'END_OF_MONTH' | 'END_OF_QUARTER' | 'END_OF_YEAR'
+  day?: number // For FIXED_DATE
+  month?: number // For FIXED_DATE
+  offset?: number // Days before/after the period end
+}
+
 // Tax Obligation DTOs based on org-mgmt-api.yaml
 export interface TaxObligation {
   id: string
   code: string
   name: string
   frequency: 'MONTHLY' | 'QUARTERLY' | 'ANNUAL' | 'ONE_TIME'
-  due_rule: any // JSON object for due date rules
+  due_rule: DueRule
   status?: string
   created_at: string
   updated_at: string
@@ -16,7 +24,7 @@ export interface CreateTaxObligationRequestDto {
   code: string
   name: string
   frequency: 'MONTHLY' | 'QUARTERLY' | 'ANNUAL' | 'ONE_TIME'
-  due_rule: any // JSON object for due date rules
+  due_rule: DueRule
   status?: string
 }
 

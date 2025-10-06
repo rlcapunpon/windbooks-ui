@@ -18,7 +18,7 @@ const OrganizationsPercentageTax: React.FC = () => {
       setError(null)
       const data = await OrganizationService.getAllOrganizations({ tax_classification: 'NON_VAT' })
       setOrganizations(data)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load Percentage Tax organizations:', err)
       setError('Failed to load Percentage Tax organizations. Please try again.')
     } finally {
@@ -42,7 +42,7 @@ const OrganizationsPercentageTax: React.FC = () => {
     setIsCreateModalOpen(false)
   }
 
-  const handleCreateSuccess = async (_newOrganization: any) => {
+  const handleCreateSuccess = async () => {
     setIsCreateModalOpen(false)
     // Refresh the organizations list to show the newly created organization
     await loadOrganizations()

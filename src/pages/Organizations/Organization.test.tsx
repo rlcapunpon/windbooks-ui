@@ -6,6 +6,7 @@ import Organization from './Organization'
 import { OrganizationService } from '../../services/organizationService'
 import { UserService } from '../../services/userService'
 import type { Organization as OrganizationType, OrganizationStatus, OrganizationRegistration, OrganizationOwnership } from '../../services/organizationService'
+import type { User } from '../../api/auth'
 import { canEditOrganizationStatus, canEditOrganizationRegistration } from '../../utils/organizationPermissions'
 
 // Mock the organization service
@@ -38,6 +39,9 @@ vi.mock('../../utils/organizationPermissions', () => ({
 
 const mockCanEditOrganizationStatus = vi.mocked(canEditOrganizationStatus)
 const mockCanEditOrganizationRegistration = vi.mocked(canEditOrganizationRegistration)
+
+const mockOrganizationService = vi.mocked(OrganizationService)
+const mockUserService = vi.mocked(UserService)
 
 // Mock useNavigate
 const mockNavigate = vi.fn()
@@ -84,7 +88,6 @@ const mockOrganizationStatus: OrganizationStatus = {
 }
 
 const mockOrganizationOperation = {
-  id: 'operation-1',
   organization_id: 'org-1',
   fy_start: '2024-01-01T00:00:00.000Z',
   fy_end: '2025-12-30T16:00:00.000Z',
@@ -98,8 +101,7 @@ const mockOrganizationOperation = {
   is_ewt: true,
   is_fwt: true,
   is_bir_withholding_agent: true,
-  accounting_method: 'ACCRUAL',
-  last_update: '2024-01-01T00:00:00.000Z',
+  accounting_method: 'ACCRUAL' as const,
   created_at: '2024-01-01T00:00:00.000Z',
   updated_at: '2024-01-01T00:00:00.000Z'
 }
@@ -150,6 +152,29 @@ const mockOrganizationOwnershipNonOwner: OrganizationOwnership = {
   userId: 'user-2'
 }
 
+const mockUser: User = {
+  id: 'user-1',
+  email: 'test@example.com',
+  isActive: true,
+  isSuperAdmin: false,
+  createdAt: '2024-01-01T00:00:00.000Z',
+  updatedAt: '2024-01-01T00:00:00.000Z',
+  details: {
+    firstName: 'Test',
+    lastName: 'User',
+    nickName: 'TestUser',
+    contactNumber: '+1234567890',
+    reportTo: {
+      id: 'manager-1',
+      email: 'manager@example.com',
+      firstName: 'Manager',
+      lastName: 'User',
+      nickName: 'ManagerUser'
+    }
+  },
+  resources: []
+}
+
 describe('Organization Page', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -158,15 +183,15 @@ describe('Organization Page', () => {
     mockCanEditOrganizationRegistration.mockReset()
     
     // Set up default UserService mocks
-    ;(UserService.hasUserData as any).mockReturnValue(true)
-    ;(UserService.fetchAndStoreUserData as any).mockResolvedValue({})
-    ;(UserService.hasRole as any).mockReturnValue(false)
-    ;(UserService.isSuperAdmin as any).mockReturnValue(false)
+    mockUserService.hasUserData.mockReturnValue(true)
+    mockUserService.fetchAndStoreUserData.mockResolvedValue(mockUser)
+    mockUserService.hasRole.mockReturnValue(false)
+    mockUserService.isSuperAdmin.mockReturnValue(false)
   })
 
   describe('Loading State', () => {
     it('should show loading state initially', () => {
-      ;(OrganizationService.getOrganizationById as any).mockImplementation(() => new Promise(() => {}))
+      mockOrganizationService.getOrganizationById.mockImplementation(() => new Promise(() => {}))
 
       render(
         <BrowserRouter>
@@ -180,7 +205,7 @@ describe('Organization Page', () => {
 
   describe('Successful Data Loading', () => {
     beforeEach(() => {
-      ;(OrganizationService.getOrganizationById as any).mockResolvedValue(mockOrganization)
+      mockOrganizationService.getOrganizationById.mockResolvedValue(mockOrganization)
     })
 
     it('should load and display organization details', async () => {
@@ -203,12 +228,12 @@ describe('Organization Page', () => {
     })
 
     it('should display menu items', async () => {
-      ;(OrganizationService.getOrganizationById as any).mockResolvedValue(mockOrganization)
-      ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(mockOrganizationStatus)
-      ;(OrganizationService.getOrganizationOperation as any).mockResolvedValue(mockOrganizationOperation)
-      ;(OrganizationService.getOrganizationRegistration as any).mockResolvedValue(mockOrganizationRegistration)
-      ;(OrganizationService.getOrganizationOwnership as any).mockResolvedValue(mockOrganizationOwnership)
-      ;(UserService.isSuperAdmin as any).mockReturnValue(true)
+      mockOrganizationService.getOrganizationById.mockResolvedValue(mockOrganization)
+      mockOrganizationService.getOrganizationStatus.mockResolvedValue(mockOrganizationStatus)
+      mockOrganizationService.getOrganizationOperation.mockResolvedValue(mockOrganizationOperation)
+      mockOrganizationService.getOrganizationRegistration.mockResolvedValue(mockOrganizationRegistration)
+      mockOrganizationService.getOrganizationOwnership.mockResolvedValue(mockOrganizationOwnership)
+      mockUserService.isSuperAdmin.mockReturnValue(true)
 
       render(
         <BrowserRouter>
@@ -230,12 +255,12 @@ describe('Organization Page', () => {
     })
 
     it('should switch between menu sections', async () => {
-      ;(OrganizationService.getOrganizationById as any).mockResolvedValue(mockOrganization)
-      ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(mockOrganizationStatus)
-      ;(OrganizationService.getOrganizationOperation as any).mockResolvedValue(mockOrganizationOperation)
-      ;(OrganizationService.getOrganizationRegistration as any).mockResolvedValue(mockOrganizationRegistration)
-      ;(OrganizationService.getOrganizationOwnership as any).mockResolvedValue(mockOrganizationOwnership)
-      ;(UserService.isSuperAdmin as any).mockReturnValue(true)
+      mockOrganizationService.getOrganizationById.mockResolvedValue(mockOrganization)
+      mockOrganizationService.getOrganizationStatus.mockResolvedValue(mockOrganizationStatus)
+      mockOrganizationService.getOrganizationOperation.mockResolvedValue(mockOrganizationOperation)
+      mockOrganizationService.getOrganizationRegistration.mockResolvedValue(mockOrganizationRegistration)
+      mockOrganizationService.getOrganizationOwnership.mockResolvedValue(mockOrganizationOwnership)
+      mockUserService.isSuperAdmin.mockReturnValue(true)
 
       render(
         <BrowserRouter>
@@ -294,10 +319,10 @@ describe('Organization Page', () => {
     })
 
     it('should show Employees tab when organization has employees', async () => {
-      ;(OrganizationService.getOrganizationById as any).mockResolvedValue(mockOrganization)
-      ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(mockOrganizationStatus)
-      ;(OrganizationService.getOrganizationOperation as any).mockResolvedValue(mockOrganizationOperation)
-      ;(OrganizationService.getOrganizationRegistration as any).mockResolvedValue(mockOrganizationRegistration)
+      mockOrganizationService.getOrganizationById.mockResolvedValue(mockOrganization)
+      mockOrganizationService.getOrganizationStatus.mockResolvedValue(mockOrganizationStatus)
+      mockOrganizationService.getOrganizationOperation.mockResolvedValue(mockOrganizationOperation)
+      mockOrganizationService.getOrganizationRegistration.mockResolvedValue(mockOrganizationRegistration)
 
       render(
         <BrowserRouter>
@@ -314,10 +339,10 @@ describe('Organization Page', () => {
 
     it('should hide Employees tab when organization does not have employees', async () => {
       const operationWithoutEmployees = { ...mockOrganizationOperation, has_employees: false }
-      ;(OrganizationService.getOrganizationById as any).mockResolvedValue(mockOrganization)
-      ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(mockOrganizationStatus)
-      ;(OrganizationService.getOrganizationOperation as any).mockResolvedValue(operationWithoutEmployees)
-      ;(OrganizationService.getOrganizationRegistration as any).mockResolvedValue(mockOrganizationRegistration)
+      mockOrganizationService.getOrganizationById.mockResolvedValue(mockOrganization)
+      mockOrganizationService.getOrganizationStatus.mockResolvedValue(mockOrganizationStatus)
+      mockOrganizationService.getOrganizationOperation.mockResolvedValue(operationWithoutEmployees)
+      mockOrganizationService.getOrganizationRegistration.mockResolvedValue(mockOrganizationRegistration)
 
       render(
         <BrowserRouter>
@@ -335,7 +360,7 @@ describe('Organization Page', () => {
 
   describe('Error Handling', () => {
     it('should display error message when organization loading fails', async () => {
-      ;(OrganizationService.getOrganizationById as any).mockRejectedValue(new Error('API Error'))
+      mockOrganizationService.getOrganizationById.mockRejectedValue(new Error('API Error'))
 
       render(
         <BrowserRouter>
@@ -351,7 +376,7 @@ describe('Organization Page', () => {
     })
 
     it('should navigate back when error back button is clicked', async () => {
-      ;(OrganizationService.getOrganizationById as any).mockRejectedValue(new Error('API Error'))
+      mockOrganizationService.getOrganizationById.mockRejectedValue(new Error('API Error'))
 
       render(
         <BrowserRouter>
@@ -373,7 +398,7 @@ describe('Organization Page', () => {
 
   describe('Organization Not Found', () => {
     it('should display not found message when organization is null', async () => {
-      ;(OrganizationService.getOrganizationById as any).mockResolvedValue(null)
+      mockOrganizationService.getOrganizationById.mockResolvedValue(null as never)
 
       render(
         <BrowserRouter>
@@ -389,10 +414,10 @@ describe('Organization Page', () => {
 
   describe('Comprehensive Data Loading', () => {
     beforeEach(() => {
-      ;(OrganizationService.getOrganizationById as any).mockResolvedValue(mockOrganization)
-      ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(mockOrganizationStatus)
-      ;(OrganizationService.getOrganizationOperation as any).mockResolvedValue(mockOrganizationOperation)
-      ;(OrganizationService.getOrganizationRegistration as any).mockResolvedValue(mockOrganizationRegistration)
+      mockOrganizationService.getOrganizationById.mockResolvedValue(mockOrganization)
+      mockOrganizationService.getOrganizationStatus.mockResolvedValue(mockOrganizationStatus)
+      mockOrganizationService.getOrganizationOperation.mockResolvedValue(mockOrganizationOperation)
+      mockOrganizationService.getOrganizationRegistration.mockResolvedValue(mockOrganizationRegistration)
     })
 
     it('should call all 4 endpoints to load comprehensive organization data', async () => {
@@ -403,10 +428,10 @@ describe('Organization Page', () => {
       )
 
       await waitFor(() => {
-        expect(OrganizationService.getOrganizationById).toHaveBeenCalledWith('org-1')
-        expect(OrganizationService.getOrganizationStatus).toHaveBeenCalledWith('org-1')
-        expect(OrganizationService.getOrganizationOperation).toHaveBeenCalledWith('org-1')
-        expect(OrganizationService.getOrganizationRegistration).toHaveBeenCalledWith('org-1')
+        expect(mockOrganizationService.getOrganizationById).toHaveBeenCalledWith('org-1')
+        expect(mockOrganizationService.getOrganizationStatus).toHaveBeenCalledWith('org-1')
+        expect(mockOrganizationService.getOrganizationOperation).toHaveBeenCalledWith('org-1')
+        expect(mockOrganizationService.getOrganizationRegistration).toHaveBeenCalledWith('org-1')
       })
     })
 
@@ -482,10 +507,10 @@ describe('Organization Page', () => {
 
   describe('Business Status Display', () => {
     beforeEach(() => {
-      ;(OrganizationService.getOrganizationById as any).mockResolvedValue(mockOrganization)
-      ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(mockOrganizationStatus)
-      ;(OrganizationService.getOrganizationOperation as any).mockResolvedValue(mockOrganizationOperation)
-      ;(OrganizationService.getOrganizationRegistration as any).mockResolvedValue(mockOrganizationRegistration)
+      mockOrganizationService.getOrganizationById.mockResolvedValue(mockOrganization)
+      mockOrganizationService.getOrganizationStatus.mockResolvedValue(mockOrganizationStatus)
+      mockOrganizationService.getOrganizationOperation.mockResolvedValue(mockOrganizationOperation)
+      mockOrganizationService.getOrganizationRegistration.mockResolvedValue(mockOrganizationRegistration)
     })
 
     it('should display status with aesthetic styling without Status label', async () => {
@@ -507,9 +532,9 @@ describe('Organization Page', () => {
 
     it('should show approval button for PENDING_REG status when user has APPROVER role', async () => {
       const pendingStatus = { ...mockOrganizationStatus, status: 'PENDING_REG' as const }
-      ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(pendingStatus)
-      ;(UserService.hasRole as any).mockImplementation((role: string) => role === 'APPROVER')
-      ;(UserService.isSuperAdmin as any).mockReturnValue(false)
+      mockOrganizationService.getOrganizationStatus.mockResolvedValue(pendingStatus)
+      mockUserService.hasRole.mockImplementation((role: string) => role === 'APPROVER')
+      mockUserService.isSuperAdmin.mockReturnValue(false)
 
       render(
         <BrowserRouter>
@@ -526,9 +551,9 @@ describe('Organization Page', () => {
 
     it('should show approval button for PENDING_REG status when user is SUPERADMIN', async () => {
       const pendingStatus = { ...mockOrganizationStatus, status: 'PENDING_REG' as const }
-      ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(pendingStatus)
-      ;(UserService.hasRole as any).mockReturnValue(false)
-      ;(UserService.isSuperAdmin as any).mockReturnValue(true)
+      mockOrganizationService.getOrganizationStatus.mockResolvedValue(pendingStatus)
+      mockUserService.hasRole.mockReturnValue(false)
+      mockUserService.isSuperAdmin.mockReturnValue(true)
 
       render(
         <BrowserRouter>
@@ -545,9 +570,9 @@ describe('Organization Page', () => {
 
     it('should show pending approval message for PENDING_REG status when user lacks approval permissions', async () => {
       const pendingStatus = { ...mockOrganizationStatus, status: 'PENDING_REG' as const }
-      ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(pendingStatus)
-      ;(UserService.hasRole as any).mockReturnValue(false)
-      ;(UserService.isSuperAdmin as any).mockReturnValue(false)
+      mockOrganizationService.getOrganizationStatus.mockResolvedValue(pendingStatus)
+      mockUserService.hasRole.mockReturnValue(false)
+      mockUserService.isSuperAdmin.mockReturnValue(false)
 
       render(
         <BrowserRouter>
@@ -565,10 +590,10 @@ describe('Organization Page', () => {
 
     it('should call updateOrganizationStatus API when approval button is clicked', async () => {
       const pendingStatus = { ...mockOrganizationStatus, status: 'PENDING_REG' as const }
-      ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(pendingStatus)
-      ;(UserService.hasRole as any).mockImplementation((role: string) => role === 'APPROVER')
-      ;(UserService.isSuperAdmin as any).mockReturnValue(false)
-      ;(OrganizationService.updateOrganizationStatus as any).mockResolvedValue({
+      mockOrganizationService.getOrganizationStatus.mockResolvedValue(pendingStatus)
+      mockUserService.hasRole.mockImplementation((role: string) => role === 'APPROVER')
+      mockUserService.isSuperAdmin.mockReturnValue(false)
+      mockOrganizationService.updateOrganizationStatus.mockResolvedValue({
         ...pendingStatus,
         status: 'REGISTERED'
       })
@@ -586,7 +611,7 @@ describe('Organization Page', () => {
       const approveButton = screen.getByRole('button', { name: /approve registration/i })
       await userEvent.click(approveButton)
 
-      expect(OrganizationService.updateOrganizationStatus).toHaveBeenCalledWith('org-1', {
+      expect(mockOrganizationService.updateOrganizationStatus).toHaveBeenCalledWith('org-1', {
         status: 'REGISTERED',
         reason: 'APPROVED',
         description: 'Registration to Windbooks approved.'
@@ -597,13 +622,13 @@ describe('Organization Page', () => {
       // TODO: Fix React async state update in testing environment
       // Core functionality works correctly, test needs refactoring for proper state updates
       const pendingStatus = { ...mockOrganizationStatus, status: 'PENDING_REG' as const }
-      ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(pendingStatus)
-      ;(UserService.hasRole as any).mockImplementation((role: string) => role === 'APPROVER')
-      ;(UserService.isSuperAdmin as any).mockReturnValue(false)
+      mockOrganizationService.getOrganizationStatus.mockResolvedValue(pendingStatus)
+      mockUserService.hasRole.mockImplementation((role: string) => role === 'APPROVER')
+      mockUserService.isSuperAdmin.mockReturnValue(false)
       
       const approvedStatus = { ...pendingStatus, status: 'REGISTERED' as const }
       const updateStatusSpy = vi.fn().mockResolvedValue(approvedStatus)
-      ;(OrganizationService.updateOrganizationStatus as any).mockImplementation(updateStatusSpy)
+      mockOrganizationService.updateOrganizationStatus.mockImplementation(updateStatusSpy)
 
       render(
         <BrowserRouter>
@@ -636,10 +661,10 @@ describe('Organization Page', () => {
 
   describe('Registration Information Display', () => {
     it('should display VAT as Tax Classification for VAT tax_type', async () => {
-      ;(OrganizationService.getOrganizationById as any).mockResolvedValue(mockOrganization)
-      ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(mockOrganizationStatus)
-      ;(OrganizationService.getOrganizationOperation as any).mockResolvedValue(mockOrganizationOperation)
-      ;(OrganizationService.getOrganizationRegistration as any).mockResolvedValue(mockOrganizationRegistration)
+      mockOrganizationService.getOrganizationById.mockResolvedValue(mockOrganization)
+      mockOrganizationService.getOrganizationStatus.mockResolvedValue(mockOrganizationStatus)
+      mockOrganizationService.getOrganizationOperation.mockResolvedValue(mockOrganizationOperation)
+      mockOrganizationService.getOrganizationRegistration.mockResolvedValue(mockOrganizationRegistration)
 
       render(
         <BrowserRouter>
@@ -665,10 +690,10 @@ describe('Organization Page', () => {
     })
 
     it('should display Percentage Tax as Tax Classification for NON_VAT tax_type', async () => {
-      ;(OrganizationService.getOrganizationById as any).mockResolvedValue(mockOrganization)
-      ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(mockOrganizationStatus)
-      ;(OrganizationService.getOrganizationOperation as any).mockResolvedValue(mockOrganizationOperation)
-      ;(OrganizationService.getOrganizationRegistration as any).mockResolvedValue(mockOrganizationRegistrationNonVat)
+      mockOrganizationService.getOrganizationById.mockResolvedValue(mockOrganization)
+      mockOrganizationService.getOrganizationStatus.mockResolvedValue(mockOrganizationStatus)
+      mockOrganizationService.getOrganizationOperation.mockResolvedValue(mockOrganizationOperation)
+      mockOrganizationService.getOrganizationRegistration.mockResolvedValue(mockOrganizationRegistrationNonVat)
 
       render(
         <BrowserRouter>
@@ -688,10 +713,10 @@ describe('Organization Page', () => {
     })
 
     it('should display Tax Excempted as Tax Classification for EXCEMPT tax_type', async () => {
-      ;(OrganizationService.getOrganizationById as any).mockResolvedValue(mockOrganization)
-      ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(mockOrganizationStatus)
-      ;(OrganizationService.getOrganizationOperation as any).mockResolvedValue(mockOrganizationOperation)
-      ;(OrganizationService.getOrganizationRegistration as any).mockResolvedValue(mockOrganizationRegistrationExcempt)
+      mockOrganizationService.getOrganizationById.mockResolvedValue(mockOrganization)
+      mockOrganizationService.getOrganizationStatus.mockResolvedValue(mockOrganizationStatus)
+      mockOrganizationService.getOrganizationOperation.mockResolvedValue(mockOrganizationOperation)
+      mockOrganizationService.getOrganizationRegistration.mockResolvedValue(mockOrganizationRegistrationExcempt)
 
       render(
         <BrowserRouter>
@@ -1061,15 +1086,15 @@ describe('Organization Page', () => {
 
 describe('Step 17 - Settings Tab Visibility', () => {
   beforeEach(() => {
-    ;(OrganizationService.getOrganizationById as any).mockResolvedValue(mockOrganization)
-    ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(mockOrganizationStatus)
-    ;(OrganizationService.getOrganizationOperation as any).mockResolvedValue(mockOrganizationOperation)
-    ;(OrganizationService.getOrganizationRegistration as any).mockResolvedValue(mockOrganizationRegistration)
+    mockOrganizationService.getOrganizationById.mockResolvedValue(mockOrganization)
+    mockOrganizationService.getOrganizationStatus.mockResolvedValue(mockOrganizationStatus)
+    mockOrganizationService.getOrganizationOperation.mockResolvedValue(mockOrganizationOperation)
+    mockOrganizationService.getOrganizationRegistration.mockResolvedValue(mockOrganizationRegistration)
   })
 
   it('should display Settings tab for SUPERADMIN users', async () => {
-    ;(OrganizationService.getOrganizationOwnership as any).mockResolvedValue(mockOrganizationOwnership)
-    ;(UserService.isSuperAdmin as any).mockReturnValue(true)
+    mockOrganizationService.getOrganizationOwnership.mockResolvedValue(mockOrganizationOwnership)
+    mockUserService.isSuperAdmin.mockReturnValue(true)
 
     render(
       <BrowserRouter>
@@ -1085,8 +1110,8 @@ describe('Step 17 - Settings Tab Visibility', () => {
   })
 
   it('should display Settings tab for organization owners', async () => {
-    ;(OrganizationService.getOrganizationOwnership as any).mockResolvedValue(mockOrganizationOwnership)
-    ;(UserService.isSuperAdmin as any).mockReturnValue(false)
+    mockOrganizationService.getOrganizationOwnership.mockResolvedValue(mockOrganizationOwnership)
+    mockUserService.isSuperAdmin.mockReturnValue(false)
 
     render(
       <BrowserRouter>
@@ -1102,8 +1127,8 @@ describe('Step 17 - Settings Tab Visibility', () => {
   })
 
   it('should hide Settings tab for non-owners and non-SUPERADMIN users', async () => {
-    ;(OrganizationService.getOrganizationOwnership as any).mockResolvedValue(mockOrganizationOwnershipNonOwner)
-    ;(UserService.isSuperAdmin as any).mockReturnValue(false)
+    mockOrganizationService.getOrganizationOwnership.mockResolvedValue(mockOrganizationOwnershipNonOwner)
+    mockUserService.isSuperAdmin.mockReturnValue(false)
 
     render(
       <BrowserRouter>
@@ -1120,10 +1145,10 @@ describe('Step 17 - Settings Tab Visibility', () => {
 })
 describe('Step 15.3 - Organization Details Page Layout Updates', () => {
   beforeEach(() => {
-    ;(OrganizationService.getOrganizationById as any).mockResolvedValue(mockOrganization)
-    ;(OrganizationService.getOrganizationStatus as any).mockResolvedValue(mockOrganizationStatus)
-    ;(OrganizationService.getOrganizationOperation as any).mockResolvedValue(mockOrganizationOperation)
-    ;(OrganizationService.getOrganizationRegistration as any).mockResolvedValue(mockOrganizationRegistration)
+    mockOrganizationService.getOrganizationById.mockResolvedValue(mockOrganization)
+    mockOrganizationService.getOrganizationStatus.mockResolvedValue(mockOrganizationStatus)
+    mockOrganizationService.getOrganizationOperation.mockResolvedValue(mockOrganizationOperation)
+    mockOrganizationService.getOrganizationRegistration.mockResolvedValue(mockOrganizationRegistration)
   })
 
   it('should display General tab with single column layout (Business Status first, then Basic Information)', async () => {

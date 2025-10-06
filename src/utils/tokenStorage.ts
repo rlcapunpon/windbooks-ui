@@ -129,6 +129,6 @@ export const getUserIdFromToken = (): string | null => {
 
 // Make analysis function available globally for debugging
 if (typeof window !== 'undefined') {
-  (window as any).analyzeJWT = analyzeToken;
+  (window as unknown as { analyzeJWT: typeof analyzeToken }).analyzeJWT = analyzeToken;
   console.log('🔧 JWT Analysis Tool Available: Call analyzeJWT() in console to analyze current token');
 }

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import type { OrganizationOperation } from '../../services/organizationService'
 
 // Enum values from the requirements
 const ACCOUNTING_METHOD_OPTIONS = [
@@ -27,7 +28,7 @@ export interface UpdateOrganizationOperationsModalProps {
   isOpen: boolean
   onClose: () => void
   onSave: (data: UpdateOperationFormData) => void
-  currentOperation: any
+  currentOperation: OrganizationOperation | null
   loading: boolean
 }
 

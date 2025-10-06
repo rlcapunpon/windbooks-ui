@@ -15,16 +15,11 @@ const ownershipCache = new Map<string, Promise<boolean>>()
  * @param organizationId - The ID of the organization to check permissions for
  * @returns Promise<boolean> - True if user can edit the status, false otherwise
  */
-export async function canEditOrganizationStatus(organizationId: string): Promise<boolean> {
+export async function canEditOrganizationStatus(organizationId: string | null): Promise<boolean> {
   try {
     // First check if user is SUPERADMIN - this gives universal access regardless of organization ID
     if (UserService.isSuperAdmin()) {
       return true
-    }
-
-    // Check if organization ID is valid
-    if (!organizationId || typeof organizationId !== 'string' || organizationId.trim() === '') {
-      return false
     }
 
     // If not SUPERADMIN, check if user is an owner of the organization
@@ -48,16 +43,11 @@ export async function canEditOrganizationStatus(organizationId: string): Promise
  * @param organizationId - The ID of the organization to check permissions for
  * @returns Promise<boolean> - True if user can edit the registration, false otherwise
  */
-export async function canEditOrganizationRegistration(organizationId: string): Promise<boolean> {
+export async function canEditOrganizationRegistration(organizationId: string | null): Promise<boolean> {
   try {
     // First check if user is SUPERADMIN - this gives universal access regardless of organization ID
     if (UserService.isSuperAdmin()) {
       return true
-    }
-
-    // Check if organization ID is valid
-    if (!organizationId || typeof organizationId !== 'string' || organizationId.trim() === '') {
-      return false
     }
 
     // If not SUPERADMIN, check if user is an owner of the organization
@@ -78,7 +68,12 @@ export async function canEditOrganizationRegistration(organizationId: string): P
  * @param organizationId - The ID of the organization to check ownership for
  * @returns Promise<boolean> - True if user is owner, false otherwise
  */
-async function getCachedOwnership(organizationId: string): Promise<boolean> {
+async function getCachedOwnership(organizationId: string | null): Promise<boolean> {
+  // Handle null/undefined organizationId
+  if (!organizationId || typeof organizationId !== 'string' || organizationId.trim() === '') {
+    return false
+  }
+
   // Check if we already have a cached result for this organization
   const cachedResult = ownershipCache.get(organizationId)
   if (cachedResult !== undefined) {

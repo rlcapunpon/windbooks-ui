@@ -5,7 +5,7 @@ import Login from './Login'
 
 // Mock react-router-dom
 const mockNavigate = vi.fn()
-const mockLocation = { state: null as any }
+const mockLocation: { state: Record<string, unknown> | null } = { state: null }
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual('react-router-dom')
   return {

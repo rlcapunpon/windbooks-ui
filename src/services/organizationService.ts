@@ -1,4 +1,15 @@
 import orgApiClient from '../api/orgClient'
+import type { AxiosError } from 'axios'
+
+// API Error Response interface
+interface ApiErrorResponse {
+  message?: string
+  error?: string
+  details?: unknown
+}
+
+// Axios Error type for API calls
+type ApiError = AxiosError<ApiErrorResponse>
 
 // Organization DTOs based on org-mgmt-api.yaml
 export interface Organization {
@@ -127,6 +138,25 @@ export interface UpdateOrganizationRegistrationRequestDto {
   reg_date?: string
 }
 
+export interface OrganizationOperation {
+  organization_id: string
+  fy_start?: string
+  fy_end?: string
+  vat_reg_effectivity?: string
+  registration_effectivity?: string
+  payroll_cut_off?: string[]
+  payment_cut_off?: string[]
+  quarter_closing?: string[]
+  has_foreign?: boolean
+  has_employees?: boolean
+  is_ewt?: boolean
+  is_fwt?: boolean
+  is_bir_withholding_agent?: boolean
+  accounting_method?: 'ACCRUAL' | 'CASH' | 'OTHERS'
+  created_at: string
+  updated_at: string
+}
+
 export interface OrganizationOwnership {
   isOwner: boolean
   orgId: string
@@ -155,15 +185,16 @@ export class OrganizationService {
       const response = await orgApiClient.get(this.BASE_ENDPOINT, { timeout: 5000 })
       console.log('✅ Backend connectivity test passed:', response.status)
       return true
-    } catch (error: any) {
-      console.error('❌ Backend connectivity test failed:', error.response?.status || error.message)
+    } catch (error: unknown) {
+      const apiError = error as ApiError
+      console.error('❌ Backend connectivity test failed:', apiError.response?.status || (apiError as Error).message)
       
-      if (error.response?.status === 401) {
+      if (apiError.response?.status === 401) {
         console.log('✅ Backend is responding (401 = authentication required, which is expected)')
         return true
       }
       
-      if (error.response?.status === 404) {
+      if (apiError.response?.status === 404) {
         console.error('🚫 404: Organization service endpoint not found')
         console.error('🔧 Verify organization management service is running on http://localhost:3001')
         console.error('🔧 Verify /api/org/organizations endpoint exists')
@@ -182,18 +213,19 @@ export class OrganizationService {
         params: filters
       })
       return response.data
-    } catch (error: any) {
-      console.error('Failed to fetch organizations:', error)
+    } catch (error: unknown) {
+      const apiError = error as ApiError
+      console.error('Failed to fetch organizations:', apiError)
       
       // Provide more helpful error information
-      if (error.response?.status === 404) {
+      if (apiError.response?.status === 404) {
         console.error('🔧 Troubleshooting steps:')
         console.error('1. Ensure organization management service is running on http://localhost:3001')
         console.error('2. Check if /api/org/organizations endpoint exists')
         console.error('3. Verify VITE_ORG_API_BASE_URL in .env file')
       }
       
-      throw error
+      throw apiError
     }
   }
 
@@ -204,9 +236,10 @@ export class OrganizationService {
     try {
       const response = await orgApiClient.post<Organization>(this.BASE_ENDPOINT, data)
       return response.data
-    } catch (error: any) {
-      console.error('Failed to create organization:', error)
-      throw error
+    } catch (error: unknown) {
+      const apiError = error as ApiError
+      console.error('Failed to create organization:', apiError)
+      throw apiError
     }
   }
 
@@ -217,9 +250,10 @@ export class OrganizationService {
     try {
       const response = await orgApiClient.get<Organization>(`${this.BASE_ENDPOINT}/${id}`)
       return response.data
-    } catch (error: any) {
-      console.error('Failed to fetch organization:', error)
-      throw error
+    } catch (error: unknown) {
+      const apiError = error as ApiError
+      console.error('Failed to fetch organization:', apiError)
+      throw apiError
     }
   }
 
@@ -230,9 +264,10 @@ export class OrganizationService {
     try {
       const response = await orgApiClient.put<Organization>(`${this.BASE_ENDPOINT}/${id}`, data)
       return response.data
-    } catch (error: any) {
-      console.error('Failed to update organization:', error)
-      throw error
+    } catch (error: unknown) {
+      const apiError = error as ApiError
+      console.error('Failed to update organization:', apiError)
+      throw apiError
     }
   }
 
@@ -243,9 +278,10 @@ export class OrganizationService {
     try {
       const response = await orgApiClient.put<OrganizationStatus>(`${this.BASE_ENDPOINT}/${id}/status`, data)
       return response.data
-    } catch (error: any) {
-      console.error('Failed to update organization status:', error)
-      throw error
+    } catch (error: unknown) {
+      const apiError = error as ApiError
+      console.error('Failed to update organization status:', apiError)
+      throw apiError
     }
   }
 
@@ -256,35 +292,38 @@ export class OrganizationService {
     try {
       const response = await orgApiClient.get<OrganizationStatus>(`${this.BASE_ENDPOINT}/${id}/status`)
       return response.data
-    } catch (error: any) {
-      console.error('Failed to fetch organization status:', error)
-      throw error
+    } catch (error: unknown) {
+      const apiError = error as ApiError
+      console.error('Failed to fetch organization status:', apiError)
+      throw apiError
     }
   }
 
   /**
    * Updates organization operation details
    */
-  static async updateOrganizationOperation(id: string, data: UpdateOrganizationOperationRequestDto): Promise<any> {
+  static async updateOrganizationOperation(id: string, data: UpdateOrganizationOperationRequestDto): Promise<OrganizationOperation> {
     try {
-      const response = await orgApiClient.put(`${this.BASE_ENDPOINT}/${id}/operation`, data)
+      const response = await orgApiClient.put<OrganizationOperation>(`${this.BASE_ENDPOINT}/${id}/operation`, data)
       return response.data
-    } catch (error: any) {
-      console.error('Failed to update organization operation:', error)
-      throw error
+    } catch (error: unknown) {
+      const apiError = error as ApiError
+      console.error('Failed to update organization operation:', apiError)
+      throw apiError
     }
   }
 
   /**
    * Gets organization operation details
    */
-  static async getOrganizationOperation(id: string): Promise<any> {
+  static async getOrganizationOperation(id: string): Promise<OrganizationOperation> {
     try {
-      const response = await orgApiClient.get(`${this.BASE_ENDPOINT}/${id}/operation`)
+      const response = await orgApiClient.get<OrganizationOperation>(`${this.BASE_ENDPOINT}/${id}/operation`)
       return response.data
-    } catch (error: any) {
-      console.error('Failed to fetch organization operation:', error)
-      throw error
+    } catch (error: unknown) {
+      const apiError = error as ApiError
+      console.error('Failed to fetch organization operation:', apiError)
+      throw apiError
     }
   }
 
@@ -295,22 +334,24 @@ export class OrganizationService {
     try {
       const response = await orgApiClient.get<OrganizationRegistration>(`${this.BASE_ENDPOINT}/${id}/registration`)
       return response.data
-    } catch (error: any) {
-      console.error('Failed to fetch organization registration:', error)
-      throw error
+    } catch (error: unknown) {
+      const apiError = error as ApiError
+      console.error('Failed to fetch organization registration:', apiError)
+      throw apiError
     }
   }
 
   /**
    * Updates organization registration details
    */
-  static async updateOrganizationRegistration(id: string, data: UpdateOrganizationRegistrationRequestDto): Promise<any> {
+  static async updateOrganizationRegistration(id: string, data: UpdateOrganizationRegistrationRequestDto): Promise<OrganizationRegistration> {
     try {
-      const response = await orgApiClient.put(`${this.BASE_ENDPOINT}/${id}/registration`, data)
+      const response = await orgApiClient.put<OrganizationRegistration>(`${this.BASE_ENDPOINT}/${id}/registration`, data)
       return response.data
-    } catch (error: any) {
-      console.error('Failed to update organization registration:', error)
-      throw error
+    } catch (error: unknown) {
+      const apiError = error as ApiError
+      console.error('Failed to update organization registration:', apiError)
+      throw apiError
     }
   }
 
@@ -321,9 +362,10 @@ export class OrganizationService {
     try {
       const response = await orgApiClient.get<OrganizationOwnership>(`${this.BASE_ENDPOINT}/${id}/ownership`)
       return response.data
-    } catch (error: any) {
-      console.error('Failed to fetch organization ownership:', error)
-      throw error
+    } catch (error: unknown) {
+      const apiError = error as ApiError
+      console.error('Failed to fetch organization ownership:', apiError)
+      throw apiError
     }
   }
 
@@ -333,9 +375,10 @@ export class OrganizationService {
   static async deleteOrganization(id: string): Promise<void> {
     try {
       await orgApiClient.delete(`${this.BASE_ENDPOINT}/${id}`)
-    } catch (error: any) {
-      console.error('Failed to delete organization:', error)
-      throw error
+    } catch (error: unknown) {
+      const apiError = error as ApiError
+      console.error('Failed to delete organization:', apiError)
+      throw apiError
     }
   }
 }

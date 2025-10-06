@@ -95,7 +95,7 @@ describe('organizationPermissions', () => {
     it('should handle null organization ID', async () => {
       mockIsSuperAdmin.mockReturnValue(false)
 
-      const result = await canEditOrganizationStatus(null as any)
+      const result = await canEditOrganizationStatus(null)
 
       expect(result).toBe(false)
       expect(mockIsSuperAdmin).toHaveBeenCalled()

@@ -4,36 +4,36 @@ import '@testing-library/jest-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { MainLayout } from './MainLayout';
 import { UserService } from '../services/userService';
-import { useAuth } from '../contexts/AuthContextTypes';
+import type { MenuProps, MenuItem } from '../components/Menu/types';
 
 // Mock the Menu component
 vi.mock('../components/Menu/Menu', () => ({
-  Menu: ({ items, userPermissions, showIcons, collapsed, collapsible = true, onItemClick, onSubmenuToggle }: any) => {
+  Menu: ({ items, userPermissions, showIcons, collapsed, collapsible = true, onItemClick, onSubmenuToggle }: MenuProps) => {
     // Filter items based on permissions like the real component does
-    const filteredItems = items.filter((item: any) => {
+    const filteredItems = items.filter((item: MenuItem) => {
       // If no permissions required, show the item
       if (!item.permissions || item.permissions.length === 0) {
         return true;
       }
 
       // If user has wildcard permission (*), show all items
-      if (userPermissions.includes('*')) {
+      if (userPermissions?.includes('*')) {
         return true;
       }
 
       // Check if user has any of the required permissions
-      return item.permissions.some((permission: string) => userPermissions.includes(permission));
+      return item.permissions.some((permission: string) => userPermissions?.includes(permission));
     });
 
     // For testing purposes, also include organizations and tasks if they have resource:read permission
     const testFilteredItems = [
       ...filteredItems,
-      ...(userPermissions.includes('resource:read') ? items.filter((item: any) => ['organizations', 'tasks'].includes(item.id)) : [])
+      ...(userPermissions?.includes('resource:read') ? items.filter((item: MenuItem) => ['organizations', 'tasks'].includes(item.id)) : [])
     ].filter((item, index, arr) => arr.findIndex(i => i.id === item.id) === index); // Remove duplicates
 
     return (
       <div data-testid="menu-component" data-show-icons={showIcons ? 'true' : 'false'} data-collapsed={collapsed ? 'true' : 'false'}>
-        {testFilteredItems.map((item: any) => (
+        {testFilteredItems.map((item: MenuItem) => (
           <div key={item.id} data-testid={`menu-item-${item.id}`} className={collapsed ? 'justify-center' : ''} onClick={() => onItemClick?.(item)}>
             {showIcons && item.icon && <span data-testid={`icon-${item.id}`}>Icon</span>}
             <span>{item.label}</span>
@@ -51,7 +51,7 @@ vi.mock('../components/Menu/Menu', () => ({
             )}
             {item.children && (
               <div data-testid={`submenu-${item.id}`}>
-                {item.children.map((child: any) => (
+                {item.children.map((child: MenuItem) => (
                   <div key={child.id} data-testid={`submenu-item-${child.id}`} onClick={(e) => { e.stopPropagation(); onItemClick?.(child); }}>
                     {child.label}
                   </div>
@@ -129,17 +129,7 @@ describe('MainLayout Component', () => {
     }, { timeout: 2000 });
   };
 
-  // Helper function to safely get menu items with permission checks
-  const getSafeMenuItems = () => {
-    return {
-      dashboard: screen.queryByTestId('menu-item-dashboard'),
-      organizations: screen.queryByTestId('menu-item-organizations'),
-      tasks: screen.queryByTestId('menu-item-tasks'), 
-      profile: screen.queryByTestId('menu-item-profile'),
-      admin: screen.queryByTestId('menu-item-admin'),
-      settings: screen.queryByTestId('menu-item-settings'),
-    };
-  };
+
 
   beforeEach(() => {
     vi.clearAllMocks();

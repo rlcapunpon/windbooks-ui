@@ -533,7 +533,7 @@ describe('CreateOrganizationModal', () => {
         await userEvent.click(individualRadio)
         await userEvent.click(vatRadio)
 
-        let nextButton = screen.getByText('Next Step')
+        const nextButton = screen.getByText('Next Step')
         await userEvent.click(nextButton) // Step 2
 
         // Fill step 2
@@ -590,7 +590,7 @@ describe('CreateOrganizationModal', () => {
         await userEvent.click(individualRadio)
         await userEvent.click(vatRadio)
 
-        let nextButton = screen.getByText('Next Step')
+        const nextButton = screen.getByText('Next Step')
         await userEvent.click(nextButton) // Step 2
 
         // Fill step 2
@@ -647,7 +647,7 @@ describe('CreateOrganizationModal', () => {
         await userEvent.click(individualRadio)
         await userEvent.click(vatRadio)
 
-        let nextButton = screen.getByText('Next Step')
+        const nextButton = screen.getByText('Next Step')
         await userEvent.click(nextButton) // Step 2
 
         // Fill step 2
@@ -704,7 +704,7 @@ describe('CreateOrganizationModal', () => {
         await userEvent.click(individualRadio)
         await userEvent.click(vatRadio)
 
-        let nextButton = screen.getByText('Next Step')
+        const nextButton = screen.getByText('Next Step')
         await userEvent.click(nextButton) // Step 2
 
         // Fill step 2
@@ -763,7 +763,7 @@ describe('CreateOrganizationModal', () => {
         await userEvent.click(individualRadio)
         await userEvent.click(vatRadio)
 
-        let nextButton = screen.getByText('Next Step')
+        const nextButton = screen.getByText('Next Step')
         await userEvent.click(nextButton) // Step 2
 
         // Fill step 2
@@ -798,7 +798,7 @@ describe('CreateOrganizationModal', () => {
         await userEvent.click(individualRadio)
         await userEvent.click(vatRadio)
 
-        let nextButton = screen.getByText('Next Step')
+        const nextButton = screen.getByText('Next Step')
         await userEvent.click(nextButton) // Step 2
 
         // Fill step 2
@@ -833,7 +833,7 @@ describe('CreateOrganizationModal', () => {
         await userEvent.click(individualRadio)
         await userEvent.click(vatRadio)
 
-        let nextButton = screen.getByText('Next Step')
+        const nextButton = screen.getByText('Next Step')
         await userEvent.click(nextButton) // Step 2
 
         // Fill step 2
@@ -868,7 +868,7 @@ describe('CreateOrganizationModal', () => {
         await userEvent.click(individualRadio)
         await userEvent.click(vatRadio)
 
-        let nextButton = screen.getByText('Next Step')
+        const nextButton = screen.getByText('Next Step')
         await userEvent.click(nextButton) // Step 2
 
         // Fill step 2
@@ -903,7 +903,7 @@ describe('CreateOrganizationModal', () => {
         await userEvent.click(individualRadio)
         await userEvent.click(vatRadio)
 
-        let nextButton = screen.getByText('Next Step')
+        const nextButton = screen.getByText('Next Step')
         await userEvent.click(nextButton) // Step 2
 
         // Fill step 2
@@ -938,7 +938,7 @@ describe('CreateOrganizationModal', () => {
         await userEvent.click(individualRadio)
         await userEvent.click(vatRadio)
 
-        let nextButton = screen.getByText('Next Step')
+        const nextButton = screen.getByText('Next Step')
         await userEvent.click(nextButton) // Step 2
 
         // Fill step 2
@@ -1071,13 +1071,11 @@ describe('CreateOrganizationModal', () => {
       // Navigate to step 2 first
       const individualRadio = screen.getByLabelText('Individual')
       const vatRadio = screen.getByLabelText('VAT')
-      await userEvent.click(individualRadio)
-      await userEvent.click(vatRadio)
+        await userEvent.click(individualRadio)
+        await userEvent.click(vatRadio)
 
-      const nextButton = screen.getByText('Next Step')
-      await userEvent.click(nextButton) // Step 2
-
-      // Fill required fields for step 2
+        const nextButton = screen.getByText('Next Step')
+        await userEvent.click(nextButton) // Step 2      // Fill required fields for step 2
       const tinInput = screen.getByLabelText('Tax Identification Number (TIN) *')
       const registrationDateInput = screen.getByLabelText('Registration Date *')
       await userEvent.type(tinInput, '001234567890')

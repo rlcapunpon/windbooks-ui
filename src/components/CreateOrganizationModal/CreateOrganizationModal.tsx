@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { OrganizationService } from '../../services/organizationService'
+import { OrganizationService, type Organization, type CreateOrganizationRequestDto, type UpdateOrganizationOperationRequestDto } from '../../services/organizationService'
 import { RadioOptionSelector } from '../RadioOptionSelector'
 
 interface CreateOrganizationModalProps {
   isOpen: boolean
   onClose: () => void
-  onSuccess: (data: any) => Promise<void> | void
+  onSuccess: (data: Organization) => Promise<void> | void
 }
 
 export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = ({
@@ -100,7 +100,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
 
   const totalSteps = 6
 
-  const updateFormData = (field: string, value: any) => {
+  const updateFormData = (field: string, value: string | boolean | string[]) => {
     let safeValue = value
     if (value === undefined || value === null) {
       if (['has_foreign', 'has_employees', 'is_ewt', 'is_fwt', 'is_bir_withholding_agent', 'enable_autosave'].includes(field)) {
@@ -937,7 +937,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
 
   const validateName = (name: string): boolean => {
     if (!name || name.trim() === '') return false
-    const nameRegex = /^[a-zA-Z\s\-\.&,]+$/
+    const nameRegex = /^[a-zA-Z\s\-.&,]+$/
     return nameRegex.test(name.trim())
   }
 
@@ -971,11 +971,13 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
   const handleSubmit = async () => {
     setIsSubmitting(true)
     try {
-      // Transform form data to match API requirements
-      const submitData: any = {
+      // Prepare basic organization creation data
+      const createData: CreateOrganizationRequestDto = {
         category: formData.category as 'INDIVIDUAL' | 'NON_INDIVIDUAL',
         tax_classification: formData.tax_classification as 'VAT' | 'NON_VAT' | 'EXCEMPT',
-        tin: formData.tin,
+        first_name: formData.category === 'INDIVIDUAL' ? formData.first_name : '',
+        last_name: formData.category === 'INDIVIDUAL' ? formData.last_name : '',
+        tin_registration: formData.tin,
         registration_date: formData.registration_date,
         line_of_business: formData.line_of_business,
         address_line: formData.address_line,
@@ -985,33 +987,46 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
         rdo_code: formData.rdo_code,
         contact_number: formData.contact_number,
         email_address: formData.email_address,
-        start_date: formData.start_date
+        start_date: formData.start_date,
+        reg_date: formData.start_date, // Use start_date as reg_date
+        tax_type: 'VAT' // Default tax type, can be updated later
       }
 
       // Add conditional fields based on category
       if (formData.category === 'INDIVIDUAL') {
-        submitData.first_name = formData.first_name
-        submitData.last_name = formData.last_name
-        if (formData.middle_name) submitData.middle_name = formData.middle_name
+        createData.first_name = formData.first_name
+        createData.last_name = formData.last_name
+        if (formData.middle_name) createData.middle_name = formData.middle_name
       } else {
-        submitData.registered_name = formData.registered_name
-        if (formData.trade_name) submitData.trade_name = formData.trade_name
+        createData.trade_name = formData.registered_name
+        if (formData.trade_name) createData.trade_name = formData.trade_name
       }
 
       // Add optional subcategory
-      if (formData.subcategory) submitData.subcategory = formData.subcategory
+      if (formData.subcategory) createData.subcategory = formData.subcategory as 'SELF_EMPLOYED' | 'SOLE_PROPRIETOR' | 'FREELANCER' | 'CORPORATION' | 'PARTNERSHIP' | 'OTHERS'
 
-      // Add advanced settings if they exist
-      if (formData.fy_start) submitData.fy_start = formData.fy_start
-      if (formData.fy_end) submitData.fy_end = formData.fy_end
-      if (formData.accounting_method) submitData.accounting_method = formData.accounting_method
-      if (formData.has_foreign) submitData.has_foreign = formData.has_foreign
-      if (formData.has_employees) submitData.has_employees = formData.has_employees
-      if (formData.is_ewt) submitData.is_ewt = formData.is_ewt
-      if (formData.is_fwt) submitData.is_fwt = formData.is_fwt
-      if (formData.is_bir_withholding_agent) submitData.is_bir_withholding_agent = formData.is_bir_withholding_agent
+      // Create the organization first
+      const result = await OrganizationService.createOrganization(createData)
 
-      const result = await OrganizationService.createOrganization(submitData)
+      // If advanced settings are provided, update organization operation
+      const hasAdvancedSettings = formData.fy_start || formData.fy_end || formData.accounting_method ||
+                                  formData.has_foreign !== undefined || formData.has_employees !== undefined ||
+                                  formData.is_ewt !== undefined || formData.is_fwt !== undefined ||
+                                  formData.is_bir_withholding_agent !== undefined
+
+      if (hasAdvancedSettings) {
+        const operationData: UpdateOrganizationOperationRequestDto = {}
+        if (formData.fy_start) operationData.fy_start = formData.fy_start
+        if (formData.fy_end) operationData.fy_end = formData.fy_end
+        if (formData.accounting_method) operationData.accounting_method = formData.accounting_method as 'ACCRUAL' | 'CASH' | 'OTHERS'
+        if (formData.has_foreign !== undefined) operationData.has_foreign = formData.has_foreign
+        if (formData.has_employees !== undefined) operationData.has_employees = formData.has_employees
+        if (formData.is_ewt !== undefined) operationData.is_ewt = formData.is_ewt
+        if (formData.is_fwt !== undefined) operationData.is_fwt = formData.is_fwt
+        if (formData.is_bir_withholding_agent !== undefined) operationData.is_bir_withholding_agent = formData.is_bir_withholding_agent
+
+        await OrganizationService.updateOrganizationOperation(result.id, operationData)
+      }
       
       // Clear autosave data after successful submission
       localStorage.removeItem('organizationCreationDraft')

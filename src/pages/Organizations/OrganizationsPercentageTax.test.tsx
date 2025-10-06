@@ -3,12 +3,31 @@ import { vi, describe, it, expect, beforeEach } from 'vitest'
 import OrganizationsPercentageTax from './OrganizationsPercentageTax'
 import { OrganizationService } from '../../services/organizationService'
 import { UserService } from '../../services/userService'
+import type { Organization } from '../../services/organizationService'
+
+// Mock component interfaces
+interface MockOrganizationTableProps {
+  organizations: Organization[]
+  loading: boolean
+  onRefresh: () => void
+}
+
+interface MockCreateOrganizationButtonProps {
+  hasCreatePermission: boolean
+  onCreate: () => void
+}
+
+interface MockCreateOrganizationModalProps {
+  isOpen: boolean
+  onClose: () => void
+  onSuccess: (data: Organization) => Promise<void> | void
+}
 
 // Mock dependencies
 vi.mock('../../services/organizationService')
 vi.mock('../../services/userService')
 vi.mock('../../components/OrganizationTable/OrganizationTable', () => ({
-  OrganizationTable: ({ organizations, loading, onRefresh }: any) => (
+  OrganizationTable: ({ organizations, loading, onRefresh }: MockOrganizationTableProps) => (
     <div data-testid="organization-table">
       <div data-testid="organizations-data">{JSON.stringify(organizations)}</div>
       <div data-testid="loading-state">{loading ? 'loading' : 'not-loading'}</div>
@@ -17,7 +36,7 @@ vi.mock('../../components/OrganizationTable/OrganizationTable', () => ({
   )
 }))
 vi.mock('../../components/CreateOrganizationButton/CreateOrganizationButton', () => ({
-  CreateOrganizationButton: ({ hasCreatePermission, onCreate }: any) => (
+  CreateOrganizationButton: ({ hasCreatePermission, onCreate }: MockCreateOrganizationButtonProps) => (
     hasCreatePermission ? (
       <button data-testid="create-org-btn" onClick={onCreate}>
         Create Organization
@@ -26,11 +45,11 @@ vi.mock('../../components/CreateOrganizationButton/CreateOrganizationButton', ()
   )
 }))
 vi.mock('../../components/CreateOrganizationModal/CreateOrganizationModal', () => ({
-  CreateOrganizationModal: ({ isOpen, onClose, onSuccess }: any) => (
+  CreateOrganizationModal: ({ isOpen, onClose, onSuccess }: MockCreateOrganizationModalProps) => (
     isOpen ? (
       <div data-testid="create-modal">
         <button data-testid="close-modal-btn" onClick={onClose}>Close</button>
-        <button data-testid="success-btn" onClick={() => onSuccess({ id: 'new-org' })}>Success</button>
+        <button data-testid="success-btn" onClick={() => onSuccess({ id: 'new-org' } as Organization)}>Success</button>
       </div>
     ) : null
   )

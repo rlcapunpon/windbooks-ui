@@ -11,7 +11,7 @@ global.fetch = mockFetch;
 const mockNavigate = vi.fn();
 
 // Mock useParams - defined before the mock
-let mockUseParams = vi.fn();
+const mockUseParams = vi.fn();
 
 // Mock window.alert
 const mockAlert = vi.fn();

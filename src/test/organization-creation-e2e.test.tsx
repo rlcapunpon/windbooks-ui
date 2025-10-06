@@ -6,7 +6,8 @@ import { CreateOrganizationModal } from '../components/CreateOrganizationModal/C
 // Mock the organization service
 vi.mock('../services/organizationService', () => ({
   OrganizationService: {
-    createOrganization: vi.fn()
+    createOrganization: vi.fn(),
+    updateOrganizationOperation: vi.fn()
   }
 }))
 
@@ -60,6 +61,20 @@ import { OrganizationService } from '../services/organizationService'
         created_at: '2024-01-01T00:00:00Z',
         updated_at: '2024-01-01T00:00:00Z'
       }
+    })
+    
+    // Mock organization operation update (for advanced settings)
+    vi.mocked(OrganizationService.updateOrganizationOperation).mockResolvedValue({
+      organization_id: 'org-123',
+      fy_start: '2024-01-01',
+      fy_end: '2024-12-31',
+      accounting_method: 'ACCRUAL',
+      has_employees: true,
+      is_ewt: true,
+      is_fwt: false,
+      is_bir_withholding_agent: false,
+      created_at: '2024-01-01T00:00:00Z',
+      updated_at: '2024-01-01T00:00:00Z'
     })
   })
 
@@ -196,7 +211,9 @@ import { OrganizationService } from '../services/organizationService'
         expect(OrganizationService.createOrganization).toHaveBeenCalledWith({
           category: 'NON_INDIVIDUAL',
           tax_classification: 'VAT',
-          tin: '001234567890',
+          first_name: '',
+          last_name: '',
+          tin_registration: '001234567890',
           registration_date: '2024-01-01',
           line_of_business: '6201',
           address_line: '123 Business Street',
@@ -207,13 +224,10 @@ import { OrganizationService } from '../services/organizationService'
           contact_number: '+639123456789',
           email_address: 'contact@abc.com',
           start_date: '2024-01-01',
-          registered_name: 'ABC Corporation Inc.',
+          reg_date: '2024-01-01',
+          tax_type: 'VAT',
           trade_name: 'ABC Corp',
-          subcategory: 'CORPORATION',
-          fy_start: '2024-01-01',
-          accounting_method: 'ACCRUAL',
-          has_employees: true,
-          is_ewt: true
+          subcategory: 'CORPORATION'
         })
       })
 
@@ -860,7 +874,7 @@ import { OrganizationService } from '../services/organizationService'
         // Check that required properties are present
         expect(callArgs).toHaveProperty('category')
         expect(callArgs).toHaveProperty('tax_classification')
-        expect(callArgs).toHaveProperty('tin')
+        expect(callArgs).toHaveProperty('tin_registration')
         expect(callArgs).toHaveProperty('registration_date')
         expect(callArgs).toHaveProperty('line_of_business')
         expect(callArgs).toHaveProperty('address_line')
@@ -873,11 +887,10 @@ import { OrganizationService } from '../services/organizationService'
         expect(callArgs).toHaveProperty('start_date')
         
         // Check that invalid properties are NOT present
-        expect(callArgs).not.toHaveProperty('property name')
-        expect(callArgs).not.toHaveProperty('property address')
-        expect(callArgs).not.toHaveProperty('property tin_registration')
-        expect(callArgs).not.toHaveProperty('property tax_type')
-        expect(callArgs).not.toHaveProperty('property reg_date')
+        expect(callArgs).not.toHaveProperty('name')
+        expect(callArgs).not.toHaveProperty('address')
+        expect(callArgs).not.toHaveProperty('tin')
+        expect(callArgs).not.toHaveProperty('registered_name')
         
         // Check that the name field is NOT present (Step 7 requirement)
         expect(callArgs).not.toHaveProperty('name')

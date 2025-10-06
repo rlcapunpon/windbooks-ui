@@ -33,7 +33,7 @@ export const MenuItemComponent = ({
 
   // Always show menu items (no permission filtering)
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handleClick = (e: React.MouseEvent | React.KeyboardEvent) => {
     e.preventDefault();
     e.stopPropagation();
 
@@ -48,7 +48,7 @@ export const MenuItemComponent = ({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      handleClick(e as any);
+      handleClick(e);
     }
   };
 

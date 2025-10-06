@@ -18,7 +18,7 @@ const OrganizationsVAT: React.FC = () => {
       setError(null)
       const data = await OrganizationService.getAllOrganizations({ tax_classification: 'VAT' })
       setOrganizations(data)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to load VAT organizations:', err)
       setError('Failed to load VAT organizations. Please try again.')
     } finally {
@@ -42,7 +42,7 @@ const OrganizationsVAT: React.FC = () => {
     setIsCreateModalOpen(false)
   }
 
-  const handleCreateSuccess = async (_newOrganization: any) => {
+  const handleCreateSuccess = async () => {
     setIsCreateModalOpen(false)
     // Refresh the organizations list to show the newly created organization
     await loadOrganizations()

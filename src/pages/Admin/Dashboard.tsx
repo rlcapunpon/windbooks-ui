@@ -19,7 +19,7 @@ const Dashboard = () => {
   const [newUser, setNewUser] = useState({
     email: '',
     password: '',
-    role: 'ROLE_LEVEL_4' as const,
+    role: 'ROLE_LEVEL_4' as User['role'],
     confirmPassword: ''
   });
 
@@ -239,7 +239,7 @@ const Dashboard = () => {
               />
               <select
                 value={newUser.role}
-                onChange={(e) => setNewUser({...newUser, role: e.target.value as any})}
+                onChange={(e) => setNewUser({...newUser, role: e.target.value as User['role']})}
                 className="form-input"
               >
                 <option value="ROLE_LEVEL_1">Level 1 (Super Admin)</option>
@@ -281,7 +281,7 @@ const Dashboard = () => {
               />
               <select
                 value={editingUser.role}
-                onChange={(e) => setEditingUser({...editingUser, role: e.target.value as any})}
+                onChange={(e) => setEditingUser({...editingUser, role: e.target.value as User['role']})}
                 className="form-input"
               >
                 <option value="ROLE_LEVEL_1">Level 1 (Super Admin)</option>
@@ -292,7 +292,7 @@ const Dashboard = () => {
               </select>
               <select
                 value={editingUser.status}
-                onChange={(e) => setEditingUser({...editingUser, status: e.target.value as any})}
+                onChange={(e) => setEditingUser({...editingUser, status: e.target.value as User['status']})}
                 className="form-input"
               >
                 <option value="active">Active</option>

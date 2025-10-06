@@ -1,6 +1,53 @@
 import type { User, UserResource } from '../api/auth';
 import apiClient from '../api/client';
 import { getAccessToken, getUserIdFromToken } from '../utils/tokenStorage';
+import type { AxiosError } from 'axios';
+
+// API Error Response interface
+interface ApiErrorResponse {
+  message?: string
+  error?: string
+  details?: unknown
+}
+
+// Axios Error type for API calls
+type ApiError = AxiosError<ApiErrorResponse>
+
+// User query parameters interface
+interface UserQueryParams {
+  page: number;
+  limit: number;
+  email?: string;
+  isActive?: boolean;
+}
+
+// User data interface for admin operations
+interface AdminUserData {
+  id: string;
+  email: string;
+  isActive: boolean;
+  isSuperAdmin: boolean;
+  createdAt: string;
+  updatedAt: string;
+  roles: UserResource[];
+}
+
+// Resource search parameters interface
+interface ResourceSearchParams {
+  page: number;
+  limit: number;
+  q?: string;
+}
+
+// Resource data interface
+interface ResourceData {
+  id: string;
+  name: string;
+  description: string;
+  type?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
 
 export class UserService {
   private static readonly ME_ENDPOINT = 'auth/me';
@@ -140,9 +187,10 @@ export class UserService {
       localStorage.setItem('windbooks_rbac_permissions', JSON.stringify(response.data));
 
       return response.data;
-    } catch (error: any) {
-      console.error('Failed to fetch RBAC permissions:', error);
-      throw error;
+    } catch (error: unknown) {
+      const apiError = error as ApiError
+      console.error('Failed to fetch RBAC permissions:', apiError);
+      throw apiError;
     }
   }
 
@@ -229,28 +277,30 @@ export class UserService {
    */
   static async getAllUsers(page: number = 1, limit: number = 10, email?: string, isActive?: boolean) {
     try {
-      const params: any = { page, limit };
+      const params: UserQueryParams = { page, limit };
       if (email) params.email = email;
       if (isActive !== undefined) params.isActive = isActive;
 
       const response = await apiClient.get('/users/v2', { params });
       return response.data;
-    } catch (error) {
-      console.error('Failed to fetch users:', error);
-      throw error;
+    } catch (error: unknown) {
+      const apiError = error as ApiError
+      console.error('Failed to fetch users:', apiError);
+      throw apiError;
     }
   }
 
   /**
    * Gets a user by ID (for admin use)
    */
-  static async getUserById(userId: string): Promise<{ id: string; email: string; isActive: boolean; isSuperAdmin: boolean; createdAt: string; updatedAt: string; roles: any[] }> {
+  static async getUserById(userId: string): Promise<AdminUserData> {
     try {
-      const response = await apiClient.get(`/users/${userId}`);
+      const response = await apiClient.get<AdminUserData>(`/users/${userId}`);
       return response.data;
-    } catch (error) {
-      console.error('Failed to fetch user:', error);
-      throw error;
+    } catch (error: unknown) {
+      const apiError = error as ApiError
+      console.error('Failed to fetch user:', apiError);
+      throw apiError;
     }
   }
 
@@ -307,17 +357,18 @@ export class UserService {
   /**
    * Searches for resources (for admin use)
    */
-  static async searchResources(query: string, page: number = 1, limit: number = 10): Promise<{ id: string; name: string; description: string; type?: string; createdAt?: string; updatedAt?: string }[]> {
+  static async searchResources(query: string, page: number = 1, limit: number = 10): Promise<ResourceData[]> {
     try {
-      const params: any = { page, limit };
+      const params: ResourceSearchParams = { page, limit };
       if (query) params.q = query;
 
       const response = await apiClient.get('/resources/v2', { params });
       // Handle the actual API response structure with data and pagination
       return response.data?.data || [];
-    } catch (error) {
-      console.error('Failed to search resources:', error);
-      throw error;
+    } catch (error: unknown) {
+      const apiError = error as ApiError
+      console.error('Failed to search resources:', apiError);
+      throw apiError;
     }
   }
 

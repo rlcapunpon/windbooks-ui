@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { BrowserRouter } from 'react-router-dom'
 import OrganizationsDashboard from './OrganizationsDashboard'
 import { OrganizationService } from '../../services/organizationService'
+import type { Organization } from '../../services/organizationService'
 
 // Mock the services
 vi.mock('../../services/organizationService', () => ({
@@ -18,9 +19,20 @@ vi.mock('../../services/userService', () => ({
   }
 }))
 
+// Mock component interfaces
+interface MockOrganizationTableProps {
+  organizations: Organization[]
+  loading: boolean
+  onRefresh: () => void
+}
+
+interface MockCreateOrganizationButtonProps {
+  hasPermission: boolean
+}
+
 // Mock components
 vi.mock('../../../components/OrganizationTable/OrganizationTable', () => ({
-  OrganizationTable: ({ organizations, loading, onRefresh }: any) => (
+  OrganizationTable: ({ organizations, loading, onRefresh }: MockOrganizationTableProps) => (
     <div data-testid="organization-table">
       <div data-testid="organizations-count">{organizations?.length || 0}</div>
       <div data-testid="loading-state">{loading ? 'loading' : 'loaded'}</div>
@@ -30,7 +42,7 @@ vi.mock('../../../components/OrganizationTable/OrganizationTable', () => ({
 }))
 
 vi.mock('../../../components/CreateOrganizationButton/CreateOrganizationButton', () => ({
-  CreateOrganizationButton: ({ hasPermission }: any) => (
+  CreateOrganizationButton: ({ hasPermission }: MockCreateOrganizationButtonProps) => (
     <button data-testid="create-org-btn" disabled={!hasPermission}>
       Create Organization
     </button>
@@ -79,7 +91,7 @@ describe('OrganizationsDashboard', () => {
 
   describe('Page Rendering', () => {
     it('should render the dashboard with title and description', () => {
-      ;(OrganizationService.getAllOrganizations as any).mockResolvedValue([])
+      vi.mocked(OrganizationService.getAllOrganizations).mockResolvedValue([])
 
       renderWithRouter(<OrganizationsDashboard />)
 
@@ -88,7 +100,7 @@ describe('OrganizationsDashboard', () => {
     })
 
     it('should render the organization table component', async () => {
-      ;(OrganizationService.getAllOrganizations as any).mockResolvedValue(mockOrganizations)
+      vi.mocked(OrganizationService.getAllOrganizations).mockResolvedValue(mockOrganizations)
 
       renderWithRouter(<OrganizationsDashboard />)
 
@@ -98,7 +110,7 @@ describe('OrganizationsDashboard', () => {
     })
 
     it('should render the create organization button', async () => {
-      ;(OrganizationService.getAllOrganizations as any).mockResolvedValue([])
+      vi.mocked(OrganizationService.getAllOrganizations).mockResolvedValue([])
 
       renderWithRouter(<OrganizationsDashboard />)
 
@@ -110,7 +122,7 @@ describe('OrganizationsDashboard', () => {
 
   describe('Data Loading', () => {
     it('should load organizations on component mount', async () => {
-      ;(OrganizationService.getAllOrganizations as any).mockResolvedValue(mockOrganizations)
+      vi.mocked(OrganizationService.getAllOrganizations).mockResolvedValue(mockOrganizations)
 
       renderWithRouter(<OrganizationsDashboard />)
 
@@ -124,7 +136,7 @@ describe('OrganizationsDashboard', () => {
     })
 
     it('should handle empty organizations list', async () => {
-      ;(OrganizationService.getAllOrganizations as any).mockResolvedValue([])
+      vi.mocked(OrganizationService.getAllOrganizations).mockResolvedValue([])
 
       renderWithRouter(<OrganizationsDashboard />)
 
@@ -134,7 +146,7 @@ describe('OrganizationsDashboard', () => {
     })
 
     it('should handle loading state', async () => {
-      ;(OrganizationService.getAllOrganizations as any).mockResolvedValue(mockOrganizations)
+      vi.mocked(OrganizationService.getAllOrganizations).mockResolvedValue(mockOrganizations)
 
       renderWithRouter(<OrganizationsDashboard />)
 
@@ -149,7 +161,7 @@ describe('OrganizationsDashboard', () => {
 
     it('should handle API errors gracefully', async () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-      ;(OrganizationService.getAllOrganizations as any).mockRejectedValue(new Error('API Error'))
+      vi.mocked(OrganizationService.getAllOrganizations).mockRejectedValue(new Error('API Error'))
 
       renderWithRouter(<OrganizationsDashboard />)
 
@@ -163,7 +175,7 @@ describe('OrganizationsDashboard', () => {
 
   describe('Refresh Functionality', () => {
     it('should refresh organizations when refresh button is clicked', async () => {
-      ;(OrganizationService.getAllOrganizations as any).mockResolvedValue(mockOrganizations)
+      vi.mocked(OrganizationService.getAllOrganizations).mockResolvedValue(mockOrganizations)
 
       renderWithRouter(<OrganizationsDashboard />)
 
@@ -182,7 +194,7 @@ describe('OrganizationsDashboard', () => {
 
   describe('Permission Handling', () => {
     it('should render create organization button when user has permission', async () => {
-      ;(OrganizationService.getAllOrganizations as any).mockResolvedValue([])
+      vi.mocked(OrganizationService.getAllOrganizations).mockResolvedValue([])
 
       renderWithRouter(<OrganizationsDashboard />)
 

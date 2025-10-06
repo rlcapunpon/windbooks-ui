@@ -1,5 +1,22 @@
 import apiClient from '../api/client'
 import orgApiClient from '../api/orgClient'
+import type { AxiosError } from 'axios'
+
+// API Error Response interface
+interface ApiErrorResponse {
+  message?: string
+  error?: string
+  details?: unknown
+}
+
+// Axios Error type for API calls
+type ApiError = AxiosError<ApiErrorResponse>
+
+// Delete operation response interface
+interface DeleteResponse {
+  success?: boolean
+  message?: string
+}
 
 // Organization Owner DTOs based on org-mgmt-api.yaml
 export interface OrganizationOwner {
@@ -40,9 +57,10 @@ export class OrganizationOwnerService {
       }
       const response = await apiClient.post<OrganizationOwner>(`${this.BASE_ENDPOINT}/${organizationId}/owners`, data)
       return response.data
-    } catch (error: any) {
-      console.error('Failed to assign owner:', error)
-      throw error
+    } catch (error: unknown) {
+      const apiError = error as ApiError
+      console.error('Failed to assign owner:', apiError)
+      throw apiError
     }
   }
 
@@ -53,9 +71,10 @@ export class OrganizationOwnerService {
     try {
       const response = await apiClient.get<OrganizationOwnersResponseDto>(`${this.BASE_ENDPOINT}/${organizationId}/owners`)
       return response.data.owners
-    } catch (error: any) {
-      console.error('Failed to fetch organization owners:', error)
-      throw error
+    } catch (error: unknown) {
+      const apiError = error as ApiError
+      console.error('Failed to fetch organization owners:', apiError)
+      throw apiError
     }
   }
 
@@ -66,35 +85,38 @@ export class OrganizationOwnerService {
     try {
       const response = await orgApiClient.get<CheckOwnershipResponseDto>(`${this.BASE_ENDPOINT}/${organizationId}/ownership`)
       return response.data.is_owner
-    } catch (error: any) {
-      console.error('Failed to check ownership:', error)
-      throw error
+    } catch (error: unknown) {
+      const apiError = error as ApiError
+      console.error('Failed to check ownership:', apiError)
+      throw apiError
     }
   }
 
   /**
    * Removes a user as an owner of an organization
    */
-  static async removeOwner(organizationId: string, userId: string): Promise<any> {
+  static async removeOwner(organizationId: string, userId: string): Promise<DeleteResponse> {
     try {
-      const response = await apiClient.delete(`${this.BASE_ENDPOINT}/${organizationId}/owners/${userId}`)
+      const response = await apiClient.delete<DeleteResponse>(`${this.BASE_ENDPOINT}/${organizationId}/owners/${userId}`)
       return response.data
-    } catch (error: any) {
-      console.error('Failed to remove owner:', error)
-      throw error
+    } catch (error: unknown) {
+      const apiError = error as ApiError
+      console.error('Failed to remove owner:', apiError)
+      throw apiError
     }
   }
 
   /**
    * Removes an owner assignment by assignment ID
    */
-  static async removeOwnerById(ownerId: string): Promise<any> {
+  static async removeOwnerById(ownerId: string): Promise<DeleteResponse> {
     try {
-      const response = await apiClient.delete(`${this.OWNER_ENDPOINT}/${ownerId}`)
+      const response = await apiClient.delete<DeleteResponse>(`${this.OWNER_ENDPOINT}/${ownerId}`)
       return response.data
-    } catch (error: any) {
-      console.error('Failed to remove owner by ID:', error)
-      throw error
+    } catch (error: unknown) {
+      const apiError = error as ApiError
+      console.error('Failed to remove owner by ID:', apiError)
+      throw apiError
     }
   }
 }

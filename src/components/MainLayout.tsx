@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Menu } from '../components/Menu/Menu';
 import { useAuth } from '../contexts/AuthContextTypes';
 import { UserService } from '../services/userService';
@@ -50,76 +50,13 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [activeMenuItem, setActiveMenuItem] = useState<string | null>(null);
-  const [rbacData, setRbacData] = useState<{
+  const [rbacData, _setRbacData] = useState<{
     resourceId: string;
     roleId: string;
     role: string;
     permissions: string[];
   } | null>(null);
-  const [isLoadingPermissions, setIsLoadingPermissions] = useState(false);
-
-  // Load sidebar collapse state and active menu item from localStorage on mount
-  useEffect(() => {
-    const savedCollapsedState = localStorage.getItem('sidebarCollapsed');
-    if (savedCollapsedState === 'true') {
-      setIsSidebarCollapsed(true);
-    }
-
-    const savedActiveMenuItem = localStorage.getItem('activeMenuItem');
-    localStorage.getItem('currentPage'); // For test compatibility - restoring current page state
-    
-    // Always determine active menu item based on current route
-    const currentPath = window.location.pathname;
-    const activeItem = determineActiveMenuItem(menuItems, currentPath);
-    
-    if (activeItem) {
-      // Route-based detection takes precedence - always update to match current route
-      setActiveMenuItem(activeItem);
-      localStorage.setItem('activeMenuItem', activeItem);
-      localStorage.setItem('currentPage', currentPath);
-    } else if (savedActiveMenuItem) {
-      // Fallback to saved state only if no route match found
-      setActiveMenuItem(savedActiveMenuItem);
-    }
-  }, []);
-
-  // Load RBAC permissions - should be cached after login
-  useEffect(() => {
-    const loadRBACPermissions = async () => {
-      try {
-        setIsLoadingPermissions(true);
-        
-        // Get cached RBAC permissions (fetched during login)
-        const cachedPermissions = UserService.getCachedRBACPermissions();
-        if (cachedPermissions) {
-          setRbacData(cachedPermissions);
-          setIsLoadingPermissions(false);
-          return;
-        }
-
-        // Fallback: fetch from API if not cached (shouldn't happen after login)
-        console.warn('RBAC permissions not cached, fetching from API');
-        const rbacData = await UserService.getUserPermissionsFromRBAC();
-        setRbacData(rbacData);
-        console.log('Fetched RBAC permissions:', rbacData.permissions);
-      } catch (error) {
-        console.error('Failed to load RBAC permissions:', error);
-        // Fallback to empty permissions array on error
-        setRbacData(null);
-      } finally {
-        setIsLoadingPermissions(false);
-      }
-    };
-
-    if (user?.email && rbacData === null) {
-      loadRBACPermissions();
-    }
-  }, [user?.email, rbacData]);
-
-  // Save sidebar collapse state to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('sidebarCollapsed', isSidebarCollapsed.toString());
-  }, [isSidebarCollapsed]);
+  const [, _setIsLoadingPermissions] = useState(false);
 
   // Get user roles and permissions according to Step 30 requirements
   const userRoles = user?.resources?.map((resource: { role: string }) => resource.role) || [];
@@ -127,23 +64,22 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
 
   // Create user permissions array for the Menu component
   // Step 30: Use RBAC API permissions, don't assign roles manually
-  const userPermissions: string[] = [];
-  
-  if (UserService.isSuperAdmin()) {
-    // SUPERADMIN users see everything
-    userPermissions.push('*');
-  } else if (rbacData && rbacData.permissions.length > 0) {
-    // Use RBAC permissions from API when available
-    userPermissions.push(...rbacData.permissions);
-  }
-  // No fallback permissions - strictly rely on RBAC API response
+  const userPermissions: string[] = useMemo(() => {
+    const permissions: string[] = [];
+    
+    if (UserService.isSuperAdmin()) {
+      // SUPERADMIN users see everything
+      permissions.push('*');
+    } else if (rbacData && rbacData.permissions.length > 0) {
+      // Use RBAC permissions from API when available
+      permissions.push(...rbacData.permissions);
+    }
+    // No fallback permissions - strictly rely on RBAC API response
+    
+    return permissions;
+  }, [rbacData]);
 
-  console.log('User permissions for menu:', userPermissions);
-  console.log('RBAC data state:', rbacData);
-  console.log('Is loading permissions:', isLoadingPermissions);
-  console.log('Primary role:', primaryRole);
-
-  const menuItems: MenuItem[] = [
+  const menuItems: MenuItem[] = useMemo(() => [
     {
       id: 'dashboard',
       label: 'Dashboard',
@@ -271,7 +207,65 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
       href: '/settings',
       permissions: ['user:update'],
     },
-  ];
+  ], []);
+
+  // Load RBAC permissions - should be cached after login
+  useEffect(() => {
+    const loadRBACPermissions = async () => {
+      try {
+        _setIsLoadingPermissions(true);
+        
+        // Get cached RBAC permissions (fetched during login)
+        const cachedPermissions = UserService.getCachedRBACPermissions();
+        if (cachedPermissions) {
+          _setRbacData(cachedPermissions);
+          _setIsLoadingPermissions(false);
+          return;
+        }
+
+        // Fallback: fetch from API if not cached (shouldn't happen after login)
+        console.warn('RBAC permissions not cached, fetching from API');
+        const rbacData = await UserService.getUserPermissionsFromRBAC();
+        _setRbacData(rbacData);
+        console.log('Fetched RBAC permissions:', rbacData.permissions);
+      } catch (error) {
+        console.error('Failed to load RBAC permissions:', error);
+        // Fallback to empty permissions array on error
+        _setRbacData(null);
+      } finally {
+        _setIsLoadingPermissions(false);
+      }
+    };
+
+    if (user?.email && rbacData === null) {
+      loadRBACPermissions();
+    }
+  }, [user?.email, rbacData]);
+
+  // Load sidebar collapse state and active menu item from localStorage on mount
+  useEffect(() => {
+    const savedCollapsedState = localStorage.getItem('sidebarCollapsed');
+    if (savedCollapsedState === 'true') {
+      setIsSidebarCollapsed(true);
+    }
+
+    const savedActiveMenuItem = localStorage.getItem('activeMenuItem');
+    localStorage.getItem('currentPage'); // For test compatibility - restoring current page state
+    
+    // Always determine active menu item based on current route
+    const currentPath = window.location.pathname;
+    const activeItem = determineActiveMenuItem(menuItems, currentPath);
+    
+    if (activeItem) {
+      // Route-based detection takes precedence - always update to match current route
+      setActiveMenuItem(activeItem);
+      localStorage.setItem('activeMenuItem', activeItem);
+      localStorage.setItem('currentPage', currentPath);
+    } else if (savedActiveMenuItem) {
+      // Fallback to saved state only if no route match found
+      setActiveMenuItem(savedActiveMenuItem);
+    }
+  }, [menuItems]);
 
   const handleMenuItemClick = (item: MenuItem) => {
     // Close mobile menu when item is clicked
@@ -280,6 +274,7 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     // Auto-expand sidebar when menu item with submenu is clicked while collapsed
     if (item.children && item.children.length > 0 && isSidebarCollapsed) {
       setIsSidebarCollapsed(false);
+      localStorage.setItem('sidebarCollapsed', 'false');
     }
 
     // Don't set parent menus with children as active - only toggle submenu
@@ -305,10 +300,11 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
     }
   };
 
-  const handleSubmenuToggle = (_itemId: string) => {
+  const handleSubmenuToggle = () => {
     // Auto-expand sidebar when submenu is toggled
     if (isSidebarCollapsed) {
       setIsSidebarCollapsed(false);
+      localStorage.setItem('sidebarCollapsed', 'false');
     }
   };
 
@@ -339,7 +335,11 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
               </div>
             </div>
             <button
-              onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+              onClick={() => {
+                const newCollapsedState = !isSidebarCollapsed;
+                setIsSidebarCollapsed(newCollapsedState);
+                localStorage.setItem('sidebarCollapsed', newCollapsedState.toString());
+              }}
               disabled={isSubmenuItemActive(menuItems, activeMenuItem)}
               className={`p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200 ${
                 isSubmenuItemActive(menuItems, activeMenuItem) ? 'opacity-50 cursor-not-allowed' : ''
@@ -356,7 +356,10 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
         {isSidebarCollapsed && (
           <div className="p-4 border-b border-gray-200 flex justify-center" id="sidebar-header-collapsed">
             <button
-              onClick={() => setIsSidebarCollapsed(false)}
+              onClick={() => {
+                setIsSidebarCollapsed(false);
+                localStorage.setItem('sidebarCollapsed', 'false');
+              }}
               className="p-1 rounded-lg hover:bg-gray-100 transition-colors duration-200"
               aria-label="Expand sidebar"
             >
