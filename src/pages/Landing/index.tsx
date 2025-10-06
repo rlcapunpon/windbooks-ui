@@ -29,7 +29,7 @@ const Landing = () => {
       {/* Hero Section */}
       <div className="flex items-center justify-center min-h-[calc(100vh-6rem-3rem)] px-4">
         <div className="text-center max-w-6xl">
-          <h1 className="text-heading text-5xl mb-8 bg-gradient-to-r from-blue-600 via-purple-600 to-green-600 bg-clip-text text-transparent leading-tight">
+          <h1 className="text-heading text-5xl mb-8 bg-gradient-to-r from-primary via-primary to-primary-dark bg-clip-text text-transparent leading-tight">
             Tax Operations Simplified
           </h1>
           <p className="text-body text-2xl mb-12 leading-relaxed max-w-4xl mx-auto">
@@ -191,7 +191,7 @@ const Landing = () => {
             </Link>
             <Link
               to="/auth/login"
-              className="bg-transparent border-2 border-white text-white font-bold py-4 px-10 rounded-xl hover:bg-white hover:text-primary transition-all duration-300 text-lg"
+              className="btn-secondary py-4 px-10 rounded-xl text-lg"
             >
               Sign In
             </Link>
