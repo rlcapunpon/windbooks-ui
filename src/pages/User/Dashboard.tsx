@@ -83,8 +83,10 @@ const Dashboard = () => {
     if (!user?.resources) return [];
 
     // Extract organization IDs and names from user resources
+    // For non-SUPERADMIN users, exclude WINDBOOKS_APP from organization count
     return user.resources
       .filter(resource => resource.resourceId !== null && resource.resourceName != null)
+      .filter(resource => resource.resourceName !== 'WINDBOOKS_APP')
       .map(resource => ({
         resourceId: resource.resourceId!,
         resourceName: resource.resourceName!

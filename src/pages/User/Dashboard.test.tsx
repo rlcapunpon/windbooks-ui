@@ -192,11 +192,11 @@ describe('Dashboard Component', () => {
       expect(screen.getByText('Organizations with limited access')).toBeInTheDocument();
     });
 
-    it('should handle users with no resources gracefully', () => {
+    it('should not count WINDBOOKS_APP as organization for non-SUPERADMIN users', () => {
       mockIsSuperAdmin.mockReturnValue(false);
 
       const mockUser: User = {
-        id: '5',
+        id: '6',
         email: 'user@example.com',
         isActive: true,
         isSuperAdmin: false,
@@ -208,20 +208,24 @@ describe('Dashboard Component', () => {
           nickName: 'User',
           contactNumber: '1234567890',
           reportTo: {
-            id: '5',
+            id: '6',
             email: 'user@example.com',
             firstName: 'Regular',
             lastName: 'User',
             nickName: 'User',
           },
         },
-        resources: [],
+        resources: [
+          { resourceId: 'app1', resourceName: 'WINDBOOKS_APP', role: 'CLIENT' },
+          { resourceId: 'org1', resourceName: 'Organization 1', role: 'CLIENT' },
+          { resourceId: 'org2', resourceName: 'Organization 2', role: 'CLIENT' },
+        ],
       };
 
       renderWithAuthContext(<Dashboard />, { ...mockAuthContext, user: mockUser });
 
-      // Should show zero count
-      expect(screen.getByText('0')).toBeInTheDocument();
+      // Should show count of 2 (excluding WINDBOOKS_APP)
+      expect(screen.getByText('2')).toBeInTheDocument();
       expect(screen.getByText('Organizations with limited access')).toBeInTheDocument();
     });
   });

@@ -16,6 +16,8 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({ user, onClose, onSave
     contactNumber: user.contactNumber,
   });
 
+  const [errors, setErrors] = useState<{[key: string]: string}>({});
+
   useEffect(() => {
     setUpdatedUser({
       firstName: user.firstName,
@@ -25,17 +27,48 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({ user, onClose, onSave
     });
   }, [user]);
 
+  const validateForm = () => {
+    const newErrors: {[key: string]: string} = {};
+    
+    if (!updatedUser.firstName?.trim()) {
+      newErrors.firstName = 'First Name is required';
+    }
+    if (!updatedUser.lastName?.trim()) {
+      newErrors.lastName = 'Last Name is required';
+    }
+    if (!updatedUser.nickName?.trim()) {
+      newErrors.nickName = 'Nickname is required';
+    }
+    if (!updatedUser.contactNumber?.trim()) {
+      newErrors.contactNumber = 'Contact Number is required';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setUpdatedUser(prevUser => ({
       ...prevUser,
       [name]: value,
     }));
+    
+    // Clear error for this field when user starts typing
+    if (errors[name]) {
+      setErrors(prevErrors => ({
+        ...prevErrors,
+        [name]: '',
+      }));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(updatedUser);
+    
+    if (validateForm()) {
+      onSave(updatedUser);
+    }
   };
 
   return (
@@ -53,6 +86,7 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({ user, onClose, onSave
               placeholder="Enter your first name"
               className="w-full p-3 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
             />
+            {errors.firstName && <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>}
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 mb-2 text-sm font-medium">Last Name</label>
@@ -64,6 +98,7 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({ user, onClose, onSave
               placeholder="Enter your last name"
               className="w-full p-3 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
             />
+            {errors.lastName && <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>}
           </div>
           <div className="mb-4">
             <label className="block text-gray-700 mb-2 text-sm font-medium">Nickname</label>
@@ -75,6 +110,7 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({ user, onClose, onSave
               placeholder="Enter your nickname"
               className="w-full p-3 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
             />
+            {errors.nickName && <p className="text-red-500 text-sm mt-1">{errors.nickName}</p>}
           </div>
           <div className="mb-6">
             <label className="block text-gray-700 mb-2 text-sm font-medium">Contact Number</label>
@@ -86,6 +122,7 @@ const UpdateUserModal: React.FC<UpdateUserModalProps> = ({ user, onClose, onSave
               placeholder="Enter your contact number"
               className="w-full p-3 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
             />
+            {errors.contactNumber && <p className="text-red-500 text-sm mt-1">{errors.contactNumber}</p>}
           </div>
           <div className="flex justify-end gap-4">
             <button
