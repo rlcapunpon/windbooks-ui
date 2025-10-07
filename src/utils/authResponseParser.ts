@@ -68,6 +68,16 @@ export function parseAuthResponse(error: any): AuthResponseResult {
  */
 function parseAuthError(error: any): ErrorInfo {
   const message = error?.message || error?.response?.data?.message || 'An unexpected error occurred';
+  const statusCode = error?.response?.status;
+
+  // Handle 401 errors as invalid credentials
+  if (statusCode === 401) {
+    return {
+      type: 'credentials',
+      title: 'Invalid Credentials',
+      message: 'The email or password you entered is incorrect. Please check your credentials and try again.',
+    };
+  }
 
   // Handle unverified user errors (fallback for non-401 cases)
   if (message.includes('unverified') || message.includes('verification failed')) {

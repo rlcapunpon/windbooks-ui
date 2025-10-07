@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { BrowserRouter } from 'react-router-dom'
 import Login from './Login'
 
@@ -259,6 +260,144 @@ describe('Login', () => {
       )
 
       expect(screen.getByText('User session expired. Please login again.')).toBeInTheDocument()
+    })
+  })
+
+  describe('Login Error Handling (10-07-25.Step6)', () => {
+    it('should show correct error message for 401 invalid credentials instead of generic 401 error', async () => {
+      const user = userEvent.setup()
+      
+      // Mock login to throw 401 invalid credentials error
+      const invalidCredentialsError = {
+        response: {
+          status: 401,
+          data: { message: 'Invalid credentials' }
+        }
+      }
+      mockLogin.mockRejectedValueOnce(invalidCredentialsError)
+
+      render(
+        <BrowserRouter>
+          <Login />
+        </BrowserRouter>
+      )
+
+      // Fill in the form
+      const emailInput = screen.getByPlaceholderText('Enter your email')
+      const passwordInput = screen.getByPlaceholderText('Enter your password')
+      const loginButton = screen.getByRole('button', { name: /login/i })
+
+      await user.type(emailInput, 'test@example.com')
+      await user.type(passwordInput, 'wrongpassword')
+      await user.click(loginButton)
+
+      // Should show ErrorModal with correct message, not generic 401 error
+      expect(await screen.findByText('Invalid Credentials')).toBeInTheDocument()
+      expect(screen.getByText('The email or password you entered is incorrect. Please check your credentials and try again.')).toBeInTheDocument()
+      
+      // Should not show generic 401 error
+      expect(screen.queryByText('401')).not.toBeInTheDocument()
+    })
+
+    it('should show invalid credentials error for 401 status code even with axios default error message', async () => {
+      const user = userEvent.setup()
+      
+      // Mock login to throw 401 error with axios default message
+      const axios401Error = {
+        message: 'Request failed with status code 401',
+        response: {
+          status: 401,
+          data: {} // No specific message from API
+        }
+      }
+      mockLogin.mockRejectedValueOnce(axios401Error)
+
+      render(
+        <BrowserRouter>
+          <Login />
+        </BrowserRouter>
+      )
+
+      // Fill in the form
+      const emailInput = screen.getByPlaceholderText('Enter your email')
+      const passwordInput = screen.getByPlaceholderText('Enter your password')
+      const loginButton = screen.getByRole('button', { name: /login/i })
+
+      await user.type(emailInput, 'test@example.com')
+      await user.type(passwordInput, 'wrongpassword')
+      await user.click(loginButton)
+
+      // Should show ErrorModal with invalid credentials message, not the axios error message
+      expect(await screen.findByText('Invalid Credentials')).toBeInTheDocument()
+      expect(screen.getByText('The email or password you entered is incorrect. Please check your credentials and try again.')).toBeInTheDocument()
+      
+      // Should not show the axios default error message
+      expect(screen.queryByText('Request failed with status code 401')).not.toBeInTheDocument()
+    })
+  })
+
+  describe('Password Peek Functionality', () => {
+    it('should show password peek button in password field', () => {
+      render(
+        <BrowserRouter>
+          <Login />
+        </BrowserRouter>
+      )
+
+      const passwordInput = screen.getByPlaceholderText('Enter your password')
+      expect(passwordInput).toBeInTheDocument()
+      expect(passwordInput).toHaveAttribute('type', 'password')
+
+      // Should have eye icon button
+      const peekButton = screen.getByRole('button', { name: /toggle password visibility/i })
+      expect(peekButton).toBeInTheDocument()
+    })
+
+    it('should toggle password visibility when peek button is clicked', async () => {
+      const user = userEvent.setup()
+
+      render(
+        <BrowserRouter>
+          <Login />
+        </BrowserRouter>
+      )
+
+      const passwordInput = screen.getByPlaceholderText('Enter your password')
+      const peekButton = screen.getByRole('button', { name: /toggle password visibility/i })
+
+      // Initially password should be hidden
+      expect(passwordInput).toHaveAttribute('type', 'password')
+
+      // Click to show password
+      await user.click(peekButton)
+      expect(passwordInput).toHaveAttribute('type', 'text')
+
+      // Click again to hide password
+      await user.click(peekButton)
+      expect(passwordInput).toHaveAttribute('type', 'password')
+    })
+
+    it('should show eye icon when password is hidden and eye-slash when visible', async () => {
+      const user = userEvent.setup()
+
+      render(
+        <BrowserRouter>
+          <Login />
+        </BrowserRouter>
+      )
+
+      const peekButton = screen.getByRole('button', { name: /toggle password visibility/i })
+
+      // Initially should show eye icon (password hidden)
+      expect(peekButton).toContainHTML('M15 12a3 3 0 11-6 0 3 3 0 016 0z') // eye icon path
+
+      // Click to show password - should show eye-slash icon
+      await user.click(peekButton)
+      expect(peekButton).toContainHTML('M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21') // eye-slash icon path
+
+      // Click again to hide password - should show eye icon again
+      await user.click(peekButton)
+      expect(peekButton).toContainHTML('M15 12a3 3 0 11-6 0 3 3 0 016 0z')
     })
   })
 })
