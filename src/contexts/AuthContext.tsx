@@ -125,6 +125,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             console.warn('Failed to fetch RBAC permissions for superadmin with large token:', error);
             // Continue with login even if RBAC fetch fails
           }
+
+          // Check password update history for superadmin with large token
+          try {
+            await UserService.getLastPasswordUpdate(fallbackUser.id);
+          } catch (error) {
+            console.warn('Failed to check password update history for superadmin with large token:', error);
+            // Continue with login even if password update check fails
+          }
           
           setUser(fallbackUser);
           return;
@@ -140,6 +148,14 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       } catch (error) {
         console.warn('Failed to fetch RBAC permissions on login:', error);
         // Continue with login even if RBAC fetch fails
+      }
+
+      // Check password update history after successful login
+      try {
+        await UserService.getLastPasswordUpdate(user.id);
+      } catch (error) {
+        console.warn('Failed to check password update history on login:', error);
+        // Continue with login even if password update check fails
       }
       
       setUser(user);

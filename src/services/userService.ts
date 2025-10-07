@@ -466,4 +466,22 @@ export class UserService {
       throw error;
     }
   }
+
+  /**
+   * Gets user's last password update information
+   */
+  static async getLastPasswordUpdate(userId: string): Promise<{
+    create_date: string; // when was the user created
+    last_update: string | null;
+    updated_by: string | null;
+    how_many: number; // total count of password updates for the user
+  }> {
+    try {
+      const response = await apiClient.get(`/user/last-update/creds/${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch last password update:', error);
+      throw error;
+    }
+  }
 }

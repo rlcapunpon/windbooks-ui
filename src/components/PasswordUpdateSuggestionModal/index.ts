@@ -1,0 +1,1 @@
+export { PasswordUpdateSuggestionModal } from './PasswordUpdateSuggestionModal';

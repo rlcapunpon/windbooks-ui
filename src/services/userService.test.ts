@@ -242,4 +242,54 @@ describe('UserService', () => {
       await expect(UserService.getUserPermissionsFromRBAC()).rejects.toThrow();
     });
   });
+
+  describe('getLastPasswordUpdate', () => {
+    it('should fetch user password update history successfully', async () => {
+      const mockUserId = 'user-123';
+      const mockPasswordData = {
+        create_date: '2024-01-01T00:00:00Z',
+        last_update: '2024-06-01T00:00:00Z',
+        updated_by: 'SUPERADMIN',
+        how_many: 2
+      };
+
+      mockGet.mockResolvedValue({ data: mockPasswordData });
+
+      const result = await UserService.getLastPasswordUpdate(mockUserId);
+
+      expect(mockGet).toHaveBeenCalledWith(`/user/last-update/creds/${mockUserId}`);
+      expect(result).toEqual(mockPasswordData);
+    });
+
+    it('should handle API response when user has never updated password', async () => {
+      const mockUserId = 'user-456';
+      const mockPasswordData = {
+        create_date: '2024-01-01T00:00:00Z',
+        last_update: null,
+        updated_by: null,
+        how_many: 0
+      };
+
+      mockGet.mockResolvedValue({ data: mockPasswordData });
+
+      const result = await UserService.getLastPasswordUpdate(mockUserId);
+
+      expect(mockGet).toHaveBeenCalledWith(`/user/last-update/creds/${mockUserId}`);
+      expect(result).toEqual(mockPasswordData);
+    });
+
+    it('should handle API errors gracefully', async () => {
+      const mockUserId = 'user-789';
+      const mockError = new Error('API Error');
+      
+      const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      mockGet.mockRejectedValue(mockError);
+
+      await expect(UserService.getLastPasswordUpdate(mockUserId)).rejects.toThrow('API Error');
+      
+      expect(mockGet).toHaveBeenCalledWith(`/user/last-update/creds/${mockUserId}`);
+      expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to fetch last password update:', mockError);
+      consoleErrorSpy.mockRestore();
+    });
+  });
 });
