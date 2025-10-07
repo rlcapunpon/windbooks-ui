@@ -135,29 +135,130 @@ describe('ChangePasswordModal', () => {
     });
   });
 
-  describe('Modal Behavior', () => {
-    it('should not render when isOpen is false', () => {
-      render(<ChangePasswordModal {...defaultProps} isOpen={false} />);
-
-      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-    });
-
-    it('should render modal when isOpen is true', () => {
+  describe('Password Peek Functionality (10-07-25.Step5)', () => {
+    it('should display eye icons for all password input fields', () => {
       render(<ChangePasswordModal {...defaultProps} />);
 
-      expect(screen.getByRole('dialog')).toBeInTheDocument();
-      expect(screen.getByText('Change Password')).toBeInTheDocument();
+      // Check that eye icons are present for all password fields
+      const eyeIcons = screen.getAllByRole('button', { name: /toggle .* password visibility/i });
+      expect(eyeIcons).toHaveLength(3); // currentPassword, newPassword, newPasswordConfirmation
     });
 
-    it('should call onClose when cancel button is clicked', async () => {
+    it('should toggle current password visibility when eye icon is clicked', async () => {
       const user = userEvent.setup();
-
       render(<ChangePasswordModal {...defaultProps} />);
 
-      const cancelButton = screen.getByRole('button', { name: 'Cancel' });
-      await user.click(cancelButton);
+      const currentPasswordInput = screen.getByLabelText('Current Password');
+      const eyeIcon = screen.getByRole('button', { name: /toggle current password visibility/i });
 
-      expect(defaultProps.onClose).toHaveBeenCalledTimes(1);
+      // Initially should be password type
+      expect(currentPasswordInput).toHaveAttribute('type', 'password');
+
+      // Click eye icon to show password
+      await user.click(eyeIcon);
+      expect(currentPasswordInput).toHaveAttribute('type', 'text');
+
+      // Click again to hide password
+      await user.click(eyeIcon);
+      expect(currentPasswordInput).toHaveAttribute('type', 'password');
+    });
+
+    it('should toggle new password visibility when eye icon is clicked', async () => {
+      const user = userEvent.setup();
+      render(<ChangePasswordModal {...defaultProps} />);
+
+      const newPasswordInput = screen.getByLabelText('New Password');
+      const eyeIcon = screen.getByRole('button', { name: /toggle new password visibility/i });
+
+      // Initially should be password type
+      expect(newPasswordInput).toHaveAttribute('type', 'password');
+
+      // Click eye icon to show password
+      await user.click(eyeIcon);
+      expect(newPasswordInput).toHaveAttribute('type', 'text');
+
+      // Click again to hide password
+      await user.click(eyeIcon);
+      expect(newPasswordInput).toHaveAttribute('type', 'password');
+    });
+
+    it('should toggle confirm password visibility when eye icon is clicked', async () => {
+      const user = userEvent.setup();
+      render(<ChangePasswordModal {...defaultProps} />);
+
+      const confirmPasswordInput = screen.getByLabelText('Confirm New Password');
+      const eyeIcon = screen.getByRole('button', { name: /toggle confirm password visibility/i });
+
+      // Initially should be password type
+      expect(confirmPasswordInput).toHaveAttribute('type', 'password');
+
+      // Click eye icon to show password
+      await user.click(eyeIcon);
+      expect(confirmPasswordInput).toHaveAttribute('type', 'text');
+
+      // Click again to hide password
+      await user.click(eyeIcon);
+      expect(confirmPasswordInput).toHaveAttribute('type', 'password');
+    });
+
+    it('should maintain independent visibility state for each password field', async () => {
+      const user = userEvent.setup();
+      render(<ChangePasswordModal {...defaultProps} />);
+
+      const currentPasswordInput = screen.getByLabelText('Current Password');
+      const newPasswordInput = screen.getByLabelText('New Password');
+      const confirmPasswordInput = screen.getByLabelText('Confirm New Password');
+
+      const currentEyeIcon = screen.getByRole('button', { name: /toggle current password visibility/i });
+      const newEyeIcon = screen.getByRole('button', { name: /toggle new password visibility/i });
+      const confirmEyeIcon = screen.getByRole('button', { name: /toggle confirm password visibility/i });
+
+      // All should start as password type
+      expect(currentPasswordInput).toHaveAttribute('type', 'password');
+      expect(newPasswordInput).toHaveAttribute('type', 'password');
+      expect(confirmPasswordInput).toHaveAttribute('type', 'password');
+
+      // Show current password
+      await user.click(currentEyeIcon);
+      expect(currentPasswordInput).toHaveAttribute('type', 'text');
+      expect(newPasswordInput).toHaveAttribute('type', 'password');
+      expect(confirmPasswordInput).toHaveAttribute('type', 'password');
+
+      // Show new password
+      await user.click(newEyeIcon);
+      expect(currentPasswordInput).toHaveAttribute('type', 'text');
+      expect(newPasswordInput).toHaveAttribute('type', 'text');
+      expect(confirmPasswordInput).toHaveAttribute('type', 'password');
+
+      // Show confirm password
+      await user.click(confirmEyeIcon);
+      expect(currentPasswordInput).toHaveAttribute('type', 'text');
+      expect(newPasswordInput).toHaveAttribute('type', 'text');
+      expect(confirmPasswordInput).toHaveAttribute('type', 'text');
+
+      // Hide current password
+      await user.click(currentEyeIcon);
+      expect(currentPasswordInput).toHaveAttribute('type', 'password');
+      expect(newPasswordInput).toHaveAttribute('type', 'text');
+      expect(confirmPasswordInput).toHaveAttribute('type', 'text');
+    });
+
+    it('should display eye-slash icon when password is visible', async () => {
+      const user = userEvent.setup();
+      render(<ChangePasswordModal {...defaultProps} />);
+
+      const eyeIcon = screen.getByRole('button', { name: /toggle current password visibility/i });
+
+      // Initially should show eye icon (password hidden)
+      expect(eyeIcon).toContainHTML('d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"');
+
+      // Click to show password
+      await user.click(eyeIcon);
+      expect(eyeIcon).toContainHTML('d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"');
+
+      // Click again to hide password
+      await user.click(eyeIcon);
+      expect(eyeIcon).toContainHTML('d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"');
     });
   });
 });

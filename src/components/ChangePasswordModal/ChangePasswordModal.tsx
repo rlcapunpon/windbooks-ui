@@ -25,6 +25,11 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -34,6 +39,13 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
     }));
     // Clear error when user starts typing
     if (error) setError(null);
+  };
+
+  const togglePasswordVisibility = (field: 'current' | 'new' | 'confirm') => {
+    setShowPasswords(prev => ({
+      ...prev,
+      [field]: !prev[field]
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -136,46 +148,103 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
 
             <div className="mb-4">
               <label htmlFor="currentPassword" className="block text-gray-700 mb-2 text-sm font-medium">Current Password</label>
-              <input
-                id="currentPassword"
-                type="password"
-                name="currentPassword"
-                value={formData.currentPassword}
-                onChange={handleChange}
-                placeholder="Enter current password"
-                required
-                className="w-full p-3 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
-              />
+              <div className="relative">
+                <input
+                  id="currentPassword"
+                  type={showPasswords.current ? "text" : "password"}
+                  name="currentPassword"
+                  value={formData.currentPassword}
+                  onChange={handleChange}
+                  placeholder="Enter current password"
+                  required
+                  className="w-full p-3 pr-12 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
+                />
+                <button
+                  type="button"
+                  onClick={() => togglePasswordVisibility('current')}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                  aria-label="toggle current password visibility"
+                >
+                  {showPasswords.current ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M 2.458 12 C 3.732 7.943 7.523 5 12 5 c 4.478 0 8.268 2.943 9.542 7 c -1.274 4.057 -5.064 7 -9.542 7 c -4.477 0 -8.268 -2.943 -9.542 -7 Z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
 
             <div className="mb-4">
               <label htmlFor="newPassword" className="block text-gray-700 mb-2 text-sm font-medium">New Password</label>
-              <input
-                id="newPassword"
-                type="password"
-                name="newPassword"
-                value={formData.newPassword}
-                onChange={handleChange}
-                placeholder="Enter new password"
-                required
-                minLength={8}
-                className="w-full p-3 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
-              />
+              <div className="relative">
+                <input
+                  id="newPassword"
+                  type={showPasswords.new ? "text" : "password"}
+                  name="newPassword"
+                  value={formData.newPassword}
+                  onChange={handleChange}
+                  placeholder="Enter new password"
+                  required
+                  minLength={8}
+                  className="w-full p-3 pr-12 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
+                />
+                <button
+                  type="button"
+                  onClick={() => togglePasswordVisibility('new')}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                  aria-label="toggle new password visibility"
+                >
+                  {showPasswords.new ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M 2.458 12 C 3.732 7.943 7.523 5 12 5 c 4.478 0 8.268 2.943 9.542 7 c -1.274 4.057 -5.064 7 -9.542 7 c -4.477 0 -8.268 -2.943 -9.542 -7 Z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
 
             <div className="mb-6">
               <label htmlFor="newPasswordConfirmation" className="block text-gray-700 mb-2 text-sm font-medium">Confirm New Password</label>
-              <input
-                id="newPasswordConfirmation"
-                type="password"
-                name="newPasswordConfirmation"
-                value={formData.newPasswordConfirmation}
-                onChange={handleChange}
-                placeholder="Confirm new password"
-                required
-                minLength={8}
-                className="w-full p-3 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
-              />
+              <div className="relative">
+                <input
+                  id="newPasswordConfirmation"
+                  type={showPasswords.confirm ? "text" : "password"}
+                  name="newPasswordConfirmation"
+                  value={formData.newPasswordConfirmation}
+                  onChange={handleChange}
+                  placeholder="Confirm new password"
+                  required
+                  minLength={8}
+                  className="w-full p-3 pr-12 bg-gray-50 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500 transition-all duration-300 hover:border-gray-400"
+                />
+                <button
+                  type="button"
+                  onClick={() => togglePasswordVisibility('confirm')}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                  aria-label="toggle confirm password visibility"
+                >
+                  {showPasswords.confirm ? (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                    </svg>
+                  ) : (
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M 2.458 12 C 3.732 7.943 7.523 5 12 5 c 4.478 0 8.268 2.943 9.542 7 c -1.274 4.057 -5.064 7 -9.542 7 c -4.477 0 -8.268 -2.943 -9.542 -7 Z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
 
             {error && (
