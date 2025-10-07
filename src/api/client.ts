@@ -5,7 +5,7 @@ import { getAccessToken } from '../utils/tokenStorage';
 const isDevelopment = import.meta.env.DEV;
 const baseURL = isDevelopment
   ? '/api'  // Use Vite proxy in development
-  : import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'; // Direct URL in production
+  : import.meta.env.VITE_API_BASE_URL + '/api' || 'http://localhost:3000/api'; // Direct URL in production
 
 const apiClient = axios.create({
   baseURL,

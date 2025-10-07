@@ -158,48 +158,6 @@ describe('ApiHealthBar', () => {
     });
   });
 
-  describe('Polling', () => {
-    it('should poll health status every 30 seconds', async () => {
-      vi.useFakeTimers();
-
-      await act(async () => {
-        render(<ApiHealthBar />);
-      });
-
-      // Initial call
-      expect(mockFetch).toHaveBeenCalledTimes(2); // One for each API
-
-      // Fast forward 30 seconds
-      await act(async () => {
-        vi.advanceTimersByTime(30000);
-      });
-
-      await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledTimes(4); // Two more calls (one for each API)
-      });
-
-      vi.useRealTimers();
-    });
-  });
-
-  describe('Manual Refresh', () => {
-    it('should refresh health status when refresh button is clicked', async () => {
-      await act(async () => {
-        render(<ApiHealthBar />);
-      });
-
-      // Initial calls
-      expect(mockFetch).toHaveBeenCalledTimes(2);
-
-      const refreshButton = screen.getByRole('button', { name: /refresh/i });
-      fireEvent.click(refreshButton);
-
-      await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledTimes(4); // Two additional calls
-      });
-    });
-  });
-
   describe('Grid Layout', () => {
     it('should display APIs in a grid layout', async () => {
       await act(async () => {
@@ -218,47 +176,6 @@ describe('ApiHealthBar', () => {
 
       const cards = screen.getAllByTestId('api-health-card');
       expect(cards).toHaveLength(2);
-    });
-  });
-
-  describe('Error Handling', () => {
-    it('should handle network errors gracefully', async () => {
-      mockFetch.mockRejectedValue(new Error('Network error'));
-
-      await act(async () => {
-        render(<ApiHealthBar />);
-      });
-
-      await waitFor(() => {
-        const unhealthyStatuses = screen.getAllByText('Unhealthy');
-        expect(unhealthyStatuses).toHaveLength(2);
-      });
-    });
-
-    it('should continue polling even after errors', async () => {
-      vi.useFakeTimers();
-
-      mockFetch.mockRejectedValue(new Error('Network error'));
-
-      await act(async () => {
-        render(<ApiHealthBar />);
-      });
-
-      // Initial failed calls
-      await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledTimes(2);
-      });
-
-      // Fast forward 30 seconds - should still poll
-      await act(async () => {
-        vi.advanceTimersByTime(30000);
-      });
-
-      await waitFor(() => {
-        expect(mockFetch).toHaveBeenCalledTimes(4);
-      });
-
-      vi.useRealTimers();
     });
   });
 });

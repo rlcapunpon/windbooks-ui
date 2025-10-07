@@ -171,12 +171,12 @@ describe('Profile Component', () => {
       // Mock the APIs based on URL
       vi.mocked(global.fetch).mockImplementation((url) => {
         const urlString = url.toString();
-        if (urlString.includes('/api/user/last-login')) {
+        if (urlString.includes('/user/last-login')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve({ last_login: '2025-01-15T10:30:00.000Z' })
           } as Response);
-        } else if (urlString.includes('/api/user/last-update/creds/')) {
+        } else if (urlString.includes('/user/last-update/creds/')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve({
@@ -211,12 +211,12 @@ describe('Profile Component', () => {
       // Mock the APIs based on URL
       vi.mocked(global.fetch).mockImplementation((url) => {
         const urlString = url.toString();
-        if (urlString.includes('/api/user/last-login')) {
+        if (urlString.includes('/user/last-login')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve({ last_login: null })
           } as Response);
-        } else if (urlString.includes('/api/user/last-update/creds/')) {
+        } else if (urlString.includes('/user/last-update/creds/')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve({
@@ -251,12 +251,12 @@ describe('Profile Component', () => {
       // Mock the APIs based on URL
       vi.mocked(global.fetch).mockImplementation((url) => {
         const urlString = url.toString();
-        if (urlString.includes('/api/user/last-login')) {
+        if (urlString.includes('/user/last-login')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve({ last_login: null })
           } as Response);
-        } else if (urlString.includes('/api/user/last-update/creds/')) {
+        } else if (urlString.includes('/user/last-update/creds/')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve({
@@ -290,12 +290,12 @@ describe('Profile Component', () => {
       // Mock the APIs based on URL
       vi.mocked(global.fetch).mockImplementation((url) => {
         const urlString = url.toString();
-        if (urlString.includes('/api/user/last-login')) {
+        if (urlString.includes('/user/last-login')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve({ last_login: null })
           } as Response);
-        } else if (urlString.includes('/api/user/last-update/creds/')) {
+        } else if (urlString.includes('/user/last-update/creds/')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve({
@@ -360,12 +360,12 @@ describe('Profile Component', () => {
       // Mock the APIs based on URL
       vi.mocked(global.fetch).mockImplementation((url) => {
         const urlString = url.toString();
-        if (urlString.includes('/api/user/last-login')) {
+        if (urlString.includes('/user/last-login')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve({ last_login: null })
           } as Response);
-        } else if (urlString.includes('/api/user/last-update/creds/')) {
+        } else if (urlString.includes('/user/last-update/creds/')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve({
@@ -406,12 +406,12 @@ describe('Profile Component', () => {
       // Mock the APIs based on URL
       vi.mocked(global.fetch).mockImplementation((url) => {
         const urlString = url.toString();
-        if (urlString.includes('/api/user/last-login')) {
+        if (urlString.includes('/user/last-login')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve({ last_login: null })
           } as Response);
-        } else if (urlString.includes('/api/user/last-update/creds/')) {
+        } else if (urlString.includes('/user/last-update/creds/')) {
           return Promise.resolve({
             ok: true,
             json: () => Promise.resolve({
