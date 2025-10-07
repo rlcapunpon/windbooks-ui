@@ -265,7 +265,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
               <button
                 type="submit"
                 disabled={isLoading}
-                className="px-6 py-3 bg-gradient-to-r from-green-500 via-blue-600 to-purple-500 text-white rounded-lg hover:shadow-lg hover:shadow-green-500/25 focus:outline-none focus:ring-2 focus:ring-green-500 transition-all duration-300 transform hover:scale-105 font-semibold disabled:opacity-50 disabled:transform-none"
+                className="btn-primary px-6 py-3 rounded-lg font-semibold disabled:opacity-50"
               >
                 {isLoading ? 'Updating...' : 'Update Password'}
               </button>
