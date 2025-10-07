@@ -63,7 +63,7 @@ const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
         new_password_confirmation: formData.newPasswordConfirmation
       };
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/update/password`, {
+      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/user/update/password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
