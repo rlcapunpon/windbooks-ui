@@ -4,6 +4,7 @@ import { Menu } from '../components/Menu/Menu';
 import { useAuth } from '../contexts/AuthContextTypes';
 import { UserService } from '../services/userService';
 import type { MenuItem } from '../components/Menu/types';
+import { PasswordUpdateSuggestionModal } from './PasswordUpdateSuggestionModal/PasswordUpdateSuggestionModal';
 
 interface MainLayoutProps {
   children: ReactNode;
@@ -46,7 +47,7 @@ const isSubmenuItemActive = (menuItems: MenuItem[], activeMenuItem: string | nul
 };
 
 export const MainLayout = ({ children }: MainLayoutProps) => {
-  const { user, logout } = useAuth();
+  const { user, logout, isPasswordModalOpen, passwordModalProps, closePasswordModal } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [activeMenuItem, setActiveMenuItem] = useState<string | null>(null);
@@ -430,6 +431,16 @@ export const MainLayout = ({ children }: MainLayoutProps) => {
           {children}
         </main>
       </div>
+
+      {/* Password Update Suggestion Modal */}
+      {isPasswordModalOpen && passwordModalProps && (
+        <PasswordUpdateSuggestionModal
+          isOpen={isPasswordModalOpen}
+          onClose={closePasswordModal}
+          userRole={passwordModalProps.userRole}
+          lastUpdateDays={passwordModalProps.lastUpdateDays}
+        />
+      )}
     </div>
   );
 };

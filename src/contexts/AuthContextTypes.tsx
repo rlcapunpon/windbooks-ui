@@ -8,6 +8,13 @@ export interface AuthContextType {
   refresh: () => Promise<void>;
   register: (email: string, password: string) => Promise<void>;
   isLoading: boolean;
+  // Password update modal state
+  isPasswordModalOpen: boolean;
+  passwordModalProps: {
+    userRole: 'USER' | 'SUPERADMIN';
+    lastUpdateDays: number | null;
+  } | null;
+  closePasswordModal: () => void;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
