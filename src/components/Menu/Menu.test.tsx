@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { BrowserRouter } from 'react-router-dom';
 import { Menu } from './Menu';
 import type { MenuItem } from './types';
 
@@ -7,6 +8,22 @@ import type { MenuItem } from './types';
 vi.mock('../../utils/cn', () => ({
   cn: (...classes: string[]) => classes.join(' '),
 }));
+
+// Helper function to wrap components with Router
+const renderWithRouter = (component: React.ReactElement) => {
+  return render(
+    <BrowserRouter>
+      {component}
+    </BrowserRouter>
+  );
+};
+
+// Helper function to wrap rerender with Router
+const wrapWithRouter = (component: React.ReactElement) => (
+  <BrowserRouter>
+    {component}
+  </BrowserRouter>
+);
 
 const mockMenuItems: MenuItem[] = [
   {
@@ -48,7 +65,7 @@ describe('Menu Component', () => {
   });
 
   it('renders menu items correctly', () => {
-    render(
+    renderWithRouter(
       <Menu
         items={mockMenuItems}
         userPermissions={['*']} // Super admin permissions to see all items
@@ -85,7 +102,7 @@ describe('Menu Component', () => {
     ];
 
     // Test with no permissions - should only show public item
-    const { rerender } = render(
+    const { rerender } = renderWithRouter(
       <Menu
         items={itemsWithPermissions}
         userPermissions={[]}
@@ -99,10 +116,12 @@ describe('Menu Component', () => {
 
     // Test with USER.READ permission
     rerender(
-      <Menu
-        items={itemsWithPermissions}
-        userPermissions={['USER.READ']}
-      />
+      wrapWithRouter(
+        <Menu
+          items={itemsWithPermissions}
+          userPermissions={['USER.READ']}
+        />
+      )
     );
 
     expect(screen.getByText('Public Item')).toBeInTheDocument();
@@ -112,10 +131,12 @@ describe('Menu Component', () => {
 
     // Test with wildcard (*) permission (super admin)
     rerender(
-      <Menu
-        items={itemsWithPermissions}
-        userPermissions={['*']}
-      />
+      wrapWithRouter(
+        <Menu
+          items={itemsWithPermissions}
+          userPermissions={['*']}
+        />
+      )
     );
 
     expect(screen.getByText('Public Item')).toBeInTheDocument();
@@ -126,7 +147,7 @@ describe('Menu Component', () => {
 
   it('hides Settings menu item for non-super-admin users', () => {
     // Test with regular user permissions - Settings should be hidden
-    render(
+    renderWithRouter(
       <Menu
         items={mockMenuItems}
         userPermissions={['USER.READ', 'USER.CREATE']}
@@ -161,7 +182,7 @@ describe('Menu Component', () => {
     ];
 
     // Test with Viewer role permissions (USER.READ only)
-    render(
+    renderWithRouter(
       <Menu
         items={menuItemsWithProfile}
         userPermissions={['USER.READ']}
@@ -199,7 +220,7 @@ describe('Menu Component', () => {
     ];
 
     // Test with empty permissions array (simulating user with no roles)
-    render(
+    renderWithRouter(
       <Menu
         items={menuItemsWithProfile}
         userPermissions={[]}
@@ -215,7 +236,7 @@ describe('Menu Component', () => {
   });
 
   it('shows submenu when parent is clicked', async () => {
-    render(
+    renderWithRouter(
       <Menu
         items={mockMenuItems}
         userPermissions={['USER.READ', 'USER.CREATE']}
@@ -234,7 +255,7 @@ describe('Menu Component', () => {
   it('calls onItemClick when item is clicked', () => {
     const mockOnItemClick = vi.fn();
 
-    render(
+    renderWithRouter(
       <Menu
         items={mockMenuItems}
         userPermissions={['USER.READ']}
@@ -249,7 +270,7 @@ describe('Menu Component', () => {
   });
 
   it('supports keyboard navigation', () => {
-    render(
+    renderWithRouter(
       <Menu
         items={mockMenuItems}
         userPermissions={['USER.READ']}
@@ -276,7 +297,7 @@ describe('Menu Component', () => {
       },
     ]);
 
-    render(
+    renderWithRouter(
       <Menu
         items={mockMenuItems}
         userPermissions={['USER.READ']}
@@ -298,7 +319,7 @@ describe('Menu Component', () => {
       },
     ];
 
-    render(
+    renderWithRouter(
       <Menu
         items={itemsWithIcons}
         userPermissions={[]}
@@ -318,7 +339,7 @@ describe('Menu Component', () => {
       },
     ];
 
-    render(
+    renderWithRouter(
       <Menu
         items={itemsWithIcons}
         userPermissions={[]}
@@ -330,7 +351,7 @@ describe('Menu Component', () => {
   });
 
   it('applies custom className', () => {
-    render(
+    renderWithRouter(
       <Menu
         items={mockMenuItems}
         userPermissions={['USER.READ']}
@@ -355,7 +376,7 @@ describe('Menu Component', () => {
       },
     ];
 
-    render(
+    renderWithRouter(
       <Menu
         items={itemsWithDisabled}
         userPermissions={[]}
@@ -378,7 +399,7 @@ describe('Menu Component', () => {
       },
     ];
 
-    render(
+    renderWithRouter(
       <Menu
         items={itemsWithBadges}
         userPermissions={[]}
@@ -389,7 +410,7 @@ describe('Menu Component', () => {
   });
 
   it('has white background for sidebar variant', () => {
-    render(
+    renderWithRouter(
       <Menu
         items={mockMenuItems}
         userPermissions={[]}
@@ -405,7 +426,7 @@ describe('Menu Component', () => {
   });
 
   it('does not overflow its container width', () => {
-    render(
+    renderWithRouter(
       <div style={{ width: '256px', position: 'relative' }}>
         <Menu
           items={mockMenuItems}
@@ -435,7 +456,7 @@ describe('Menu Component', () => {
       },
     ];
 
-    render(
+    renderWithRouter(
       <Menu
         items={itemsWithIcons}
         userPermissions={[]}
@@ -455,11 +476,13 @@ describe('Menu Component', () => {
       const TestComponent = () => {
         renderCount++;
         return (
-          <Menu
-            items={mockMenuItems}
-            userPermissions={['USER.READ']}
-            activeItem="dashboard"
-          />
+          <BrowserRouter>
+            <Menu
+              items={mockMenuItems}
+              userPermissions={['USER.READ']}
+              activeItem="dashboard"
+            />
+          </BrowserRouter>
         );
       };
 
@@ -474,7 +497,7 @@ describe('Menu Component', () => {
 
       // This test ensures that the filteredItems memoization prevents
       // "Maximum update depth exceeded" errors
-      render(
+      renderWithRouter(
         <Menu
           items={mockMenuItems}
           userPermissions={['USER.READ']}
@@ -500,7 +523,7 @@ describe('Menu Component', () => {
         originalError(message);
       };
 
-      const { rerender } = render(
+      const { rerender } = renderWithRouter(
         <Menu
           items={mockMenuItems}
           userPermissions={['USER.READ']}
@@ -510,27 +533,33 @@ describe('Menu Component', () => {
 
       // Change activeItem multiple times rapidly
       rerender(
-        <Menu
-          items={mockMenuItems}
-          userPermissions={['USER.READ']}
-          activeItem="users-list"
-        />
+        wrapWithRouter(
+          <Menu
+            items={mockMenuItems}
+            userPermissions={['USER.READ']}
+            activeItem="users-list"
+          />
+        )
       );
 
       rerender(
-        <Menu
-          items={mockMenuItems}
-          userPermissions={['USER.READ']}
-          activeItem="users-create"
-        />
+        wrapWithRouter(
+          <Menu
+            items={mockMenuItems}
+            userPermissions={['USER.READ']}
+            activeItem="users-create"
+          />
+        )
       );
 
       rerender(
-        <Menu
-          items={mockMenuItems}
-          userPermissions={['USER.READ']}
-          activeItem="dashboard"
-        />
+        wrapWithRouter(
+          <Menu
+            items={mockMenuItems}
+            userPermissions={['USER.READ']}
+            activeItem="dashboard"
+          />
+        )
       );
 
       // Wait for React to process all updates
@@ -544,7 +573,7 @@ describe('Menu Component', () => {
     it('should handle permission changes without infinite re-renders', () => {
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-      const { rerender } = render(
+      const { rerender } = renderWithRouter(
         <Menu
           items={mockMenuItems}
           userPermissions={['USER.READ']}
@@ -554,19 +583,23 @@ describe('Menu Component', () => {
 
       // Change permissions which should trigger filteredItems recalculation
       rerender(
-        <Menu
-          items={mockMenuItems}
-          userPermissions={['*']}
-          activeItem="users-list"
-        />
+        wrapWithRouter(
+          <Menu
+            items={mockMenuItems}
+            userPermissions={['*']}
+            activeItem="users-list"
+          />
+        )
       );
 
       rerender(
-        <Menu
-          items={mockMenuItems}
-          userPermissions={['USER.READ', 'USER.CREATE']}
-          activeItem="users-list"
-        />
+        wrapWithRouter(
+          <Menu
+            items={mockMenuItems}
+            userPermissions={['USER.READ', 'USER.CREATE']}
+            activeItem="users-list"
+          />
+        )
       );
 
       // Verify no infinite render errors occurred
@@ -582,7 +615,7 @@ describe('Menu Component', () => {
       // that changing only activeItem doesn't trigger re-filtering
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       
-      const { rerender } = render(
+      const { rerender } = renderWithRouter(
         <Menu
           items={mockMenuItems}
           userPermissions={['USER.READ']}
@@ -593,11 +626,13 @@ describe('Menu Component', () => {
       // Re-render with same items and permissions but different activeItem
       // This should not cause infinite re-renders due to proper memoization
       rerender(
-        <Menu
-          items={mockMenuItems}
-          userPermissions={['USER.READ']}
-          activeItem="users-list"
-        />
+        wrapWithRouter(
+          <Menu
+            items={mockMenuItems}
+            userPermissions={['USER.READ']}
+            activeItem="users-list"
+          />
+        )
       );
 
       // Verify no errors were thrown during re-render

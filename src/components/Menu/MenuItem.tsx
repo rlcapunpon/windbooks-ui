@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import type { MenuItemProps } from './types';
 import { cn } from '../../utils/cn';
 
@@ -87,32 +88,59 @@ export const MenuItemComponent = ({
     <li className="menu-item-container">
       <div className={itemClasses}>
         {item.href ? (
-          <a
-            href={item.href}
-            className={linkClasses}
-            target={item.external ? '_blank' : undefined}
-            rel={item.external ? 'noopener noreferrer' : undefined}
-            onClick={handleClick}
-            onKeyDown={handleKeyDown}
-            tabIndex={0}
-            role="menuitem"
-            aria-current={isActive ? 'page' : undefined}
-          >
-            {showIcons && item.icon && (
-              <span className={cn(
-                "flex-shrink-0", 
-                collapsed ? "w-5 h-5 mr-2" : "mr-3"
-              )} aria-hidden="true">
-                {item.icon}
-              </span>
-            )}
-            <span className="truncate">{item.label}</span>
-            {item.badge && (
-              <span className="ml-auto bg-primary text-white text-xs px-2 py-1 rounded-full">
-                {item.badge}
-              </span>
-            )}
-          </a>
+          item.external ? (
+            <a
+              href={item.href}
+              className={linkClasses}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={handleClick}
+              onKeyDown={handleKeyDown}
+              tabIndex={0}
+              role="menuitem"
+              aria-current={isActive ? 'page' : undefined}
+            >
+              {showIcons && item.icon && (
+                <span className={cn(
+                  "flex-shrink-0", 
+                  collapsed ? "w-5 h-5 mr-2" : "mr-3"
+                )} aria-hidden="true">
+                  {item.icon}
+                </span>
+              )}
+              <span className="truncate">{item.label}</span>
+              {item.badge && (
+                <span className="ml-auto bg-primary text-white text-xs px-2 py-1 rounded-full">
+                  {item.badge}
+                </span>
+              )}
+            </a>
+          ) : (
+            <Link
+              to={item.href}
+              className={linkClasses}
+              onClick={handleClick}
+              onKeyDown={handleKeyDown}
+              tabIndex={0}
+              role="menuitem"
+              aria-current={isActive ? 'page' : undefined}
+            >
+              {showIcons && item.icon && (
+                <span className={cn(
+                  "flex-shrink-0", 
+                  collapsed ? "w-5 h-5 mr-2" : "mr-3"
+                )} aria-hidden="true">
+                  {item.icon}
+                </span>
+              )}
+              <span className="truncate">{item.label}</span>
+              {item.badge && (
+                <span className="ml-auto bg-primary text-white text-xs px-2 py-1 rounded-full">
+                  {item.badge}
+                </span>
+              )}
+            </Link>
+          )
         ) : (
           <button
             onClick={handleClick}
