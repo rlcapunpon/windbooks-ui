@@ -30,29 +30,28 @@ const mockOrganization = {
 }
 
 const mockCreateOrganizationData = {
-  name: 'XYZ Corporation Ltd',
-  tin: '001234567890',
   category: 'NON_INDIVIDUAL' as const,
-  subcategory: 'CORPORATION' as const,
   tax_classification: 'VAT' as const,
   registration_date: '2024-01-01',
-  address: '123 Main Street, Makati City, Philippines',
   first_name: 'John',
-  middle_name: 'Michael',
   last_name: 'Doe',
-  trade_name: 'XYZ Trading',
   line_of_business: '6201',
   address_line: '123 Main Street',
   region: 'NCR',
   city: 'Makati',
   zip_code: '1223',
-  tin_registration: '001234567890',
+  tin: '001234567890',
   rdo_code: '001',
   contact_number: '+639123456789',
   email_address: 'john.doe@example.com',
-  tax_type: 'VAT',
   start_date: '2024-01-01',
-  reg_date: '2024-01-01'
+  registered_name: 'XYZ Corporation Ltd',
+  trade_name: 'XYZ Trading',
+  subcategory: 'CORPORATION' as const,
+  middle_name: 'Michael',
+  fy_start: '2025-01-01',
+  fy_end: '2025-12-31',
+  accounting_method: 'ACCRUAL' as const
 }
 
 describe('OrganizationService', () => {
@@ -116,6 +115,113 @@ describe('OrganizationService', () => {
       // Assert
       expect(orgApiClient.post).toHaveBeenCalledWith('/organizations', mockCreateOrganizationData)
       expect(result).toEqual(mockOrganization)
+    })
+
+    it('should send correct request structure for INDIVIDUAL organization', async () => {
+      // Arrange
+      const individualData = {
+        category: 'INDIVIDUAL' as const,
+        tax_classification: 'VAT' as const,
+        tin: '001234567890',
+        registration_date: '2024-01-01',
+        first_name: 'John',
+        last_name: 'Doe',
+        middle_name: 'Michael',
+        line_of_business: '6201',
+        address_line: '123 Main Street',
+        region: 'NCR',
+        city: 'Makati',
+        zip_code: '1223',
+        rdo_code: '001',
+        contact_number: '+639123456789',
+        email_address: 'john.doe@example.com',
+        start_date: '2024-01-01',
+        subcategory: 'SELF_EMPLOYED' as const
+      }
+      ;(orgApiClient.post as any).mockResolvedValueOnce({
+        data: mockOrganization
+      })
+
+      // Act
+      await OrganizationService.createOrganization(individualData)
+
+      // Assert
+      expect(orgApiClient.post).toHaveBeenCalledWith('/organizations', expect.objectContaining({
+        category: 'INDIVIDUAL',
+        tax_classification: 'VAT',
+        tin: '001234567890',
+        registration_date: '2024-01-01',
+        first_name: 'John',
+        last_name: 'Doe',
+        middle_name: 'Michael',
+        line_of_business: '6201',
+        address_line: '123 Main Street',
+        region: 'NCR',
+        city: 'Makati',
+        zip_code: '1223',
+        rdo_code: '001',
+        contact_number: '+639123456789',
+        email_address: 'john.doe@example.com',
+        start_date: '2024-01-01',
+        subcategory: 'SELF_EMPLOYED'
+      }))
+      expect(orgApiClient.post).toHaveBeenCalledWith('/organizations', expect.not.objectContaining({
+        registered_name: expect.any(String),
+        trade_name: expect.any(String)
+      }))
+    })
+
+    it('should send correct request structure for NON_INDIVIDUAL organization', async () => {
+      // Arrange
+      const nonIndividualData = {
+        category: 'NON_INDIVIDUAL' as const,
+        tax_classification: 'VAT' as const,
+        tin: '001234567890',
+        registration_date: '2024-01-01',
+        registered_name: 'ABC Corporation',
+        trade_name: 'ABC Trading',
+        line_of_business: '6201',
+        address_line: '123 Main Street',
+        region: 'NCR',
+        city: 'Makati',
+        zip_code: '1223',
+        rdo_code: '001',
+        contact_number: '+639123456789',
+        email_address: 'john.doe@example.com',
+        start_date: '2024-01-01',
+        subcategory: 'CORPORATION' as const
+      }
+      ;(orgApiClient.post as any).mockResolvedValueOnce({
+        data: mockOrganization
+      })
+
+      // Act
+      await OrganizationService.createOrganization(nonIndividualData)
+
+      // Assert
+      expect(orgApiClient.post).toHaveBeenCalledWith('/organizations', expect.objectContaining({
+        category: 'NON_INDIVIDUAL',
+        tax_classification: 'VAT',
+        tin: '001234567890',
+        registration_date: '2024-01-01',
+        registered_name: 'ABC Corporation',
+        trade_name: 'ABC Trading',
+        line_of_business: '6201',
+        address_line: '123 Main Street',
+        region: 'NCR',
+        city: 'Makati',
+        zip_code: '1223',
+        rdo_code: '001',
+        contact_number: '+639123456789',
+        email_address: 'john.doe@example.com',
+        start_date: '2024-01-01',
+        subcategory: 'CORPORATION'
+      }))
+      expect(orgApiClient.post).toHaveBeenCalledWith('/organizations', expect.not.objectContaining({
+        first_name: expect.any(String),
+        last_name: expect.any(String),
+        middle_name: expect.any(String)
+      }))
     })
 
     it('should handle validation errors', async () => {

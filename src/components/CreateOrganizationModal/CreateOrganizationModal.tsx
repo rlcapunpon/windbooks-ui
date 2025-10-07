@@ -977,9 +977,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
       const createData: CreateOrganizationRequestDto = {
         category: formData.category as 'INDIVIDUAL' | 'NON_INDIVIDUAL',
         tax_classification: formData.tax_classification as 'VAT' | 'NON_VAT' | 'EXCEMPT',
-        first_name: formData.category === 'INDIVIDUAL' ? formData.first_name : '',
-        last_name: formData.category === 'INDIVIDUAL' ? formData.last_name : '',
-        tin_registration: formData.tin,
+        tin: formData.tin,
         registration_date: formData.registration_date,
         line_of_business: formData.line_of_business,
         address_line: formData.address_line,
@@ -989,9 +987,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
         rdo_code: formData.rdo_code,
         contact_number: formData.contact_number,
         email_address: formData.email_address,
-        start_date: formData.start_date,
-        reg_date: formData.start_date, // Use start_date as reg_date
-        tax_type: 'VAT' // Default tax type, can be updated later
+        start_date: formData.start_date
       }
 
       // Add conditional fields based on category
@@ -1000,7 +996,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
         createData.last_name = formData.last_name
         if (formData.middle_name) createData.middle_name = formData.middle_name
       } else {
-        createData.trade_name = formData.registered_name
+        createData.registered_name = formData.registered_name
         if (formData.trade_name) createData.trade_name = formData.trade_name
       }
 

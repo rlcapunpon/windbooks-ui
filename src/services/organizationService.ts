@@ -63,28 +63,43 @@ export interface OrganizationRegistration {
 }
 
 export interface CreateOrganizationRequestDto {
-  category: 'INDIVIDUAL' | 'NON_INDIVIDUAL'
-  tax_classification: 'VAT' | 'NON_VAT' | 'EXCEMPT'
-  first_name: string
-  last_name: string
-  line_of_business: string
-  address_line: string
-  region: string
-  city: string
-  zip_code: string
-  tin_registration: string
-  rdo_code: string
-  contact_number: string
-  email_address: string
-  tax_type: string
-  start_date: string
-  reg_date: string
-  tin?: string
-  subcategory?: 'SELF_EMPLOYED' | 'SOLE_PROPRIETOR' | 'FREELANCER' | 'CORPORATION' | 'PARTNERSHIP' | 'OTHERS'
-  registration_date?: string
-  address?: string
-  middle_name?: string
-  trade_name?: string
+  // Organization fields
+  registered_name?: string; // Required for NON_INDIVIDUAL
+  tin: string;
+  category: 'INDIVIDUAL' | 'NON_INDIVIDUAL';
+  subcategory?: 'SELF_EMPLOYED' | 'SOLE_PROPRIETOR' | 'FREELANCER' | 'CORPORATION' | 'PARTNERSHIP' | 'OTHERS';
+  tax_classification: 'VAT' | 'NON_VAT' | 'EXCEMPT';
+  registration_date: string; // Date string
+
+  // OrganizationRegistration fields
+  first_name?: string; // Required for INDIVIDUAL
+  middle_name?: string | null;
+  last_name?: string; // Required for INDIVIDUAL
+  trade_name?: string | null;
+  line_of_business: string;
+  address_line: string;
+  region: string;
+  city: string;
+  zip_code: string;
+  rdo_code: string;
+  contact_number: string;
+  email_address: string;
+  start_date: string; // Date string
+
+  // OrganizationOperation fields (optional)
+  fy_start?: string;
+  fy_end?: string;
+  vat_reg_effectivity?: string;
+  registration_effectivity?: string;
+  payroll_cut_off?: string[];
+  payment_cut_off?: string[];
+  quarter_closing?: string[];
+  has_foreign?: boolean;
+  has_employees?: boolean;
+  is_ewt?: boolean;
+  is_fwt?: boolean;
+  is_bir_withholding_agent?: boolean;
+  accounting_method?: 'ACCRUAL' | 'CASH' | 'OTHERS';
 }
 
 export interface UpdateOrganizationRequestDto {
