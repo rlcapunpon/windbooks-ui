@@ -10,6 +10,7 @@ import Toast from '../../components/Toast/Toast';
 import type { ErrorInfo } from '../../components/ErrorModal';
 import type { NotificationInfo } from '../../components/NotificationModal';
 import { parseAuthResponse } from '../../utils/authResponseParser';
+import { ApiHealthBar } from '../../components/ApiHealthBar/ApiHealthBar';
 
 const schema = z.object({
   email: z.string()
@@ -211,7 +212,8 @@ const Login = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background-primary px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background-primary px-4 relative">
+      <ApiHealthBar />
       <div className="w-full max-w-md">
         <Toast
           message="Please verify your email. We’ve sent a verification link to your registered email address. Kindly check your inbox (or spam folder) and click the link to activate your account."

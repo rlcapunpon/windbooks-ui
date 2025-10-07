@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContextTypes';
 import { useState } from 'react';
+import { ApiHealthBar } from '../../components/ApiHealthBar/ApiHealthBar';
 
 const schema = z.object({
   email: z.string()
@@ -47,7 +48,8 @@ const Register = () => {
   });
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background-primary px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background-primary px-4 relative">
+      <ApiHealthBar />
       <div className="w-full max-w-md">
         <form onSubmit={onSubmit} className="bg-white/95 backdrop-blur-xl p-8 rounded-2xl shadow-2xl border-2 border-gray-200 ring-1 ring-gray-100">
           <h2 className="text-heading text-3xl mb-6 text-center font-semibold">Register</h2>
