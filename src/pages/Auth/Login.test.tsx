@@ -111,26 +111,26 @@ describe('Login', () => {
     document.head.appendChild(style)
   })
 
-  describe('Reset Password Link', () => {
-    it('should display Reset Password link across from Remember me checkbox', () => {
+  describe('Forgot Password Link', () => {
+    it('should display Forgot Password? link across from Remember me checkbox', () => {
       render(
         <BrowserRouter>
           <Login />
         </BrowserRouter>
       )
 
-      // Should show Reset Password link
-      expect(screen.getByText('Reset Password')).toBeInTheDocument()
+      // Should show Forgot Password? link
+      expect(screen.getByText('Forgot Password?')).toBeInTheDocument()
     })
 
-    it('should navigate to reset password page when Reset Password link is clicked', () => {
+    it('should navigate to reset password page when Forgot Password? link is clicked', () => {
       render(
         <BrowserRouter>
           <Login />
         </BrowserRouter>
       )
 
-      const resetPasswordLink = screen.getByText('Reset Password')
+      const resetPasswordLink = screen.getByText('Forgot Password?')
       
       // Check that the link has the correct href
       expect(resetPasswordLink).toHaveAttribute('href', '/auth/reset-password')

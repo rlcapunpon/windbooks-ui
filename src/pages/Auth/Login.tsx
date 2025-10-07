@@ -277,7 +277,7 @@ const Login = () => {
             to="/auth/reset-password"
             className="text-emerald-500 hover:text-emerald-700 text-sm transition-colors"
           >
-            Reset Password
+            Forgot Password?
           </Link>
         </div>
         <button
