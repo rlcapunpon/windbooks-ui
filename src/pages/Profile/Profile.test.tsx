@@ -326,4 +326,119 @@ describe('Profile Component', () => {
       });
     });
   });
+
+  describe('Button Styling (10-07-25.Step3)', () => {
+    it('should apply btn-primary class to Update Details button', async () => {
+      vi.spyOn(UserService, 'getCachedUserData').mockReturnValue(mockUser);
+      vi.spyOn(UserService, 'isSuperAdmin').mockReturnValue(false);
+      vi.spyOn(UserService, 'getUserRoles').mockReturnValue(['STAFF']);
+
+      render(<Profile />);
+
+      await waitFor(() => {
+        const updateDetailsButton = screen.getByRole('button', { name: 'Update Details' });
+        expect(updateDetailsButton).toHaveClass('btn-primary');
+        expect(updateDetailsButton).toHaveClass('inline-flex');
+        expect(updateDetailsButton).toHaveClass('items-center');
+        expect(updateDetailsButton).toHaveClass('px-4');
+        expect(updateDetailsButton).toHaveClass('py-2');
+        expect(updateDetailsButton).toHaveClass('text-sm');
+        expect(updateDetailsButton).toHaveClass('font-medium');
+      });
+    });
+
+    it('should apply btn-primary class to Change Password button', async () => {
+      vi.spyOn(UserService, 'getCachedUserData').mockReturnValue(mockUser);
+      vi.spyOn(UserService, 'isSuperAdmin').mockReturnValue(false);
+      vi.spyOn(UserService, 'getUserRoles').mockReturnValue(['STAFF']);
+
+      // Mock tokenStorage functions
+      const { getAccessToken, getUserIdFromToken } = await import('../../utils/tokenStorage');
+      vi.mocked(getAccessToken).mockReturnValue('mock-token');
+      vi.mocked(getUserIdFromToken).mockReturnValue('test-user-id');
+
+      // Mock the APIs based on URL
+      vi.mocked(global.fetch).mockImplementation((url) => {
+        const urlString = url.toString();
+        if (urlString.includes('/api/user/last-login')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ last_login: null })
+          } as Response);
+        } else if (urlString.includes('/api/user/last-update/creds/')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({
+              create_date: '2025-01-01T00:00:00.000Z',
+              last_update: null,
+              updated_by: null,
+              how_many: 0
+            })
+          } as Response);
+        }
+        return Promise.reject(new Error('Unexpected URL'));
+      });
+
+      render(<Profile />);
+
+      await waitFor(() => {
+        const changePasswordButton = screen.getByRole('button', { name: 'Change Password' });
+        expect(changePasswordButton).toHaveClass('btn-primary');
+        expect(changePasswordButton).toHaveClass('inline-flex');
+        expect(changePasswordButton).toHaveClass('items-center');
+        expect(changePasswordButton).toHaveClass('px-4');
+        expect(changePasswordButton).toHaveClass('py-2');
+        expect(changePasswordButton).toHaveClass('text-sm');
+        expect(changePasswordButton).toHaveClass('font-medium');
+      });
+    });
+
+    it('should match Create Organization button styling pattern', async () => {
+      vi.spyOn(UserService, 'getCachedUserData').mockReturnValue(mockUser);
+      vi.spyOn(UserService, 'isSuperAdmin').mockReturnValue(false);
+      vi.spyOn(UserService, 'getUserRoles').mockReturnValue(['STAFF']);
+
+      // Mock tokenStorage functions
+      const { getAccessToken, getUserIdFromToken } = await import('../../utils/tokenStorage');
+      vi.mocked(getAccessToken).mockReturnValue('mock-token');
+      vi.mocked(getUserIdFromToken).mockReturnValue('test-user-id');
+
+      // Mock the APIs based on URL
+      vi.mocked(global.fetch).mockImplementation((url) => {
+        const urlString = url.toString();
+        if (urlString.includes('/api/user/last-login')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({ last_login: null })
+          } as Response);
+        } else if (urlString.includes('/api/user/last-update/creds/')) {
+          return Promise.resolve({
+            ok: true,
+            json: () => Promise.resolve({
+              create_date: '2025-01-01T00:00:00.000Z',
+              last_update: null,
+              updated_by: null,
+              how_many: 0
+            })
+          } as Response);
+        }
+        return Promise.reject(new Error('Unexpected URL'));
+      });
+
+      render(<Profile />);
+
+      await waitFor(() => {
+        const updateDetailsButton = screen.getByRole('button', { name: 'Update Details' });
+        const changePasswordButton = screen.getByRole('button', { name: 'Change Password' });
+
+        // Both buttons should have the same styling pattern as Create Organization button
+        expect(updateDetailsButton).toHaveClass('btn-primary');
+        expect(changePasswordButton).toHaveClass('btn-primary');
+
+        // Both should have the same additional classes for consistent styling
+        expect(updateDetailsButton).toHaveClass('inline-flex', 'items-center', 'px-4', 'py-2', 'text-sm', 'font-medium');
+        expect(changePasswordButton).toHaveClass('inline-flex', 'items-center', 'px-4', 'py-2', 'text-sm', 'font-medium');
+      });
+    });
+  });
 });

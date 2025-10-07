@@ -222,7 +222,7 @@ const Profile = () => {
             <h2 className="text-xl font-semibold text-gray-900">Personal Details</h2>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              className="btn-primary inline-flex items-center px-4 py-2 text-sm font-medium"
             >
               Update Details
             </button>
@@ -314,7 +314,7 @@ const Profile = () => {
             <h2 className="text-xl font-semibold text-gray-900">Security and Auth</h2>
             <button
               onClick={() => setIsChangePasswordModalOpen(true)}
-              className="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              className="btn-primary inline-flex items-center px-4 py-2 text-sm font-medium"
             >
               Change Password
             </button>
