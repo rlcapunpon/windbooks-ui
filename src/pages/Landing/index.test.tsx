@@ -1,10 +1,37 @@
 /**
  * @jest-environment jsdom
  */
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import Landing from './index';
+
+// Mock react-router-dom
+const mockNavigate = vi.fn();
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom');
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate,
+  };
+});
+
+// Mock AuthContext
+let mockAuthContext = {
+  user: null,
+  isLoading: false,
+  login: vi.fn(),
+  logout: vi.fn(),
+  refresh: vi.fn(),
+  register: vi.fn(),
+  isPasswordModalOpen: false,
+  passwordModalProps: null,
+  closePasswordModal: vi.fn(),
+};
+
+vi.mock('../../contexts/AuthContextTypes', () => ({
+  useAuth: () => mockAuthContext,
+}));
 
 describe('Landing Page - Theme Usage', () => {
   beforeEach(() => {
@@ -179,5 +206,73 @@ describe('Landing Page - Theme Usage', () => {
     // Check that the main container uses theme background color
     const mainContainer = document.querySelector('.min-h-screen');
     expect(mainContainer).toHaveClass('bg-background-primary');
+  });
+
+  describe('Authenticated User Redirection (10-08-25.Step1)', () => {
+    it('should redirect authenticated user to dashboard', () => {
+      // Mock authenticated user
+      mockAuthContext.user = {
+        id: 'test-user-id',
+        email: 'test@example.com',
+        isActive: true,
+        isSuperAdmin: false,
+        createdAt: '2025-01-01T00:00:00.000Z',
+        updatedAt: '2025-01-01T00:00:00.000Z',
+        details: {
+          firstName: 'John',
+          lastName: 'Doe',
+          nickName: 'Johnny',
+          contactNumber: '+1-555-0123',
+          reportTo: {
+            id: 'manager-id',
+            email: 'manager@example.com',
+            firstName: 'Jane',
+            lastName: 'Manager',
+            nickName: 'Manager'
+          }
+        },
+        resources: []
+      };
+      mockAuthContext.isLoading = false;
+
+      render(
+        <BrowserRouter>
+          <Landing />
+        </BrowserRouter>
+      );
+
+      // Should redirect to dashboard
+      expect(mockNavigate).toHaveBeenCalledWith('/user');
+    });
+
+    it('should not redirect unauthenticated user', () => {
+      // Mock unauthenticated user
+      mockAuthContext.user = null;
+      mockAuthContext.isLoading = false;
+
+      render(
+        <BrowserRouter>
+          <Landing />
+        </BrowserRouter>
+      );
+
+      // Should not redirect
+      expect(mockNavigate).not.toHaveBeenCalled();
+    });
+
+    it('should not redirect while authentication is loading', () => {
+      // Mock loading state
+      mockAuthContext.user = null;
+      mockAuthContext.isLoading = true;
+
+      render(
+        <BrowserRouter>
+          <Landing />
+        </BrowserRouter>
+      );
+
+      // Should not redirect while loading
+      expect(mockNavigate).not.toHaveBeenCalled();
+    });
   });
 });

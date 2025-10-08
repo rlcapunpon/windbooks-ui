@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContextTypes';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ApiHealthBar } from '../../components/ApiHealthBar/ApiHealthBar';
 
 const schema = z.object({
@@ -26,7 +26,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 const Register = () => {
-  const { register: registerUser } = useAuth();
+  const { register: registerUser, user, isLoading } = useAuth();
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -37,6 +37,13 @@ const Register = () => {
   } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (!isLoading && user) {
+      navigate('/user');
+    }
+  }, [user, isLoading, navigate]);
 
   const onSubmit = handleSubmit(async (data) => {
     try {

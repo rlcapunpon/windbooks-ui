@@ -956,3 +956,37 @@ it('should show Organizations and Tasks menus for STAFF user with resource:read 
  
  * * R e a d y   f o r   S t e p   2 . 1 0 * * :   C o n t i n u e   w i t h   r e m a i n i n g   T D D   r e q u i r e m e n t s  
  
+ 
+ 
+ #   1 0 - 0 8 - 2 5 . S t e p 1   -   A u t h e n t i c a t e d   U s e r   R e d i r e c t i o n     C O M P L E T E D 
+ 
+ * * R e q u i r e m e n t * * :   R e d i r e c t   c u r r e n t l y   l o g g e d - i n   u s e r s   f r o m   l o g i n / r e g i s t e r / h o m e   p a g e s   t o   d a s h b o a r d   ( / u s e r ) 
+ 
+ * * I m p l e m e n t a t i o n   D e t a i l s * * : 
+ -   A d d e d   a u t h e n t i c a t i o n   r e d i r e c t i o n   l o g i c   t o   L a n d i n g ,   L o g i n ,   a n d   R e g i s t e r   p a g e s 
+ -   I m p l e m e n t e d   u s e E f f e c t   h o o k s   t h a t   c h e c k   u s e r   a u t h e n t i c a t i o n   s t a t e 
+ -   R e d i r e c t s   a u t h e n t i c a t e d   u s e r s   t o   ` / u s e r `   r o u t e   i m m e d i a t e l y 
+ -   D o e s   n o t   r e d i r e c t   u n a u t h e n t i c a t e d   u s e r s   o r   w h i l e   a u t h e n t i c a t i o n   i s   l o a d i n g 
+ -   P r o p e r   i n t e g r a t i o n   w i t h   A u t h C o n t e x t   f o r   u s e r   s t a t e   m a n a g e m e n t 
+ 
+ * * T e s t   C o v e r a g e * * : 
+ -   A d d e d   c o m p r e h e n s i v e   f a i l i n g   t e s t s   f i r s t   ( T D D   a p p r o a c h ) 
+ -   T e s t s   v e r i f y   r e d i r e c t i o n   f o r   a u t h e n t i c a t e d   u s e r s 
+ -   T e s t s   v e r i f y   n o   r e d i r e c t i o n   f o r   u n a u t h e n t i c a t e d   u s e r s 
+ -   T e s t s   v e r i f y   n o   r e d i r e c t i o n   d u r i n g   l o a d i n g   s t a t e s 
+ -   A l l   t e s t s   p a s s i n g   w i t h   p r o p e r   m o c k i n g 
+ 
+ * * F i l e s   M o d i f i e d * * : 
+ -   ` s r c / p a g e s / L a n d i n g / i n d e x . t s x `   -   A d d e d   u s e E f f e c t   f o r   a u t h e n t i c a t i o n   r e d i r e c t i o n 
+ -   ` s r c / p a g e s / A u t h / L o g i n . t s x `   -   A d d e d   u s e E f f e c t   f o r   a u t h e n t i c a t i o n   r e d i r e c t i o n 
+ -   ` s r c / p a g e s / A u t h / R e g i s t e r . t s x `   -   A d d e d   u s e E f f e c t   f o r   a u t h e n t i c a t i o n   r e d i r e c t i o n 
+ -   ` s r c / p a g e s / L a n d i n g / i n d e x . t e s t . t s x `   -   A d d e d   a u t h e n t i c a t i o n   r e d i r e c t i o n   t e s t s 
+ -   ` s r c / p a g e s / A u t h / L o g i n . t e s t . t s x `   -   A d d e d   a u t h e n t i c a t i o n   r e d i r e c t i o n   t e s t s 
+ -   ` s r c / p a g e s / A u t h / R e g i s t e r . t e s t . t s x `   -   A d d e d   a u t h e n t i c a t i o n   r e d i r e c t i o n   t e s t s 
+ -   ` p r o m p t s _ a n d _ c o n t e x t s / t e s t - f i l e s - i n v e n t o r y . m d `   -   U p d a t e d   t e s t   i n v e n t o r y 
+ -   ` c h e c k p o i n t / 1 0 - 0 8 - 2 5 / C H E C K P O I N T . m d `   -   C r e a t e d   c o m p l e t i o n   d o c u m e n t a t i o n 
+ 
+ * * T e s t   R e s u l t s * * :   A l l   7 8 2   t e s t s   p a s s i n g   
+ 
+ * * S t a t u s * * :     C O M P L E T E D   -   A u t h e n t i c a t e d   u s e r   r e d i r e c t i o n   i m p l e m e n t e d   a n d   f u l l y   t e s t e d  
+ 

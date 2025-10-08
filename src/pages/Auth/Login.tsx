@@ -26,7 +26,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 const Login = () => {
-  const { login } = useAuth();
+  const { login, user, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [resendStatus, setResendStatus] = useState<{
@@ -58,6 +58,13 @@ const Login = () => {
       setShowExpiredSessionToast(true);
     }
   }, [location.search]);
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (!isLoading && user) {
+      navigate('/user');
+    }
+  }, [user, isLoading, navigate]);
 
   const [modalState, setModalState] = useState<{
     isOpen: boolean;

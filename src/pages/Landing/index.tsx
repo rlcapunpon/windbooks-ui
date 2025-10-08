@@ -1,7 +1,18 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import Banner from '../../components/Banner';
+import { useAuth } from '../../contexts/AuthContextTypes';
 
 const Landing = () => {
+  const navigate = useNavigate();
+  const { user, isLoading } = useAuth();
+
+  useEffect(() => {
+    if (!isLoading && user) {
+      navigate('/user');
+    }
+  }, [user, isLoading, navigate]);
+
   return (
     <div className="min-h-screen bg-background-primary">
       <Banner

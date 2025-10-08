@@ -18,10 +18,20 @@ vi.mock('react-router-dom', async () => {
 
 // Mock AuthContext
 const mockLogin = vi.fn()
+let mockAuthContext = {
+  login: mockLogin,
+  user: null,
+  isLoading: false,
+  logout: vi.fn(),
+  refresh: vi.fn(),
+  register: vi.fn(),
+  isPasswordModalOpen: false,
+  passwordModalProps: null,
+  closePasswordModal: vi.fn(),
+};
+
 vi.mock('../../contexts/AuthContextTypes', () => ({
-  useAuth: () => ({
-    login: mockLogin
-  })
+  useAuth: () => mockAuthContext,
 }))
 
 describe('Login', () => {
@@ -400,4 +410,72 @@ describe('Login', () => {
       expect(peekButton).toContainHTML('M15 12a3 3 0 11-6 0 3 3 0 016 0z')
     })
   })
+
+  describe('Authenticated User Redirection (10-08-25.Step1)', () => {
+    it('should redirect authenticated user to dashboard', () => {
+      // Mock authenticated user
+      mockAuthContext.user = {
+        id: 'test-user-id',
+        email: 'test@example.com',
+        isActive: true,
+        isSuperAdmin: false,
+        createdAt: '2025-01-01T00:00:00.000Z',
+        updatedAt: '2025-01-01T00:00:00.000Z',
+        details: {
+          firstName: 'John',
+          lastName: 'Doe',
+          nickName: 'Johnny',
+          contactNumber: '+1-555-0123',
+          reportTo: {
+            id: 'manager-id',
+            email: 'manager@example.com',
+            firstName: 'Jane',
+            lastName: 'Manager',
+            nickName: 'Manager'
+          }
+        },
+        resources: []
+      };
+      mockAuthContext.isLoading = false;
+
+      render(
+        <BrowserRouter>
+          <Login />
+        </BrowserRouter>
+      );
+
+      // Should redirect to dashboard
+      expect(mockNavigate).toHaveBeenCalledWith('/user');
+    });
+
+    it('should not redirect unauthenticated user', () => {
+      // Mock unauthenticated user
+      mockAuthContext.user = null;
+      mockAuthContext.isLoading = false;
+
+      render(
+        <BrowserRouter>
+          <Login />
+        </BrowserRouter>
+      );
+
+      // Should not redirect
+      expect(mockNavigate).not.toHaveBeenCalled();
+    });
+
+    it('should not redirect while authentication is loading', () => {
+      // Mock loading state
+      mockAuthContext.user = null;
+      mockAuthContext.isLoading = true;
+
+      render(
+        <BrowserRouter>
+          <Login />
+        </BrowserRouter>
+      );
+
+      // Should not redirect while loading
+      expect(mockNavigate).not.toHaveBeenCalled();
+    });
+  });
 })
