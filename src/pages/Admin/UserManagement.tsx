@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { UserService } from '../../services/userService';
+import AdminUserUpdateModal from '../../components/AdminUserUpdateModal/AdminUserUpdateModal';
 
 interface User {
   id: string;
@@ -47,6 +48,7 @@ const UserManagement = () => {
   const [showDeactivateDialog, setShowDeactivateDialog] = useState(false);
   const [showActivateDialog, setShowActivateDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   const fetchUsers = async (page: number = 1, email: string = '', status: string = '') => {
@@ -113,6 +115,11 @@ const UserManagement = () => {
     setShowDeleteDialog(true);
   };
 
+  const handleUpdate = (user: User) => {
+    setSelectedUser(user);
+    setShowUpdateModal(true);
+  };
+
   const confirmDeactivate = async () => {
     if (!selectedUser) return;
 
@@ -162,6 +169,18 @@ const UserManagement = () => {
     setShowDeactivateDialog(false);
     setShowActivateDialog(false);
     setShowDeleteDialog(false);
+    setSelectedUser(null);
+  };
+
+  const handleUpdateModalClose = () => {
+    setShowUpdateModal(false);
+    setSelectedUser(null);
+  };
+
+  const handleUpdateModalSave = () => {
+    // Refresh the users list after successful update
+    fetchUsers(currentPage, emailFilter, statusFilter);
+    setShowUpdateModal(false);
     setSelectedUser(null);
   };
 
@@ -292,6 +311,12 @@ const UserManagement = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <button
+                      onClick={() => handleUpdate(user)}
+                      className="text-blue-600 hover:text-blue-900 mr-4"
+                    >
+                      Edit
+                    </button>
                     {user.isActive ? (
                       <button
                         onClick={() => handleDeactivate(user)}
@@ -374,6 +399,16 @@ const UserManagement = () => {
           </div>
         )}
       </div>
+
+      {/* Admin User Update Modal */}
+      {showUpdateModal && selectedUser && (
+        <AdminUserUpdateModal
+          isOpen={showUpdateModal}
+          userId={selectedUser.id}
+          onClose={handleUpdateModalClose}
+          onSave={handleUpdateModalSave}
+        />
+      )}
 
       {/* Deactivate Confirmation Dialog */}
       {showDeactivateDialog && selectedUser && (

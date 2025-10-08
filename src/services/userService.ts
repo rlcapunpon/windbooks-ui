@@ -32,6 +32,40 @@ interface AdminUserData {
   roles: UserResource[];
 }
 
+// User details interfaces for admin operations
+interface UserDetails {
+  id: string;
+  firstName: string | null;
+  lastName: string | null;
+  nickName: string | null;
+  contactNumber: string | null;
+  reportToId: string | null;
+  createdAt: string;
+  updatedAt: string;
+  user: {
+    email: string;
+    isSuperAdmin: boolean;
+    isActive: boolean;
+  };
+  reportTo: {
+    id: string;
+    email: string;
+    details: {
+      firstName: string | null;
+      lastName: string | null;
+      nickName: string | null;
+    } | null;
+  } | null;
+}
+
+interface UpdateUserDetailsRequest {
+  firstName?: string;
+  lastName?: string;
+  nickName?: string;
+  contactNumber?: string;
+  reportTo?: string;
+}
+
 // Resource search parameters interface
 interface ResourceSearchParams {
   page: number;
@@ -482,6 +516,47 @@ export class UserService {
     } catch (error) {
       console.error('Failed to fetch last password update:', error);
       throw error;
+    }
+  }
+
+  /**
+   * Gets user details by ID (for admin use)
+   */
+  static async getUserDetails(userId: string): Promise<UserDetails> {
+    try {
+      const response = await apiClient.get<UserDetails>(`/user-details/${userId}`);
+      return response.data;
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      console.error('Failed to fetch user details:', apiError);
+      throw apiError;
+    }
+  }
+
+  /**
+   * Updates user details by ID (for admin use)
+   */
+  static async updateUserDetailsAdmin(userId: string, userDetails: UpdateUserDetailsRequest): Promise<UserDetails> {
+    try {
+      const response = await apiClient.put<UserDetails>(`/user-details/${userId}`, userDetails);
+      return response.data;
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      console.error('Failed to update user details:', apiError);
+      throw apiError;
+    }
+  }
+
+  /**
+   * Searches users by email (for admin use)
+   */
+  static async searchUsers(page: number = 1, limit: number = 10, email?: string, isActive?: boolean) {
+    try {
+      return this.getAllUsers(page, limit, email, isActive);
+    } catch (error: unknown) {
+      const apiError = error as ApiError;
+      console.error('Failed to search users:', apiError);
+      throw apiError;
     }
   }
 }
