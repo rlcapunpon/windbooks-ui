@@ -139,7 +139,7 @@ const Profile = () => {
   }
 
   const isSuperAdmin = UserService.isSuperAdmin();
-  const userRoles = UserService.getUserRoles();
+  const userResources = UserService.getUserResources();
 
   return (
     <div className="p-6 max-w-4xl mx-auto">
@@ -196,10 +196,12 @@ const Profile = () => {
                   </span>
                 ) : (
                   Object.entries(
-                    userRoles.reduce((acc, role) => {
-                      acc[role] = (acc[role] || 0) + 1;
-                      return acc;
-                    }, {} as Record<string, number>)
+                    userResources
+                      .filter(resource => resource.resourceName !== 'WINDBOOKS_APP')
+                      .reduce((acc, resource) => {
+                        acc[resource.role] = (acc[resource.role] || 0) + 1;
+                        return acc;
+                      }, {} as Record<string, number>)
                   ).map(([role, count]) => (
                     <div key={role} className="flex items-center justify-between bg-blue-50 px-3 py-2 rounded-lg">
                       <span className="text-sm font-medium text-blue-900 capitalize">

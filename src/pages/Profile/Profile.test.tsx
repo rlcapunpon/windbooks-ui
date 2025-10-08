@@ -38,7 +38,28 @@ const mockUser: User = {
   resources: [
     {
       resourceId: 'resource-1',
+      resourceName: 'ORG_123',
       role: 'STAFF'
+    },
+    {
+      resourceId: 'resource-2',
+      resourceName: 'ORG_456',
+      role: 'STAFF'
+    },
+    {
+      resourceId: 'resource-3',
+      resourceName: 'ORG_789',
+      role: 'STAFF'
+    },
+    {
+      resourceId: 'resource-4',
+      resourceName: 'ORG_ABC',
+      role: 'STAFF'
+    },
+    {
+      resourceId: 'resource-5',
+      resourceName: 'WINDBOOKS_APP',
+      role: 'APPROVER'
     }
   ]
 };
@@ -63,7 +84,7 @@ describe('Profile Component', () => {
   it('should display user profile information for non-superadmin user', async () => {
     vi.spyOn(UserService, 'getCachedUserData').mockReturnValue(mockUser);
     vi.spyOn(UserService, 'isSuperAdmin').mockReturnValue(false);
-    vi.spyOn(UserService, 'getUserRoles').mockReturnValue(['STAFF', 'STAFF', 'STAFF', 'STAFF', 'APPROVER']);
+    vi.spyOn(UserService, 'getUserResources').mockReturnValue(mockUser.resources);
 
     render(<Profile />);
 
@@ -74,15 +95,15 @@ describe('Profile Component', () => {
       expect(screen.getByText('+1-555-0123')).toBeInTheDocument();
       expect(screen.getByText('staff')).toBeInTheDocument();
       expect(screen.getByText('4')).toBeInTheDocument();
-      expect(screen.getByText('approver')).toBeInTheDocument();
-      expect(screen.getByText('1')).toBeInTheDocument();
+      // WINDBOOKS_APP role should be filtered out, so 'approver' should not appear
+      expect(screen.queryByText('approver')).not.toBeInTheDocument();
     });
   });
 
   it('should display reports to information for non-superadmin user', async () => {
     vi.spyOn(UserService, 'getCachedUserData').mockReturnValue(mockUser);
     vi.spyOn(UserService, 'isSuperAdmin').mockReturnValue(false);
-    vi.spyOn(UserService, 'getUserRoles').mockReturnValue(['STAFF']);
+    vi.spyOn(UserService, 'getUserResources').mockReturnValue(mockUser.resources);
 
     render(<Profile />);
 
@@ -97,7 +118,7 @@ describe('Profile Component', () => {
     const superAdminUser = { ...mockUser, isSuperAdmin: true };
     vi.spyOn(UserService, 'getCachedUserData').mockReturnValue(superAdminUser);
     vi.spyOn(UserService, 'isSuperAdmin').mockReturnValue(true);
-    vi.spyOn(UserService, 'getUserRoles').mockReturnValue([]);
+    vi.spyOn(UserService, 'getUserResources').mockReturnValue([]);
 
     render(<Profile />);
 
@@ -122,7 +143,7 @@ describe('Profile Component', () => {
     it('should display Security and Auth section', async () => {
       vi.spyOn(UserService, 'getCachedUserData').mockReturnValue(mockUser);
       vi.spyOn(UserService, 'isSuperAdmin').mockReturnValue(false);
-      vi.spyOn(UserService, 'getUserRoles').mockReturnValue(['STAFF']);
+      vi.spyOn(UserService, 'getUserResources').mockReturnValue(mockUser.resources);
 
       // Mock tokenStorage functions
       const { getAccessToken, getUserIdFromToken } = await import('../../utils/tokenStorage');
@@ -161,7 +182,7 @@ describe('Profile Component', () => {
     it('should display last login information', async () => {
       vi.spyOn(UserService, 'getCachedUserData').mockReturnValue(mockUser);
       vi.spyOn(UserService, 'isSuperAdmin').mockReturnValue(false);
-      vi.spyOn(UserService, 'getUserRoles').mockReturnValue(['STAFF']);
+      vi.spyOn(UserService, 'getUserResources').mockReturnValue(mockUser.resources);
 
       // Mock tokenStorage functions
       const { getAccessToken, getUserIdFromToken } = await import('../../utils/tokenStorage');
@@ -201,7 +222,7 @@ describe('Profile Component', () => {
     it('should display password change information', async () => {
       vi.spyOn(UserService, 'getCachedUserData').mockReturnValue(mockUser);
       vi.spyOn(UserService, 'isSuperAdmin').mockReturnValue(false);
-      vi.spyOn(UserService, 'getUserRoles').mockReturnValue(['STAFF']);
+      vi.spyOn(UserService, 'getUserResources').mockReturnValue(mockUser.resources);
 
       // Mock tokenStorage functions
       const { getAccessToken, getUserIdFromToken } = await import('../../utils/tokenStorage');
@@ -241,7 +262,7 @@ describe('Profile Component', () => {
     it('should display Change Password button', async () => {
       vi.spyOn(UserService, 'getCachedUserData').mockReturnValue(mockUser);
       vi.spyOn(UserService, 'isSuperAdmin').mockReturnValue(false);
-      vi.spyOn(UserService, 'getUserRoles').mockReturnValue(['STAFF']);
+      vi.spyOn(UserService, 'getUserResources').mockReturnValue(mockUser.resources);
 
       // Mock tokenStorage functions
       const { getAccessToken, getUserIdFromToken } = await import('../../utils/tokenStorage');
@@ -280,7 +301,7 @@ describe('Profile Component', () => {
     it('should open Change Password modal when button is clicked', async () => {
       vi.spyOn(UserService, 'getCachedUserData').mockReturnValue(mockUser);
       vi.spyOn(UserService, 'isSuperAdmin').mockReturnValue(false);
-      vi.spyOn(UserService, 'getUserRoles').mockReturnValue(['STAFF']);
+      vi.spyOn(UserService, 'getUserResources').mockReturnValue(mockUser.resources);
 
       // Mock tokenStorage functions
       const { getAccessToken, getUserIdFromToken } = await import('../../utils/tokenStorage');
@@ -331,7 +352,7 @@ describe('Profile Component', () => {
     it('should apply btn-primary class to Update Details button', async () => {
       vi.spyOn(UserService, 'getCachedUserData').mockReturnValue(mockUser);
       vi.spyOn(UserService, 'isSuperAdmin').mockReturnValue(false);
-      vi.spyOn(UserService, 'getUserRoles').mockReturnValue(['STAFF']);
+      vi.spyOn(UserService, 'getUserResources').mockReturnValue(mockUser.resources);
 
       render(<Profile />);
 
@@ -350,7 +371,7 @@ describe('Profile Component', () => {
     it('should apply btn-primary class to Change Password button', async () => {
       vi.spyOn(UserService, 'getCachedUserData').mockReturnValue(mockUser);
       vi.spyOn(UserService, 'isSuperAdmin').mockReturnValue(false);
-      vi.spyOn(UserService, 'getUserRoles').mockReturnValue(['STAFF']);
+      vi.spyOn(UserService, 'getUserResources').mockReturnValue(mockUser.resources);
 
       // Mock tokenStorage functions
       const { getAccessToken, getUserIdFromToken } = await import('../../utils/tokenStorage');
