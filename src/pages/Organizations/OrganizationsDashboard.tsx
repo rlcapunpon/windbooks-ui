@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { OrganizationService, type Organization } from '../../services/organizationService'
 import { UserService } from '../../services/userService'
 import { OrganizationTable } from '../../components/OrganizationTable/OrganizationTable'
@@ -12,7 +12,16 @@ const OrganizationsDashboard: React.FC = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 
+  // Ref to prevent multiple simultaneous load calls
+  const isLoadingRef = useRef(false)
+
   const loadOrganizations = useCallback(async () => {
+    // Prevent multiple simultaneous calls
+    if (isLoadingRef.current) {
+      return
+    }
+
+    isLoadingRef.current = true
     try {
       setLoading(true)
       setError(null)
@@ -23,6 +32,7 @@ const OrganizationsDashboard: React.FC = () => {
       setError('Failed to load organizations. Please try again.')
     } finally {
       setLoading(false)
+      isLoadingRef.current = false
     }
   }, [])
 
