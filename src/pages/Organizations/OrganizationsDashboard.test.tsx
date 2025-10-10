@@ -4,6 +4,7 @@ import userEvent from '@testing-library/user-event'
 import { BrowserRouter } from 'react-router-dom'
 import OrganizationsDashboard from './OrganizationsDashboard'
 import { OrganizationService } from '../../services/organizationService'
+import { UserService } from '../../services/userService'
 import type { Organization } from '../../services/organizationService'
 
 // Mock the services
@@ -15,7 +16,8 @@ vi.mock('../../services/organizationService', () => ({
 vi.mock('../../services/userService', () => ({
   UserService: {
     hasPermission: vi.fn().mockReturnValue(true),
-    isSuperAdmin: vi.fn().mockReturnValue(false)
+    isSuperAdmin: vi.fn().mockReturnValue(false),
+    fetchAndStoreUserData: vi.fn()
   }
 }))
 
@@ -201,6 +203,21 @@ describe('OrganizationsDashboard', () => {
       await waitFor(() => {
         expect(screen.getByText('Create Organization')).toBeInTheDocument()
       })
+    })
+  })
+
+  describe('API Call Optimization', () => {
+    it('should not call UserService.fetchAndStoreUserData when rendering the dashboard', async () => {
+      vi.mocked(OrganizationService.getAllOrganizations).mockResolvedValue(mockOrganizations)
+
+      renderWithRouter(<OrganizationsDashboard />)
+
+      await waitFor(() => {
+        expect(OrganizationService.getAllOrganizations).toHaveBeenCalledTimes(1)
+      })
+
+      // Ensure fetchAndStoreUserData is not called during dashboard rendering
+      expect(UserService.fetchAndStoreUserData).not.toHaveBeenCalled()
     })
   })
 })

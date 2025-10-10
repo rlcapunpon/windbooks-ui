@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { authService } from '../api/auth';
 import { setTokens, getRefreshToken, getAccessToken, clearTokens } from '../utils/tokenStorage';
@@ -19,6 +19,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     userRole: 'USER' | 'SUPERADMIN';
     lastUpdateDays: number | null;
   } | null>(null);
+
+  // Ref to prevent multiple simultaneous initialization calls
+  const isInitializingRef = useRef(false);
 
   // Helper function to calculate days between dates
   const calculateDaysBetween = (date1: string, date2: string): number => {
@@ -70,59 +73,68 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   // Initialize authentication state on app startup
   useEffect(() => {
     const initializeAuth = async () => {
-      const accessToken = getAccessToken();
-      const refreshToken = getRefreshToken();
+      // Prevent multiple simultaneous initialization calls
+      if (isInitializingRef.current) {
+        return;
+      }
+      isInitializingRef.current = true;
 
-      if (accessToken && refreshToken) {
-        try {
-          // Check if we have cached user data
-          const cachedUser = UserService.getCachedUserData();
-          if (cachedUser) {
-            // Check if token is too large for API requests
-            const tokenSize = `Bearer ${accessToken}`.length;
-            if (tokenSize > 8000) {
-              console.log('🔧 Using cached user data due to large token size');
-              setUser(cachedUser);
-              setIsLoading(false);
-              return;
-            }
-          }
-          
-          // Try to get current user with existing tokens
-          const user = await UserService.fetchAndStoreUserData();
-          setUser(user);
-        } catch (_error) { // eslint-disable-line @typescript-eslint/no-unused-vars
-          // _error is intentionally unused - we handle token refresh failures silently
-          // If tokens are invalid, try to refresh
+      try {
+        const accessToken = getAccessToken();
+        const refreshToken = getRefreshToken();
+
+        if (accessToken && refreshToken) {
           try {
-            const res = await authService.refreshToken({ refreshToken });
-            const { accessToken: newAccessToken } = res;
-            setTokens(newAccessToken, refreshToken);
-            
-            // Check new token size
-            const newTokenSize = `Bearer ${newAccessToken}`.length;
-            if (newTokenSize > 8000) {
-              console.log('🔧 Refreshed token is still too large, using cached data if available');
-              const cachedUser = UserService.getCachedUserData();
-              if (cachedUser) {
+            // Check if we have cached user data
+            const cachedUser = UserService.getCachedUserData();
+            if (cachedUser) {
+              // Check if token is too large for API requests
+              const tokenSize = `Bearer ${accessToken}`.length;
+              if (tokenSize > 8000) {
+                console.log('🔧 Using cached user data due to large token size');
                 setUser(cachedUser);
                 setIsLoading(false);
                 return;
               }
             }
             
+            // Try to get current user with existing tokens
             const user = await UserService.fetchAndStoreUserData();
             setUser(user);
-          } catch (_refreshError) { // eslint-disable-line @typescript-eslint/no-unused-vars
-            // _refreshError is intentionally unused - we handle refresh failures silently
-            // If refresh fails, clear tokens and cache
-            clearTokens();
-            UserService.clearUserData();
+          } catch (_error) { // eslint-disable-line @typescript-eslint/no-unused-vars
+            // _error is intentionally unused - we handle token refresh failures silently
+            // If tokens are invalid, try to refresh
+            try {
+              const res = await authService.refreshToken({ refreshToken });
+              const { accessToken: newAccessToken } = res;
+              setTokens(newAccessToken, refreshToken);
+              
+              // Check new token size
+              const newTokenSize = `Bearer ${newAccessToken}`.length;
+              if (newTokenSize > 8000) {
+                console.log('🔧 Refreshed token is still too large, using cached data if available');
+                const cachedUser = UserService.getCachedUserData();
+                if (cachedUser) {
+                  setUser(cachedUser);
+                  setIsLoading(false);
+                  return;
+                }
+              }
+              
+              const user = await UserService.fetchAndStoreUserData();
+              setUser(user);
+            } catch (_refreshError) { // eslint-disable-line @typescript-eslint/no-unused-vars
+              // _refreshError is intentionally unused - we handle refresh failures silently
+              // If refresh fails, clear tokens and cache
+              clearTokens();
+              UserService.clearUserData();
+            }
           }
         }
+      } finally {
+        setIsLoading(false);
+        isInitializingRef.current = false;
       }
-
-      setIsLoading(false);
     };
 
     initializeAuth();
