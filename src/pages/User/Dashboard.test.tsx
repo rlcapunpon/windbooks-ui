@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import Dashboard from './Dashboard';
 import { AuthContext } from '../../contexts/AuthContextTypes';
@@ -291,9 +291,10 @@ describe('Dashboard Component', () => {
       expect(screen.getByText('Resources')).toBeInTheDocument();
       expect(screen.getByText('Roles')).toBeInTheDocument();
       
-      // Check that the statistics are displayed (using getAllByText since there might be multiple "3"s)
-      const numberElements = screen.getAllByText('3');
-      expect(numberElements.length).toBeGreaterThanOrEqual(2); // At least totalUsers and totalResources
+      // Check that the statistics are displayed
+      expect(screen.getByText('3')).toBeInTheDocument(); // totalUsers
+      const numberElements = screen.getAllByText('2');
+      expect(numberElements.length).toBeGreaterThanOrEqual(2); // totalResources (3 - 1 for WINDBOOKS_APP) and totalRoles
       
       // Check specific statistics text
       expect(screen.getByText('2 active, 1 inactive')).toBeInTheDocument();
@@ -375,6 +376,64 @@ describe('Dashboard Component', () => {
 
       // Verify API was not called
       expect(mockGetAdminStatus).not.toHaveBeenCalled();
+    });
+
+    it('should exclude WINDBOOKS_APP from Resources count for SUPERADMIN users', async () => {
+      mockIsSuperAdmin.mockReturnValue(true);
+
+      // Mock API response that includes WINDBOOKS_APP in totalResources
+      const mockAdminStatus = {
+        totalUsers: 3,
+        totalResources: 4, // Includes WINDBOOKS_APP
+        activeUsers: 2,
+        activeResources: 2,
+        inactiveUsers: 1,
+        inactiveResources: 1,
+        deletedUsers: 0,
+        deletedResources: 1,
+        totalRoles: 2
+      };
+
+      mockGetAdminStatus.mockResolvedValueOnce(mockAdminStatus);
+
+      const mockUser: User = {
+        id: '1',
+        email: 'admin@example.com',
+        isActive: true,
+        isSuperAdmin: true,
+        createdAt: '2025-01-01T00:00:00Z',
+        updatedAt: '2025-01-01T00:00:00Z',
+        details: {
+          firstName: 'Admin',
+          lastName: 'User',
+          nickName: 'Admin',
+          contactNumber: '1234567890',
+          reportTo: {
+            id: '1',
+            email: 'admin@example.com',
+            firstName: 'Admin',
+            lastName: 'User',
+            nickName: 'Admin',
+          },
+        },
+        resources: [
+          { resourceId: 'org1', role: 'SUPERADMIN' },
+        ],
+      };
+
+      renderWithAuthContext(<Dashboard />, { ...mockAuthContext, user: mockUser });
+
+      // Wait for API call to complete
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      // Verify UserService.getAdminStatus was called
+      expect(mockGetAdminStatus).toHaveBeenCalledTimes(1);
+
+      // Should display Resources count as 3 (totalResources 4 - 1 for WINDBOOKS_APP)
+      // Find the Resources card specifically and check its count
+      const resourcesCard = screen.getByText('Resources').closest('.card') as HTMLElement;
+      const resourcesCount = within(resourcesCard).getByText('3');
+      expect(resourcesCount).toBeInTheDocument();
     });
   });
 });
