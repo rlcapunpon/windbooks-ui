@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import '@testing-library/jest-dom'
 import { BrowserRouter } from 'react-router-dom'
 import { OrganizationTable } from './OrganizationTable'
 import type { Organization } from '../../services/organizationService'
@@ -958,5 +959,41 @@ describe('Step 18 - Organization Dashboard Table Updates', () => {
 
     // Should refresh the table
     expect(mockOnRefresh).toHaveBeenCalled()
+  })
+
+  it('should close modal and refresh table even when delete APIs fail', async () => {
+    mockUserService.isSuperAdmin.mockReturnValue(true)
+    mockOrganizationService.deleteOrganization.mockRejectedValue(new Error('Delete failed'))
+    mockUserService.deleteResource.mockRejectedValue(new Error('Resource delete failed'))
+    
+    const user = userEvent.setup()
+
+    render(
+      <BrowserRouter>
+        <OrganizationTable
+          organizations={mockOrganizations}
+          loading={false}
+          onRefresh={mockOnRefresh}
+        />
+      </BrowserRouter>
+    )
+
+    // Click Delete button (the first one in the table)
+    const deleteButtons = screen.getAllByText('Delete')
+    await user.click(deleteButtons[0])
+
+    // Click Confirm button (the one in the dialog)
+    const confirmButton = screen.getByText('Cancel').parentElement?.querySelector('button:last-child') as HTMLElement
+    await user.click(confirmButton)
+
+    // Should call both delete APIs
+    expect(mockOrganizationService.deleteOrganization).toHaveBeenCalledWith('org-1')
+    expect(mockUserService.deleteResource).toHaveBeenCalledWith('org-1')
+
+    // Should refresh the table even on failure
+    expect(mockOnRefresh).toHaveBeenCalled()
+
+    // Modal should be closed
+    expect(screen.queryByText('Confirm Delete')).not.toBeInTheDocument()
   })
 })

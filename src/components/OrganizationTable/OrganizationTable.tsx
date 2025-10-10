@@ -70,15 +70,14 @@ export const OrganizationTable: React.FC<OrganizationTableProps> = ({
         OrganizationService.deleteOrganization(organizationToDelete.id),
         UserService.deleteResource(organizationToDelete.id)
       ])
-
-      // Refresh the table
-      onRefresh()
-      setShowDeleteDialog(false)
-      setOrganizationToDelete(null)
     } catch (error) {
       console.error('Failed to delete organization:', error)
       // TODO: Show error message to user
     } finally {
+      // Always refresh the table and close modal regardless of success/failure
+      onRefresh()
+      setShowDeleteDialog(false)
+      setOrganizationToDelete(null)
       setIsDeleting(false)
     }
   }
