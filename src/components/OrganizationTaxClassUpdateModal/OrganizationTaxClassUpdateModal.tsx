@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react'
 import { RadioOptionSelector } from '../RadioOptionSelector'
 
 export interface UpdateTaxClassFormData {
-  tax_classification: 'VAT' | 'NON_VAT' | 'EXCEMPT'
-  vat_reg_effectivity: string
+  new_classification: 'VAT' | 'NON_VAT' | 'EXCEMPT'
+  effective_date: string
 }
 
 export interface OrganizationTaxClassUpdateModalProps {
@@ -24,16 +24,16 @@ export const OrganizationTaxClassUpdateModal: React.FC<OrganizationTaxClassUpdat
   loading
 }) => {
   const [formData, setFormData] = useState<UpdateTaxClassFormData>({
-    tax_classification: 'VAT',
-    vat_reg_effectivity: ''
+    new_classification: 'VAT',
+    effective_date: ''
   })
 
   // Initialize form with current values when modal opens
   useEffect(() => {
     if (isOpen) {
       setFormData({
-        tax_classification: currentTaxClassification,
-        vat_reg_effectivity: currentVatRegEffectivity || ''
+        new_classification: currentTaxClassification,
+        effective_date: currentVatRegEffectivity || ''
       })
     }
   }, [isOpen, currentTaxClassification, currentVatRegEffectivity])
@@ -86,9 +86,9 @@ export const OrganizationTaxClassUpdateModal: React.FC<OrganizationTaxClassUpdat
                   Tax Classification *
                 </label>
                 <RadioOptionSelector
-                  name="tax_classification"
-                  selectedValue={formData.tax_classification}
-                  onChange={(value) => setFormData({ ...formData, tax_classification: value as 'VAT' | 'NON_VAT' | 'EXCEMPT' })}
+                  name="new_classification"
+                  selectedValue={formData.new_classification}
+                  onChange={(value) => setFormData({ ...formData, new_classification: value as 'VAT' | 'NON_VAT' | 'EXCEMPT' })}
                   options={[
                     {
                       value: 'VAT',
@@ -114,18 +114,18 @@ export const OrganizationTaxClassUpdateModal: React.FC<OrganizationTaxClassUpdat
 
               {/* VAT Registration Effectivity Field */}
               <div>
-                <label htmlFor="vat_reg_effectivity" className="block text-sm font-medium text-gray-700 mb-1">
-                  VAT Registration Effectivity
+                <label htmlFor="effective_date" className="block text-sm font-medium text-gray-700 mb-1">
+                  Tax Classification Update Effectivity
                 </label>
                 <input
                   type="date"
-                  id="vat_reg_effectivity"
-                  value={formData.vat_reg_effectivity}
-                  onChange={(e) => setFormData({ ...formData, vat_reg_effectivity: e.target.value })}
+                  id="effective_date"
+                  value={formData.effective_date}
+                  onChange={(e) => setFormData({ ...formData, effective_date: e.target.value })}
                   disabled={loading}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 />
-                <p className="text-xs text-gray-500 mt-1">Optional: Date when VAT registration becomes effective</p>
+                <p className="text-xs text-gray-500 mt-1">Date when tax classification update becomes effective</p>
               </div>
             </div>
 
@@ -141,7 +141,7 @@ export const OrganizationTaxClassUpdateModal: React.FC<OrganizationTaxClassUpdat
               <button
                 type="submit"
                 disabled={loading}
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                className="btn-primary px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? 'Saving...' : 'Save'}
               </button>

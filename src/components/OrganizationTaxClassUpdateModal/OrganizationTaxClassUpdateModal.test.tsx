@@ -41,7 +41,7 @@ describe('OrganizationTaxClassUpdateModal', () => {
     
     expect(screen.getByText('Update Organization Type')).toBeInTheDocument()
     expect(screen.getByText('Tax Classification *')).toBeInTheDocument()
-    expect(screen.getByText('VAT Registration Effectivity')).toBeInTheDocument()
+    expect(screen.getByText('Tax Classification Update Effectivity')).toBeInTheDocument()
   })
 
   it('does not render modal when isOpen is false', () => {
@@ -78,8 +78,8 @@ describe('OrganizationTaxClassUpdateModal', () => {
     
     await waitFor(() => {
       expect(mockOnSave).toHaveBeenCalledWith({
-        tax_classification: 'NON_VAT',
-        vat_reg_effectivity: '2024-02-01'
+        new_classification: 'NON_VAT',
+        effective_date: '2024-02-01'
       })
     })
   })
@@ -132,8 +132,8 @@ describe('OrganizationTaxClassUpdateModal', () => {
     
     await waitFor(() => {
       expect(mockOnSave).toHaveBeenCalledWith({
-        tax_classification: 'VAT',
-        vat_reg_effectivity: ''
+        new_classification: 'VAT',
+        effective_date: ''
       })
     })
   })
@@ -148,8 +148,8 @@ describe('OrganizationTaxClassUpdateModal', () => {
     
     await waitFor(() => {
       expect(mockOnSave).toHaveBeenCalledWith({
-        tax_classification: 'VAT',
-        vat_reg_effectivity: '2024-01-01'
+        new_classification: 'VAT',
+        effective_date: '2024-01-01'
       })
     })
   })

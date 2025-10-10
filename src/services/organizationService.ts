@@ -154,8 +154,8 @@ export interface UpdateOrganizationRegistrationRequestDto {
 }
 
 export interface UpdateTaxClassificationRequestDto {
-  tax_classification: 'VAT' | 'NON_VAT' | 'EXCEMPT'
-  vat_reg_effectivity?: string
+  new_classification: 'VAT' | 'NON_VAT' | 'EXCEMPT'
+  effective_date?: string
 }
 
 export interface OrganizationOperation {

@@ -485,8 +485,8 @@ const OrganizationDetails: React.FC<{
       setTaxClassUpdateLoading(true)
       // Call the tax classification update API
       const requestData = {
-        tax_classification: formData.tax_classification,
-        vat_reg_effectivity: formData.vat_reg_effectivity || undefined
+        new_classification: formData.new_classification,
+        effective_date: formData.effective_date || undefined
       }
       await OrganizationService.updateOrganizationTaxClassification(organization.id, requestData)
       // Reload the page to reflect changes
