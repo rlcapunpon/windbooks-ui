@@ -6,6 +6,7 @@ import type { Organization, OrganizationStatus, OrganizationRegistration, Organi
 import { UpdateOrganizationStatusModal, type UpdateStatusFormData } from '../../components/UpdateOrganizationStatusModal'
 import { UpdateOrganizationOperationsModal, type UpdateOperationFormData } from '../../components/UpdateOrganizationOperationsModal/UpdateOrganizationOperationsModal'
 import { UpdateOrganizationRegistrationModal, type UpdateRegistrationFormData } from '../../components/UpdateOrganizationRegistrationModal/UpdateOrganizationRegistrationModal'
+import { OrganizationTaxClassUpdateModal, type UpdateTaxClassFormData } from '../../components/OrganizationTaxClassUpdateModal'
 import { canEditOrganizationStatus, canEditOrganizationRegistration } from '../../utils/organizationPermissions'
 
 type MenuItem = 'details' | 'contacts' | 'obligations' | 'books' | 'employees' | 'history' | 'settings'
@@ -328,6 +329,8 @@ const OrganizationDetails: React.FC<{
   const [isRegistrationModalOpen, setIsRegistrationModalOpen] = useState(false)
   const [canEditRegistration, setCanEditRegistration] = useState(false)
   const [registrationUpdateLoading, setRegistrationUpdateLoading] = useState(false)
+  const [isTaxClassModalOpen, setIsTaxClassModalOpen] = useState(false)
+  const [taxClassUpdateLoading, setTaxClassUpdateLoading] = useState(false)
 
   // Check edit permissions on component mount and when organization changes
   useEffect(() => {
@@ -469,6 +472,33 @@ const OrganizationDetails: React.FC<{
     }
   }
 
+  const handleEditTaxClassClick = () => {
+    setIsTaxClassModalOpen(true)
+  }
+
+  const handleTaxClassModalClose = () => {
+    setIsTaxClassModalOpen(false)
+  }
+
+  const handleTaxClassSave = async (formData: UpdateTaxClassFormData) => {
+    try {
+      setTaxClassUpdateLoading(true)
+      // Call the tax classification update API
+      const requestData = {
+        tax_classification: formData.tax_classification,
+        vat_reg_effectivity: formData.vat_reg_effectivity || undefined
+      }
+      await OrganizationService.updateOrganizationTaxClassification(organization.id, requestData)
+      // Reload the page to reflect changes
+      window.location.reload()
+    } catch (error) {
+      console.error('Failed to update organization tax classification:', error)
+      // TODO: Show error message to user
+    } finally {
+      setTaxClassUpdateLoading(false)
+    }
+  }
+
   const tabs = [
     { id: 'general' as const, label: 'General', icon: '📋' },
     { id: 'operation' as const, label: 'Operations', icon: '⚙️' },
@@ -575,6 +605,7 @@ const OrganizationDetails: React.FC<{
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-lg font-medium">Basic Information</h3>
                 <button 
+                  onClick={handleEditTaxClassClick}
                   className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-md"
                   aria-label="Edit Basic Information"
                 >
@@ -823,6 +854,16 @@ const OrganizationDetails: React.FC<{
         onSave={handleRegistrationSave}
         currentRegistration={organizationRegistration}
         loading={registrationUpdateLoading}
+      />
+
+      {/* Tax Classification Update Modal - New */}
+      <OrganizationTaxClassUpdateModal
+        isOpen={isTaxClassModalOpen}
+        onClose={handleTaxClassModalClose}
+        onSave={handleTaxClassSave}
+        currentTaxClassification={organization.tax_classification}
+        currentVatRegEffectivity={organizationOperation?.vat_reg_effectivity}
+        loading={taxClassUpdateLoading}
       />
     </div>
   )

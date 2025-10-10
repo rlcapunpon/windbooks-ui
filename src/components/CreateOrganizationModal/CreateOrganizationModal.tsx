@@ -741,7 +741,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all duration-200 bg-white"
                     aria-label="Start Date"
                   />
-                  <p className="text-xs text-gray-500 mt-1">Business registration start date</p>
+                  <p className="text-xs text-gray-500 mt-1">Taxation start date on Windbooks</p>
                 </div>
 
                 <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">

@@ -153,6 +153,11 @@ export interface UpdateOrganizationRegistrationRequestDto {
   reg_date?: string
 }
 
+export interface UpdateTaxClassificationRequestDto {
+  tax_classification: 'VAT' | 'NON_VAT' | 'EXCEMPT'
+  vat_reg_effectivity?: string
+}
+
 export interface OrganizationOperation {
   organization_id: string
   fy_start?: string
@@ -393,6 +398,20 @@ export class OrganizationService {
     } catch (error: unknown) {
       const apiError = error as ApiError
       console.error('Failed to delete organization:', apiError)
+      throw apiError
+    }
+  }
+
+  /**
+   * Updates organization tax classification
+   */
+  static async updateOrganizationTaxClassification(id: string, data: UpdateTaxClassificationRequestDto): Promise<any> {
+    try {
+      const response = await orgApiClient.post(`${this.BASE_ENDPOINT}/${id}/tax-classification`, data)
+      return response.data
+    } catch (error: unknown) {
+      const apiError = error as ApiError
+      console.error('Failed to update organization tax classification:', apiError)
       throw apiError
     }
   }
