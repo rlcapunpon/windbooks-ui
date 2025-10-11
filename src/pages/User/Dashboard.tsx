@@ -158,7 +158,7 @@ const Dashboard = () => {
             <div className="card p-6 rounded-lg shadow-sm border border-gray-200">
               <h3 className="text-lg font-semibold text-gray-800 mb-2">Resources</h3>
               <p className="text-3xl font-bold text-gray-400">
-                {adminStatusLoading ? '...' : (adminStatus?.totalResources ? adminStatus.totalResources - 1 : '--')}
+                {adminStatusLoading ? '...' : (adminStatus ? adminStatus.activeResources + adminStatus.inactiveResources : '--')}
               </p>
               <p className="text-sm text-gray-500 mt-1">
                 {adminStatus ? `${adminStatus.activeResources} active, ${adminStatus.inactiveResources} inactive` : 'Data will be loaded from API'}

@@ -378,10 +378,10 @@ describe('Dashboard Component', () => {
       expect(mockGetAdminStatus).not.toHaveBeenCalled();
     });
 
-    it('should exclude WINDBOOKS_APP from Resources count for SUPERADMIN users', async () => {
+    it('should display total of active and inactive resources for SUPERADMIN users', async () => {
       mockIsSuperAdmin.mockReturnValue(true);
 
-      // Mock API response that includes WINDBOOKS_APP in totalResources
+      // Mock API response with specific active/inactive counts
       const mockAdminStatus = {
         totalUsers: 3,
         totalResources: 4, // Includes WINDBOOKS_APP
@@ -429,7 +429,7 @@ describe('Dashboard Component', () => {
       // Verify UserService.getAdminStatus was called
       expect(mockGetAdminStatus).toHaveBeenCalledTimes(1);
 
-      // Should display Resources count as 3 (totalResources 4 - 1 for WINDBOOKS_APP)
+      // Should display Resources count as 3 (activeResources 2 + inactiveResources 1)
       // Find the Resources card specifically and check its count
       const resourcesCard = screen.getByText('Resources').closest('.card') as HTMLElement;
       const resourcesCount = within(resourcesCard).getByText('3');
