@@ -282,6 +282,7 @@ export const CreateOrganizationModal: React.FC<CreateOrganizationModalProps> = (
                           <option value="SELF_EMPLOYED">Self Employed</option>
                           <option value="SOLE_PROPRIETOR">Sole Proprietor</option>
                           <option value="FREELANCER">Freelancer</option>
+                          <option value="PROFESSIONAL">Professional</option>
                           <option value="BMBE">Barangay Micro Business Enterprise</option>
                           <option value="MIXED_INCOME">Mixed Income</option>
                           <option value="ESTATE">Estate</option>

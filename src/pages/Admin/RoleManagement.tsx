@@ -9,7 +9,11 @@ interface User {
   isSuperAdmin: boolean;
   createdAt: string;
   updatedAt: string;
-  roles: Array<{
+  resourceRoles: Array<{
+    id: string;
+    userId: string;
+    resourceId: string;
+    roleId: string;
     role: {
       id: string;
       name: string;
@@ -22,7 +26,15 @@ interface User {
         };
       }>;
     };
+    resource: {
+      id: string;
+      name: string;
+      description: string;
+      createdAt: string;
+      updatedAt: string;
+    };
   }>;
+  appRole: string;
 }
 
 interface PaginatedUsersResponse {
@@ -101,10 +113,7 @@ const RoleManagement = () => {
   };
 
   const getPrimaryRole = (user: User): string => {
-    if (user.roles && user.roles.length > 0) {
-      return user.roles[0].role.name;
-    }
-    return 'None';
+    return user.appRole || 'None';
   };
 
   if (loading) {

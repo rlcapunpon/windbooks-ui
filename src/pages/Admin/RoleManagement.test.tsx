@@ -26,8 +26,12 @@ describe('RoleManagement', () => {
       isSuperAdmin: true,
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z',
-      roles: [
+      resourceRoles: [
         {
+          id: 'role-1',
+          userId: 'user-1',
+          resourceId: 'resource-1',
+          roleId: 'role-1',
           role: {
             id: 'role-1',
             name: 'ADMIN',
@@ -41,9 +45,17 @@ describe('RoleManagement', () => {
                 }
               }
             ]
+          },
+          resource: {
+            id: 'resource-1',
+            name: 'WINDBOOKS_APP',
+            description: 'Main application',
+            createdAt: '2024-01-01T00:00:00.000Z',
+            updatedAt: '2024-01-01T00:00:00.000Z'
           }
         }
-      ]
+      ],
+      appRole: 'ADMIN'
     },
     {
       id: 'user-2',
@@ -52,7 +64,8 @@ describe('RoleManagement', () => {
       isSuperAdmin: false,
       createdAt: '2024-01-01T00:00:00.000Z',
       updatedAt: '2024-01-01T00:00:00.000Z',
-      roles: []
+      resourceRoles: [],
+      appRole: 'CLIENT'
     }
   ]
 
@@ -134,7 +147,7 @@ describe('RoleManagement', () => {
 
     await waitFor(() => {
       expect(screen.getByText('ADMIN')).toBeInTheDocument()
-      expect(screen.getByText('None')).toBeInTheDocument()
+      expect(screen.getByText('CLIENT')).toBeInTheDocument()
     })
   })
 
