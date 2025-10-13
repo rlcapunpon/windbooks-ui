@@ -190,6 +190,30 @@ export interface OrganizationFilters {
   search?: string
 }
 
+// Tax Obligation DTOs based on org-mgmt-api.yaml
+export interface TaxObligationResponseDto {
+  id: string
+  code: string
+  name: string
+  frequency: 'MONTHLY' | 'QUARTERLY' | 'ANNUAL' | 'ONE_TIME'
+  due_rule: object // JSON object for due date rules
+  status: 'MANDATORY' | 'OPTIONAL' | 'EXEMPT' | 'CONDITIONAL' | 'ONE_TIME' | 'RETIRED'
+  created_at: string
+  updated_at: string
+}
+
+export interface OrganizationObligationResponseDto {
+  id: string
+  organization_id: string
+  obligation_id: string
+  start_date: string
+  end_date?: string | null
+  status: 'NOT_APPLICABLE' | 'ASSIGNED' | 'ACTIVE' | 'DUE' | 'FILED' | 'PAID' | 'OVERDUE' | 'LATE' | 'EXEMPT' | 'SUSPENDED' | 'CLOSED'
+  notes?: string | null
+  created_at: string
+  updated_at: string
+}
+
 export class OrganizationService {
   private static readonly BASE_ENDPOINT = '/organizations'
 
@@ -412,6 +436,34 @@ export class OrganizationService {
     } catch (error: unknown) {
       const apiError = error as ApiError
       console.error('Failed to update organization tax classification:', apiError)
+      throw apiError
+    }
+  }
+
+  /**
+   * Fetches all active tax obligations
+   */
+  static async getActiveTaxObligations(): Promise<TaxObligationResponseDto[]> {
+    try {
+      const response = await orgApiClient.get<TaxObligationResponseDto[]>('/tax-obligations')
+      return response.data
+    } catch (error: unknown) {
+      const apiError = error as ApiError
+      console.error('Failed to fetch active tax obligations:', apiError)
+      throw apiError
+    }
+  }
+
+  /**
+   * Fetches organization obligations by organization ID
+   */
+  static async getOrganizationObligations(orgId: string): Promise<OrganizationObligationResponseDto[]> {
+    try {
+      const response = await orgApiClient.get<OrganizationObligationResponseDto[]>(`${this.BASE_ENDPOINT}/${orgId}/obligations`)
+      return response.data
+    } catch (error: unknown) {
+      const apiError = error as ApiError
+      console.error('Failed to fetch organization obligations:', apiError)
       throw apiError
     }
   }

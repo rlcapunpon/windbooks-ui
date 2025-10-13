@@ -17,7 +17,9 @@ vi.mock('../../services/organizationService', () => ({
     getOrganizationOperation: vi.fn(),
     getOrganizationRegistration: vi.fn(),
     updateOrganizationStatus: vi.fn(),
-    getOrganizationOwnership: vi.fn()
+    getOrganizationOwnership: vi.fn(),
+    getOrganizationObligations: vi.fn(),
+    getActiveTaxObligations: vi.fn()
   }
 }))
 
@@ -260,6 +262,8 @@ describe('Organization Page', () => {
       mockOrganizationService.getOrganizationOperation.mockResolvedValue(mockOrganizationOperation)
       mockOrganizationService.getOrganizationRegistration.mockResolvedValue(mockOrganizationRegistration)
       mockOrganizationService.getOrganizationOwnership.mockResolvedValue(mockOrganizationOwnership)
+      mockOrganizationService.getOrganizationObligations.mockResolvedValue([])
+      mockOrganizationService.getActiveTaxObligations.mockResolvedValue([])
       mockUserService.isSuperAdmin.mockReturnValue(true)
 
       render(
@@ -278,7 +282,7 @@ describe('Organization Page', () => {
 
       // Click on Tax Obligations menu
       await userEvent.click(screen.getByText('Tax Obligations'))
-      expect(screen.getByText('Tax obligations functionality coming soon.')).toBeInTheDocument()
+      expect(screen.getByText('No Tax Obligations')).toBeInTheDocument()
 
       // Click on Books menu
       await userEvent.click(screen.getByText('Books'))

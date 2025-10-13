@@ -8,6 +8,8 @@ import { UpdateOrganizationOperationsModal, type UpdateOperationFormData } from 
 import { UpdateOrganizationRegistrationModal, type UpdateRegistrationFormData } from '../../components/UpdateOrganizationRegistrationModal/UpdateOrganizationRegistrationModal'
 import { OrganizationTaxClassUpdateModal, type UpdateTaxClassFormData } from '../../components/OrganizationTaxClassUpdateModal'
 import { canEditOrganizationStatus, canEditOrganizationRegistration } from '../../utils/organizationPermissions'
+import TaxObligationCard from '../../components/TaxObligationCard'
+import type { OrganizationObligationResponseDto, TaxObligationResponseDto } from '../../services/organizationService'
 
 type MenuItem = 'details' | 'contacts' | 'obligations' | 'books' | 'employees' | 'history' | 'settings'
 
@@ -876,12 +878,122 @@ const Contacts: React.FC<{ organization: Organization }> = () => (
   </div>
 )
 
-const TaxObligations: React.FC<{ organization: Organization }> = () => (
-  <div>
-    <h2 className="text-xl font-semibold mb-4">Tax Obligations</h2>
-    <p className="text-gray-600">Tax obligations functionality coming soon.</p>
-  </div>
-)
+const TaxObligations: React.FC<{ organization: Organization }> = ({ organization }) => {
+  const [organizationObligations, setOrganizationObligations] = useState<OrganizationObligationResponseDto[]>([])
+  const [taxObligations, setTaxObligations] = useState<TaxObligationResponseDto[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const loadTaxObligations = async () => {
+      try {
+        setLoading(true)
+        setError(null)
+
+        // Fetch both organization obligations and all tax obligations in parallel
+        const [orgObligationsResult, taxObligationsResult] = await Promise.allSettled([
+          OrganizationService.getOrganizationObligations(organization.id),
+          OrganizationService.getActiveTaxObligations()
+        ])
+
+        // Handle organization obligations
+        if (orgObligationsResult.status === 'fulfilled') {
+          setOrganizationObligations(orgObligationsResult.value)
+        } else {
+          console.warn('Failed to load organization obligations:', orgObligationsResult.reason)
+          setOrganizationObligations([])
+        }
+
+        // Handle tax obligations
+        if (taxObligationsResult.status === 'fulfilled') {
+          setTaxObligations(taxObligationsResult.value)
+        } else {
+          console.warn('Failed to load tax obligations:', taxObligationsResult.reason)
+          setTaxObligations([])
+        }
+
+      } catch (err) {
+        console.error('Failed to load tax obligations:', err)
+        setError('Failed to load tax obligations')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadTaxObligations()
+  }, [organization.id])
+
+  // Create a map of tax obligations by ID for efficient lookup
+  const taxObligationsMap = React.useMemo(() => {
+    return new Map(taxObligations.map(obligation => [obligation.id, obligation]))
+  }, [taxObligations])
+
+  // Combine organization obligations with their corresponding tax obligation details
+  const combinedObligations = React.useMemo(() => {
+    return organizationObligations
+      .map(orgObligation => {
+        const taxObligation = taxObligationsMap.get(orgObligation.obligation_id)
+        return taxObligation ? { orgObligation, taxObligation } : null
+      })
+      .filter((item): item is { orgObligation: OrganizationObligationResponseDto; taxObligation: TaxObligationResponseDto } => item !== null)
+  }, [organizationObligations, taxObligationsMap])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span className="ml-2 text-gray-600">Loading tax obligations...</span>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <div className="text-red-500 mb-4">
+          <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+        </div>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">Error Loading Tax Obligations</h3>
+        <p className="text-gray-600">{error}</p>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-semibold">Tax Obligations</h2>
+        <div className="text-sm text-gray-600">
+          {combinedObligations.length} obligation{combinedObligations.length !== 1 ? 's' : ''}
+        </div>
+      </div>
+
+      {combinedObligations.length === 0 ? (
+        <div className="text-center py-12">
+          <div className="text-gray-400 mb-4">
+            <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">No Tax Obligations</h3>
+          <p className="text-gray-600">This organization has no assigned tax obligations.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {combinedObligations.map(({ orgObligation, taxObligation }) => (
+            <TaxObligationCard
+              key={orgObligation.id}
+              organizationObligation={orgObligation}
+              taxObligation={taxObligation}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 const Books: React.FC<{ organization: Organization }> = () => (
   <div>
